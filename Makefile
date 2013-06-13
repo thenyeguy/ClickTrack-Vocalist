@@ -1,14 +1,13 @@
 #Define compiler
-CC      = gcc
-CFLAGS  = -std=c99 -Wall -Werror
-LIBS    = -L/opt/local/lib
+CC      = g++
+CFLAGS  = -Wall -Werror
+LIBS    = -lportaudio
 
 #Define compile paths
 SRCDIR  = src
 BINDIR  = bin
 OBJDIR  = obj
-vpath %.c $(SRCDIR)
-
+vpath %.cpp $(SRCDIR)
 
 # Primary target
 all: test
@@ -16,18 +15,20 @@ full: clean all
 
 
 
-#Define test target
-TESTSRC = test.c
-TESTOBJ = $(addprefix $(OBJDIR)/, $(TESTSRC:.c=.o))
+#Define test target and dependencides
+TESTSRC = test.cpp
+TESTOBJ = $(addprefix $(OBJDIR)/, $(TESTSRC:.cpp=.o))
 
 test: $(TESTOBJ) $(BINDIR)
-	$(CC) $(CFLAGS) $(LIBS) $(TESTOBJ) -o $(BINDIR)/$@
+	@echo "Linking $@\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TESTOBJ) -o $(BINDIR)/$@
 
 
 
 #Define helper macros
-$(OBJDIR)/%.o: %.c $(OBJDIR)
-	$(CC) -c $(CFLAGS) $< -o $@
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)
+	@echo "Compiling $<"
+	@$(CC) -c $(CFLAGS) $< -o $@
 	
 $(BINDIR):
 	@mkdir $(BINDIR)
@@ -36,5 +37,6 @@ $(OBJDIR):
 	@mkdir $(OBJDIR)
 
 clean:
+	@echo "Cleaning...\n"
 	@rm -rf $(BINDIR)
 	@rm -rf $(OBJDIR)
