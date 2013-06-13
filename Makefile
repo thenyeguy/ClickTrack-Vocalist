@@ -16,7 +16,7 @@ full: clean all
 
 
 #Define test target and dependencides
-TESTSRC = test.cpp
+TESTSRC = portaudio_wrapper.cpp test.cpp
 TESTOBJ = $(addprefix $(OBJDIR)/, $(TESTSRC:.cpp=.o))
 
 test: $(TESTOBJ) $(BINDIR)
