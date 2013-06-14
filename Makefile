@@ -1,5 +1,5 @@
 #Define compiler
-CC      = g++
+CC      = clang++
 CFLAGS  = -Wall -Werror
 LIBS    = -lportaudio
 
@@ -10,19 +10,28 @@ OBJDIR  = obj
 vpath %.cpp $(SRCDIR)
 
 # Primary target
-all: test
+all: test_ringbuffer test_portaudio
 full: clean all
 
 
 
 #Define test target and dependencides
-TESTSRC = portaudio_wrapper.cpp test.cpp
-TESTOBJ = $(addprefix $(OBJDIR)/, $(TESTSRC:.cpp=.o))
+TEST_RINGBUFFER_SRC = test_ringbuffer.cpp
+TEST_RINGBUFFER_OBJ = $(addprefix $(OBJDIR)/, $(TEST_RINGBUFFER_SRC:.cpp=.o))
 
-test: $(TESTOBJ) $(BINDIR)
-	@echo "Linking $@\n"
-	@$(CC) $(CFLAGS) $(LIBS) $(TESTOBJ) -o $(BINDIR)/$@
+test_ringbuffer: $(TEST_RINGBUFFER_OBJ) $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TEST_RINGBUFFER_OBJ) -o $(BINDIR)/$@
 
+
+
+#Define test target and dependencides
+TEST_PORTAUDIO_SRC = portaudio_wrapper.cpp test_portaudio.cpp
+TEST_PORTAUDIO_OBJ = $(addprefix $(OBJDIR)/, $(TEST_PORTAUDIO_SRC:.cpp=.o))
+
+test_portaudio: $(TEST_PORTAUDIO_OBJ) $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TEST_PORTAUDIO_OBJ) -o $(BINDIR)/$@
 
 
 #Define helper macros

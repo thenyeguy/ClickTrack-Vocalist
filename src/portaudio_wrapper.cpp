@@ -2,6 +2,7 @@
 #include "portaudio_wrapper.h"
 
 using namespace std;
+using namespace Portaudio;
 
 
 int error_check(string location, int err)
@@ -14,7 +15,7 @@ int error_check(string location, int err)
 }
 
 
-PortaudioStream::PortaudioStream()
+Stream::Stream()
 {
     // Initialize portaudio
     error_check("PaInitialize", Pa_Initialize());
@@ -47,7 +48,7 @@ PortaudioStream::PortaudioStream()
 }
 
 
-PortaudioStream::~PortaudioStream()
+Stream::~Stream()
 {
     error_check("StopStream", Pa_StartStream(stream));
     error_check("Pa_CloseStream", Pa_CloseStream(&stream));
@@ -56,13 +57,13 @@ PortaudioStream::~PortaudioStream()
 }
 
 
-void PortaudioStream::readFromStream(float* buffer, int num_samples)
+void Stream::readFromStream(float* buffer, int num_samples)
 {
     Pa_ReadStream(stream, buffer, num_samples);    
 }
 
 
-void PortaudioStream::writeToStream(float* buffer, int num_samples)
+void Stream::writeToStream(float* buffer, int num_samples)
 {
     Pa_WriteStream(stream, buffer, num_samples);
 }

@@ -23,27 +23,29 @@ typedef float SAMPLE;
  * streams for us, and provide the ability to read from or write to the audio
  * stream.
  */
-class PortaudioStream {
-    private:
-        PaStream* stream;
+namespace Portaudio {
+    class Stream {
+        private:
+            PaStream* stream;
 
-    public:
-        /* Constructor and destructor automatically open and close the portaudio
-         * streams for us. Uses default sample rate and buffer size
-         */
-        PortaudioStream();
-        ~PortaudioStream();
+        public:
+            /* Constructor and destructor automatically open and close the portaudio
+             * streams for us. Uses default sample rate and buffer size
+             */
+            Stream();
+            ~Stream();
 
-        /* Given the location to store our data and the number of samples, reads
-         * samples into a buffer.
-         */
-        void readFromStream(float*, int);
+            /* Given the location to store our data and the number of samples, reads
+             * samples into a buffer.
+             */
+            void readFromStream(float*, int);
 
-        /* Given a buffer and number of samples, writes those samples to our
-         * output buffer.
-         */
-        void writeToStream(float*, int);
-};
+            /* Given a buffer and number of samples, writes those samples to our
+             * output buffer.
+             */
+            void writeToStream(float*, int);
+    };
+}
 
 
 #endif
