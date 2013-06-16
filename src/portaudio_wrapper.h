@@ -3,13 +3,7 @@
 #include <portaudio.h>
 
 
-/* Define some key constants that can be used throughout the program.
- */
-#define PA_DEFAULT_SAMPLE_RATE 44100 //hz
-#define PA_DEFAULT_BUFFER_SIZE 1024  //slightly more than 20 ms
-
-
-/* Define the constants for portaudio sampling.
+/* Define the constants for portaudio library.
  * Use 32-bit floating point samples.
  */
 typedef float SAMPLE;
@@ -19,11 +13,17 @@ typedef float SAMPLE;
 
 
 
-/* A wrapper for the portaudio boilerplate code. Should initialize and close the
- * streams for us, and provide the ability to read from or write to the audio
- * stream.
- */
 namespace Portaudio {
+    /* Define some key constants that can be used throughout the program.
+    */
+    const unsigned DEFAULT_SAMPLE_RATE = 44100; //hz
+    const unsigned DEFAULT_BUFFER_SIZE = 512;   //slightly more than 20 ms
+
+
+    /* A wrapper for the portaudio boilerplate code. Should initialize and close the
+     * streams for us, and provide the ability to read from or write to the audio
+     * stream.
+     */
     class Stream {
         private:
             PaStream* stream;

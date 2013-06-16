@@ -2,70 +2,72 @@
 #include "ringbuffer.h"
 
 using namespace std;
-using namespace ringbuffer;
+using namespace ClickTrackUtils;
 
 
 int main()
 {
-    RingBuffer<short> small(2);
-    RingBuffer<short> big(10);
-    cout << "Starting test..." << endl << endl;
+    RingBuffer<short> ring(4);
+    cout << "Starting test..." << "\n\n" << endl;
 
-    // Test dequeue from empty
+
+    // Test get first element
     try
     {
-        small.deq();
+        ring.get_sample(0);
         cerr << "Failed to throw exception on empty buffer" << endl;
     }
-    catch(...)
+    catch(RingBufferOutOfRange&)
     {
         cout << "Caught empty buffer." << endl;
     }
 
 
-    // Test enqueue to full
-    small.enq(0);
-    small.enq(1);
+    // Add some elements
+    ring.add_sample(0);
+    ring.add_sample(1);
+    ring.add_sample(2);
+    ring.add_sample(3);
+
+
+    // Try to view elements
+    for(unsigned t = 0; t < 4; t++)
+    {
+        cout << "Time t=" << t << ": " << ring.get_sample(t) << endl;
+        if(ring.get_sample(t) != t)
+            throw "Failed test on proper lookup";
+    }
+
+
+    // Try to add first overlap element
+    ring.add_sample(4);
+    cout << "Time t=" << 4 << ": " << ring.get_sample(4) << endl;
+    if(ring.get_sample(4) != 4)
+        throw "Failed test on proper lookup";
+
+
+    // Test under and overflow of buffer
     try
     {
-        small.enq(2);
-        cerr << "Failed to throw exception on full buffer" << endl;
+        ring.get_sample(0);
+        throw "Failed to throw exception on underflow of buffer";
     }
-    catch(...)
+    catch(RingBufferOutOfRange&)
     {
-        cout << "Caught full buffer." << endl;
+        cout << "Caught underflow of buffer." << endl;
     }
 
-
-    // Test normal
-    big.enq(0);
-    big.enq(1);
-    big.enq(2);
-    big.enq(3);
-    big.enq(4);
-    big.enq(5);
-    big.enq(6);
-    big.enq(7);
-    big.enq(8);
-
-    while(!big.is_empty())
+    try
     {
-        short temp = big.deq();
-        cout << "Got out: " << temp << endl;
+        ring.get_sample(5);
+        throw "Failed to throw exception on overflow of buffer";
     }
-
-
-    // Test wrap around
-    big.enq(9);
-    big.enq(10);
-    big.enq(11);
-    big.enq(12);
-
-    while(!big.is_empty())
+    catch(RingBufferOutOfRange&)
     {
-        short temp = big.deq();
-        cout << "Got out: " << temp << endl;
+        cout << "Caught overflow of buffer." << endl;
     }
+
+    cout << "\n\n" << "All tests passed!" << endl;
 
     return 0;
 }

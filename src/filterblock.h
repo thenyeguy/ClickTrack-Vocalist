@@ -4,38 +4,108 @@
 #include "ringbuffer.h"
 
 
-namespace filterblocks {
-    /* A filter block is the generic building block for a signal processing
-     * chain. All real filters inherit from this interface.
-     *
-     * To be a valid filter block, a filter must adhere to two properties:
-     *   (1) on fill_in_buffer, it must populate its input buffer from the
-     *       previous element in the chain. An object may make up its input if
-     *       it is the first element (ie a microphone input).
-     *   (2) on fill_out_buffer, it must use the in_buffer to calculate the
-     *       output of the filter, and store it in the output RingBuffer so that
-     *       the next element in the chain can access it. If this is the last
-     *       element, it may just throw into space (ie a speaker output).
+namespace FilterChain {
+    /* This determines the size of our ring buffers and processing blocks.
+     * For best performance, block size should be an integer multiple of the
+     * portaudio buffer size. For processing safety the buffer size should be
+     * an integer multiple of the block size, greater than 1.
      */
-    class FilterBlock
+    const unsigned DEFAULT_BLOCK_SIZE = Portaudio::DEFAULT_BUFFER_SIZE;
+    const unsigned DEFAULT_BUFFER_SIZE = 4*DEFAULT_BLOCK_SIZE;
+
+
+    /* A audio element is the most generic unit in an audio chain.
+     *
+     * To qualify as a audio element, a subclass should satisfy the following:
+     *  (2) Process in discrete blocks of size BLOCK_SIZE.
+     *  (3) Return a block 
+     *
+     * To implement a standard audio element, all that is nessecary is defining
+     * the virtual method generate_output. The top level class will handle the
+     * boilerplate code to determine when to processs.
+     */
+    class AudioElement
     {
-        protected:
-            SAMPLE* in_buffer;
+        private:
+            /* Stores its output into a ring buffer. Each sample is an array of
+             * channels.
+             */
+            unsigned num_output_channels;
+            ClickTrackUtils::RingBuffer<SAMPLE*>* out_buffer;
+
+            // Used to determine whether we need to compute new outputs.
+            unsigned next_block;
+
         public:
-            RingBuffer<SAMPLE> out_buffer;
+            AudioElement(unsigned num_channels = 1);
+            ~AudioElement();
 
-            virtual void fill_in_buffer(RingBuffer<SAMPLE>* input)
-            {
-                int i = 0;
-                while(!input->is_empty())
-                {
-                    in_buffer[i] = input.deq();
-                    i++;
-                }
-            }
+            /* Given a channel number and a time block id, returns a 1D array of
+             * samples for that channel. Automatically evaluates new output if
+             * nessecary.
+             */
+            SAMPLE* get_sample_block(unsigned output_channel, unsigned block_id);
 
-            virtual void fill_out_buffer() = 0;
-    }
+            /* To implement an audio element, one must override this. The
+             * generate_output function must fill the out_buffer with the next
+             * block of samples.
+             */
+            virtual void generate_output() = 0;
+    };
+
+
+    /* A filter element is a pure function - it takes a variable number of
+     * inputs and outputs to a variable number of channels. To implement a new
+     * filter, one must only override the run_filter function to perform your
+     * filter. The function will automatically pull in the input data.
+     */
+    class FilterElement: public AudioElement
+    {
+        private:
+            unsigned num_inputs;
+            unsigned* input_channels;
+            AudioElement* inputs;
+        public:
+            FilterElement(AudioElement* input_elements,
+                          unsigned* input_chans,
+                          unsigned num_input_elements = 1,
+                          unsigned num_channels = 1);
+
+            /* This function automatically pulls in inputs, then runs filter.
+             */
+            void generate_output(unsigned block_id);
+
+            /* Actually runs the filter, and stores it to output buffer. Takes
+             * input as a list of samples, each of which is a list of channels.
+             */
+            virtual void run_filter(SAMPLE** inputs) = 0;
+    };
+
+
+    /* An output element listens to a variable number of inputs, and pipes the
+     * output outside the ClickTrack environment. To create a new output
+     * element, override the output function.
+     */
+    class OutputElement
+    {
+        private:
+            unsigned num_inputs;
+            unsigned* input_channels;
+            AudioElement* inputs;
+
+            unsigned next_block;
+        public:
+            OutputElement(AudioElement* input_elements, unsigned* input_chans,
+                          unsigned num_input_elements = 1);
+
+            /* Fetches our inputs, then calls the output function.
+             */
+            void process_inputs();
+
+            /* Actually outputs our data.
+             */
+            virtual void output(SAMPLE** inputs) = 0;
+    };
 }
 
 

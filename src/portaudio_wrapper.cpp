@@ -40,7 +40,7 @@ Stream::Stream()
     //Open the stream!
     error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, &inputParams, &outputParams,
-            PA_DEFAULT_SAMPLE_RATE, PA_DEFAULT_BUFFER_SIZE, paNoFlag,
+            DEFAULT_SAMPLE_RATE, DEFAULT_BUFFER_SIZE, paNoFlag,
             0, 0));
     error_check("StartStream", Pa_StartStream(stream));
     

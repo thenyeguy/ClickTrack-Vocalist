@@ -4,22 +4,15 @@
 #include <exception>
 
 
-namespace ringbuffer {
-    /* Define two exceptions for use in RingBuffer. Thrown when a ring buffer is
-     * required to be nonempty or nonfull.
+namespace ClickTrackUtils {
+    /* Define an exceptions for use in RingBuffer. Thrown when requesting a time
+     * value that is not in the ring buffer.
      */
-    class EmptyRingBufferException: public std::exception
+    class RingBufferOutOfRange: public std::exception
     {
         virtual const char* what() const throw()
         {
-            return "Can't dequeue from an empty buffer";
-        }
-    };
-    class FullRingBufferException: public std::exception
-    {
-        virtual const char* what() const throw()
-        {
-            return "Can't enqueue to a full buffer";
+            return "The requested time value is not stored in the buffer.";
         }
     };
 
@@ -33,11 +26,11 @@ namespace ringbuffer {
     class RingBuffer
     {
         private:
-            int start; // starting index of the queue in the ring
-            int end;   // ending index of the queue in the ring
-            int size;  // the number of elements contained in the ring
+            unsigned start_t; // earliest time still in the buffer
+            unsigned end_t;   //  latest time still in the buffer
+            unsigned samples_added; // the number of samples stored in the buffer
 
-            int buffer_size;  // the max size of the ring
+            unsigned buffer_size;  // the number of elements in the buffer
             SampleT* samples; // the actual ring array
         
         public:
@@ -45,11 +38,11 @@ namespace ringbuffer {
              * specified, it can contain at most 1024 elements, otherwise it can
              * contain as many as its argument allows.
              */
-            RingBuffer(int n_buffer_size=1024)
+            RingBuffer(unsigned n_buffer_size=1024)
             {
-                start = 0;
-                end = 0;
-                size = 0;
+                start_t = 0;
+                end_t = 0;
+                samples_added = 0;
 
                 buffer_size = n_buffer_size;
                 samples = new SampleT[buffer_size];
@@ -62,47 +55,33 @@ namespace ringbuffer {
                 delete samples;
             }
 
-            /* Returns true iff there are currently no elements in the ring.
+            /* Adds a sample as the next time step in the buffer. May overwrite
+             * the oldest time step.
              */
-            bool is_empty()
+            void add_sample(SampleT s)
             {
-                return size == 0;
+                //  Write the sample into the ring
+                unsigned i = end_t % buffer_size;
+                samples[i] = s;
+                end_t++;
+
+                // If we are at max capacity, we replace the oldest element
+                if(samples_added == buffer_size)
+                    start_t++;
+                else
+                    samples_added++;
+
             }
 
-            /* Returns the number of elements in the ring that have been
-             * enqueued but not yet dequeued.
+            /* Gets the sample at time t. If this is not in the range stored
+             * inside the buffer, throws OutOfRange exception.
              */
-            int get_size()
+            SampleT get_sample(unsigned t)
             {
-                return size;
-            }
+                if(t < start_t || t >= end_t)
+                    throw RingBufferOutOfRange();
 
-            /* Enqueue takes a single sample and puts it at the end of the ring.
-             * If the ring is already full, throws FullRingBufferException.
-             */
-            void enq(SampleT s)
-            {
-                if(size == buffer_size)
-                    throw new FullRingBufferException();
-
-                samples[end] = s;
-                end = (end+1) % buffer_size;
-                size++;
-            }
-
-            /* Dequeue removes a single sample from the beginning of the ring.
-             * After a dequeue, the head of the ring is advanced by one.
-             * If the ring is already empty, throws EmptyRingBufferException
-             */
-            SampleT deq()
-            {
-                if(size == 0)
-                    throw new EmptyRingBufferException();
-
-                SampleT s = samples[start];
-                start = (start+1) % buffer_size;
-                size--;
-                return s;
+                return samples[t % buffer_size];
             }
     };
 }
