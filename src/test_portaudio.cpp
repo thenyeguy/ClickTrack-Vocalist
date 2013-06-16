@@ -6,15 +6,14 @@ using namespace Portaudio;
 
 int main(int argc, char* argv[])
 {
-    cout << "Hello World!\n";
-
-    Stream* pa = new Stream();
+    InputStream* in = new InputStream();
+    OutputStream* out = new OutputStream();
     float* buffer = new float[DEFAULT_BUFFER_SIZE];
 
     while(true)
     {
-        pa->readFromStream(buffer, DEFAULT_BUFFER_SIZE);
-        pa->writeToStream(buffer, DEFAULT_BUFFER_SIZE);
+        in->readFromStream(buffer, DEFAULT_BUFFER_SIZE);
+        out->writeToStream(buffer, DEFAULT_BUFFER_SIZE);
     }
 
     return 0;

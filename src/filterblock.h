@@ -1,5 +1,6 @@
 #ifndef FILTERBLOCK_H
 #define FILTERBLOCK_H
+#include <vector>
 #include "portaudio_wrapper.h"
 #include "ringbuffer.h"
 
@@ -16,29 +17,24 @@ namespace FilterChain {
 
     /* A audio element is the most generic unit in an audio chain.
      *
-     * To qualify as a audio element, a subclass should satisfy the following:
-     *  (2) Process in discrete blocks of size BLOCK_SIZE.
-     *  (3) Return a block 
-     *
      * To implement a standard audio element, all that is nessecary is defining
      * the virtual method generate_output. The top level class will handle the
      * boilerplate code to determine when to processs.
      */
     class AudioElement
     {
-        private:
+        protected:
             /* Stores its output into a ring buffer. Each sample is an array of
              * channels.
              */
             unsigned num_output_channels;
-            ClickTrackUtils::RingBuffer<SAMPLE*>* out_buffer;
+            std::vector< ClickTrackUtils::RingBuffer<SAMPLE> > out_buffers;
 
             // Used to determine whether we need to compute new outputs.
             unsigned next_block;
 
         public:
             AudioElement(unsigned num_channels = 1);
-            ~AudioElement();
 
             /* Given a channel number and a time block id, returns a 1D array of
              * samples for that channel. Automatically evaluates new output if
@@ -61,7 +57,7 @@ namespace FilterChain {
      */
     class FilterElement: public AudioElement
     {
-        private:
+        protected:
             unsigned num_inputs;
             unsigned* input_channels;
             AudioElement* inputs;
@@ -73,6 +69,7 @@ namespace FilterChain {
 
             /* This function automatically pulls in inputs, then runs filter.
              */
+            using AudioElement::generate_output;
             void generate_output(unsigned block_id);
 
             /* Actually runs the filter, and stores it to output buffer. Takes
@@ -88,7 +85,7 @@ namespace FilterChain {
      */
     class OutputElement
     {
-        private:
+        protected:
             unsigned num_inputs;
             unsigned* input_channels;
             AudioElement* inputs;

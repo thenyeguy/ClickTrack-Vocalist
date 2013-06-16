@@ -6,16 +6,10 @@ using namespace FilterChain;
 
 
 AudioElement::AudioElement(unsigned num_channels)
+    : out_buffers(num_channels,
+      ClickTrackUtils::RingBuffer<SAMPLE>(DEFAULT_BUFFER_SIZE))
 {
     num_output_channels = num_channels;
-    out_buffer =
-        new ClickTrackUtils::RingBuffer<SAMPLE*>(DEFAULT_BUFFER_SIZE);
-}
-
-
-AudioElement::~AudioElement()
-{
-    delete out_buffer;
 }
 
 
@@ -31,8 +25,8 @@ SAMPLE* AudioElement::get_sample_block(unsigned output_channel, unsigned block_i
 
     for(unsigned t = 0; t < DEFAULT_BLOCK_SIZE; t++)
     {
-        SAMPLE* s = out_buffer->get_sample(block_id*DEFAULT_BLOCK_SIZE + t);
-        block[t] = s[output_channel];
+        block[t] = out_buffers[output_channel].
+            get_sample(block_id*DEFAULT_BLOCK_SIZE + t);
     }
 
     return block;

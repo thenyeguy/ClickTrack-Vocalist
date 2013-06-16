@@ -10,28 +10,34 @@ OBJDIR  = obj
 vpath %.cpp $(SRCDIR)
 
 # Primary target
-all: test_ringbuffer test_portaudio
+all: tests
 full: clean all
+
+tests: test_ringbuffer test_portaudio test_filterchain
 
 
 
 #Define test target and dependencides
 TEST_RINGBUFFER_SRC = test_ringbuffer.cpp
 TEST_RINGBUFFER_OBJ = $(addprefix $(OBJDIR)/, $(TEST_RINGBUFFER_SRC:.cpp=.o))
-
 test_ringbuffer: $(TEST_RINGBUFFER_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_RINGBUFFER_OBJ) -o $(BINDIR)/$@
 
 
-
-#Define test target and dependencides
 TEST_PORTAUDIO_SRC = portaudio_wrapper.cpp test_portaudio.cpp
 TEST_PORTAUDIO_OBJ = $(addprefix $(OBJDIR)/, $(TEST_PORTAUDIO_SRC:.cpp=.o))
-
 test_portaudio: $(TEST_PORTAUDIO_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_PORTAUDIO_OBJ) -o $(BINDIR)/$@
+
+
+TEST_FILTERCHAIN_SRC = portaudio_wrapper.cpp filterblock.cpp ioblocks.cpp \
+                       test_portaudio.cpp
+TEST_FILTERCHAIN_OBJ = $(addprefix $(OBJDIR)/, $(TEST_FILTERCHAIN_SRC:.cpp=.o))
+test_filterchain: $(TEST_FILTERCHAIN_OBJ) $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TEST_FILTERCHAIN_OBJ) -o $(BINDIR)/$@
 
 
 #Define helper macros
