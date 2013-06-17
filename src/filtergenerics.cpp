@@ -81,7 +81,6 @@ AudioConsumer::AudioConsumer(unsigned in_num_input_channels,
 
 void AudioConsumer::consume_inputs()
 {
-
     // Read in each channel
     for(int i = 0; i < num_input_channels; i++)
         input_channels[i]->fill_external_buffer(input_buffer[i], next_t);
@@ -110,8 +109,4 @@ void AudioFilter::generate_outputs(SAMPLE** outputs)
 void AudioFilter::process_inputs(SAMPLE** inputs)
 {
     filter(inputs, output_buffer);
-
-    // Copy and delete data
-    for(int i = 0; i < num_output_channels; i++)
-        output_channels[i].fill_internal_buffer(output_buffer[i]);
 }
