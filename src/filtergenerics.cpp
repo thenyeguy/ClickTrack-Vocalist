@@ -18,7 +18,7 @@ OutputChannel::OutputChannel(unsigned in_channel_id,
 
 void OutputChannel::fill_external_buffer(SAMPLE* buffer, const unsigned t)
 {
-    while(start_t < t)
+    while(start_t < t || end_t < t+DEFAULT_BLOCK_SIZE)
         parent->generate_outputs();
 
     out.get_range(buffer, start_t, start_t+DEFAULT_BLOCK_SIZE);

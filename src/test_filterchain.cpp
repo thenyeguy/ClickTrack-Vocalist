@@ -20,6 +20,14 @@ int main()
     cout << "Entering process loop" << endl;
     while(true)
     {
-        speak.consume_inputs();
+        try
+        {
+            speak.consume_inputs();
+        }
+        catch(exception& e)
+        {
+            cerr << "\n\n" << "EXCEPTION: " << e.what() << endl;
+            exit(1);
+        }
     }
 }

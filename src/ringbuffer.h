@@ -1,6 +1,7 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
+#include <iostream>
 #include <exception>
 #include <vector>
 
@@ -56,7 +57,9 @@ namespace ClickTrackUtils {
             SampleT get(const unsigned t)
             {
                 if(t < start_t || t >= end_t)
+                {
                     throw RingBufferOutOfRange();
+                }
 
                 return samples[t % buffer_size];                
             }
@@ -68,9 +71,6 @@ namespace ClickTrackUtils {
             void get_range(SampleT* buffer, const unsigned start,
                                             const unsigned end)
             {
-                if(start < start_t || end >= end_t)
-                    throw RingBufferOutOfRange();
-
                 for(int i = 0; i < end-start; i++)
                     buffer[i] = get(i+start);
             }
