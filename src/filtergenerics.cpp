@@ -4,11 +4,9 @@
 using namespace FilterGenerics;
 
 
-OutputChannel::OutputChannel(unsigned in_channel_id,
-                             AudioGenerator* in_parent)
+OutputChannel::OutputChannel(AudioGenerator* in_parent)
     : out(DEFAULT_BUFFER_SIZE)
 {
-    channel_id = in_channel_id;
     parent = in_parent;
 
     start_t = 0;
@@ -37,11 +35,9 @@ void OutputChannel::fill_internal_buffer(const SAMPLE* buffer)
 
 
 AudioGenerator::AudioGenerator(const unsigned in_num_output_channels)
-    : num_output_channels(in_num_output_channels)
+    : num_output_channels(in_num_output_channels),
+      output_channels(in_num_output_channels, OutputChannel(this))
 {
-    for(int i = 0; i < in_num_output_channels; i++)
-        output_channels.push_back(OutputChannel(i, this));
-
     // Allocate the buffer once for writing to
     output_buffer = new SAMPLE*[num_output_channels];
     for(int i = 0; i < num_output_channels; i++)
@@ -67,12 +63,12 @@ void AudioGenerator::write_outputs()
 
 
 
-AudioConsumer::AudioConsumer(const unsigned in_num_input_channels,
+AudioConsumer::AudioConsumer(unsigned in_num_input_channels,
         OutputChannel* in_input_channels)
+    : num_input_channels(in_num_input_channels)
 {
     next_t = 0;
     
-    num_input_channels = in_num_input_channels;
     for(int i = 0; i < num_input_channels; i++)
         input_channels.push_back(&in_input_channels[i]);
 
@@ -98,9 +94,9 @@ void AudioConsumer::consume_inputs()
 
 
 
-AudioFilter::AudioFilter(const unsigned in_num_output_channels,
-        const unsigned in_num_input_channels,
-        OutputChannel* in_input_channels)
+AudioFilter::AudioFilter(unsigned in_num_output_channels,
+                         unsigned in_num_input_channels,
+                         OutputChannel* in_input_channels)
     : AudioGenerator(in_num_output_channels),
       AudioConsumer(in_num_input_channels, in_input_channels) {}
 

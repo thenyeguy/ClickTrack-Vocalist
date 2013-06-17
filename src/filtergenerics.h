@@ -27,7 +27,6 @@ namespace FilterGenerics
     class OutputChannel
     {
         private:
-            unsigned channel_id;
             AudioGenerator* parent;
 
             unsigned start_t;
@@ -36,8 +35,7 @@ namespace FilterGenerics
 
         public:
             // Called only by parent AudioGenerator
-            OutputChannel(unsigned in_channel_id,
-                          AudioGenerator* in_parent);
+            OutputChannel(AudioGenerator* in_parent);
 
             /* Fills an incoming buffer with one block worth of audio data
              * beginning at the requested time.
@@ -66,7 +64,7 @@ namespace FilterGenerics
             SAMPLE** output_buffer;
 
         public:
-            AudioGenerator(const unsigned in_num_output_channels);
+            AudioGenerator(unsigned in_num_output_channels);
 
             /* Returns the requested output channel by number
              */
@@ -97,7 +95,7 @@ namespace FilterGenerics
         protected:
             unsigned next_t; // Starting time unit of next block
 
-            unsigned num_input_channels;
+            const unsigned num_input_channels;
             std::vector<OutputChannel*> input_channels;
 
             // statically allocated input buffer for speed
@@ -128,8 +126,8 @@ namespace FilterGenerics
     class AudioFilter : public AudioGenerator, public AudioConsumer
     {
         public:
-            AudioFilter(const unsigned in_num_output_channels,
-                        const unsigned in_num_input_channels,
+            AudioFilter(unsigned in_num_output_channels,
+                        unsigned in_num_input_channels,
                         OutputChannel* in_input_channels);
 
             /* Override the generator. When requested, use the consumer to
