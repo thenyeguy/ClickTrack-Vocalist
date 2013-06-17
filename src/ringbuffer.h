@@ -58,6 +58,9 @@ namespace ClickTrackUtils {
             {
                 if(t < start_t || t >= end_t)
                 {
+                    std::cout << "Asking for t=" << t;
+                    std::cout << " from (" << start_t << "," << end_t << ")";
+                    std::cout << std::endl;
                     throw RingBufferOutOfRange();
                 }
 

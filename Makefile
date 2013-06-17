@@ -34,7 +34,7 @@ test_portaudio: $(TEST_PORTAUDIO_OBJ) $(BINDIR)
 
 
 TEST_FILTERCHAIN_SRC = portaudio_wrapper.cpp filtergenerics.cpp ioelements.cpp \
-                       test_filterchain.cpp
+                       delay.cpp test_filterchain.cpp
 TEST_FILTERCHAIN_OBJ = $(addprefix $(OBJDIR)/, $(TEST_FILTERCHAIN_SRC:.cpp=.o))
 test_filterchain: $(TEST_FILTERCHAIN_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
