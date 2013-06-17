@@ -17,6 +17,9 @@ full: clean all
 tests: test_ringbuffer test_portaudio test_filterchain
 
 
+# Macro the filter list
+FILTER_SRC = filtergenerics.cpp ioelements.cpp unity.cpp delay.cpp
+
 
 #Define test target and dependencides
 TEST_RINGBUFFER_SRC = test_ringbuffer.cpp
@@ -33,8 +36,7 @@ test_portaudio: $(TEST_PORTAUDIO_OBJ) $(BINDIR)
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_PORTAUDIO_OBJ) -o $(BINDIR)/$@
 
 
-TEST_FILTERCHAIN_SRC = portaudio_wrapper.cpp filtergenerics.cpp ioelements.cpp \
-                       delay.cpp test_filterchain.cpp
+TEST_FILTERCHAIN_SRC = portaudio_wrapper.cpp $(FILTER_SRC) test_filterchain.cpp
 TEST_FILTERCHAIN_OBJ = $(addprefix $(OBJDIR)/, $(TEST_FILTERCHAIN_SRC:.cpp=.o))
 test_filterchain: $(TEST_FILTERCHAIN_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
