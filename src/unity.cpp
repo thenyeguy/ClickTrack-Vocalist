@@ -5,8 +5,8 @@ using namespace FilterGenerics;
 using namespace Filters;
 
 
-UnityFilter::UnityFilter(unsigned in_num_channels,
-                         OutputChannel* in_input_channels)
+UnityFilter::UnityFilter(OutputChannel* in_input_channels, 
+                         unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels,
                   in_input_channels)
 {}

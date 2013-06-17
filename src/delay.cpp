@@ -6,8 +6,8 @@ using namespace Filters;
 
 //std::vector<ClickTrackUtils::RingBuffer<SAMPLE> > last_second;
 
-SimpleDelay::SimpleDelay(unsigned in_num_channels,
-                         OutputChannel* in_input_channels)
+SimpleDelay::SimpleDelay(OutputChannel* in_input_channels,
+                         unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels,
                   in_input_channels),
       last_second(num_input_channels, ClickTrackUtils::RingBuffer<SAMPLE>(44100))

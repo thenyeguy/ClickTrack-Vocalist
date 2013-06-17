@@ -18,14 +18,14 @@ int main()
 
     cout << "Initializing signal chain" << endl;
     Microphone mic(in);
-    SimpleDelay delay(1, &mic.get_output_channel(0));
-    UnityFilter unity(1, &delay.get_output_channel(0));
-    Speaker speak(out, &unity.get_output_channel(0));
+    SimpleDelay delay(&mic.get_output_channel());
+    UnityFilter unity(&delay.get_output_channel());
+    Speaker speak(out, &unity.get_output_channel());
 
     SquareWave sq(440.0f);
     SinWave si(440.0f);
     TriangleWave tri(440.f);
-    Speaker amp(out, &si.get_output_channel(0));
+    Speaker amp(out, &tri.get_output_channel());
 
     cout << "Entering process loop" << endl;
     while(true)

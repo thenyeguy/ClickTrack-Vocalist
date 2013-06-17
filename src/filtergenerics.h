@@ -68,7 +68,7 @@ namespace FilterGenerics
 
             /* Returns the requested output channel by number
              */
-            OutputChannel& get_output_channel(int i);
+            OutputChannel& get_output_channel(int i = 0);
 
             /* Writes outputs into the buffer. Calls generate_outputs to
              * determine what to write out.

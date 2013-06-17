@@ -7,6 +7,9 @@
 
 namespace IOElements
 {
+    /* The microphone is an input device. It uses the default input device on
+     * your computer, and pulls its data from portaudio.
+     */
     class Microphone : public FilterGenerics::AudioGenerator
     {
         private:
@@ -18,6 +21,9 @@ namespace IOElements
     };
 
 
+    /* The speaker is an output device. It uses the default output device on
+     * your computer, and pushes its data out to portaudio.
+     */
     class Speaker : public FilterGenerics::AudioConsumer
     {
         private:
