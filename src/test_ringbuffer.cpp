@@ -14,7 +14,7 @@ int main()
     // Test get first element
     try
     {
-        ring.get_sample(0);
+        ring.get(0);
         cerr << "Failed to throw exception on empty buffer" << endl;
     }
     catch(RingBufferOutOfRange&)
@@ -24,32 +24,32 @@ int main()
 
 
     // Add some elements
-    ring.add_sample(0);
-    ring.add_sample(1);
-    ring.add_sample(2);
-    ring.add_sample(3);
+    ring.add(0);
+    ring.add(1);
+    ring.add(2);
+    ring.add(3);
 
 
     // Try to view elements
     for(unsigned t = 0; t < 4; t++)
     {
-        cout << "Time t=" << t << ": " << ring.get_sample(t) << endl;
-        if(ring.get_sample(t) != t)
+        cout << "Time t=" << t << ": " << ring.get(t) << endl;
+        if(ring.get(t) != t)
             throw "Failed test on proper lookup";
     }
 
 
     // Try to add first overlap element
-    ring.add_sample(4);
-    cout << "Time t=" << 4 << ": " << ring.get_sample(4) << endl;
-    if(ring.get_sample(4) != 4)
+    ring.add(4);
+    cout << "Time t=" << 4 << ": " << ring.get(4) << endl;
+    if(ring.get(4) != 4)
         throw "Failed test on proper lookup";
 
 
     // Test under and overflow of buffer
     try
     {
-        ring.get_sample(0);
+        ring.get(0);
         throw "Failed to throw exception on underflow of buffer";
     }
     catch(RingBufferOutOfRange&)
@@ -59,13 +59,27 @@ int main()
 
     try
     {
-        ring.get_sample(5);
+        ring.get(5);
         throw "Failed to throw exception on overflow of buffer";
     }
     catch(RingBufferOutOfRange&)
     {
         cout << "Caught overflow of buffer." << endl;
     }
+
+
+    // Test get range
+    short buffer[3];
+    ring.get_range(buffer, 1, 4);
+
+    cout << "\n" << "Getting range:" << endl;
+    for(unsigned i = 0; i < 3; i++)
+    {
+        cout << "Time t=" << i+1 << ": " << buffer[i] << endl;
+        if(buffer[i] != i+1)
+            throw "Failed test on proper lookup";
+    }
+
 
     cout << "\n\n" << "All tests passed!" << endl;
 

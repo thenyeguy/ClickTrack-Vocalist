@@ -5,6 +5,7 @@ LIBS    = -lportaudio
 
 #Define compile paths
 SRCDIR  = src
+TSTDIR  = tst
 BINDIR  = bin
 OBJDIR  = obj
 vpath %.cpp $(SRCDIR)
@@ -32,8 +33,8 @@ test_portaudio: $(TEST_PORTAUDIO_OBJ) $(BINDIR)
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_PORTAUDIO_OBJ) -o $(BINDIR)/$@
 
 
-TEST_FILTERCHAIN_SRC = portaudio_wrapper.cpp filterblock.cpp ioblocks.cpp \
-                       test_portaudio.cpp
+TEST_FILTERCHAIN_SRC = portaudio_wrapper.cpp filtergenerics.cpp ioelements.cpp \
+                       test_filterchain.cpp
 TEST_FILTERCHAIN_OBJ = $(addprefix $(OBJDIR)/, $(TEST_FILTERCHAIN_SRC:.cpp=.o))
 test_filterchain: $(TEST_FILTERCHAIN_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"

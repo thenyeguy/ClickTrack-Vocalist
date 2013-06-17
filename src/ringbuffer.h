@@ -2,6 +2,7 @@
 #define RINGBUFFER_H
 
 #include <exception>
+#include <vector>
 
 
 namespace ClickTrackUtils {
@@ -27,11 +28,11 @@ namespace ClickTrackUtils {
     {
         private:
             unsigned start_t; // earliest time still in the buffer
-            unsigned end_t;   //  latest time still in the buffer
-            unsigned samples_added; // the number of samples stored in the buffer
+            unsigned end_t;   // latest time still in the buffer
+            unsigned size;    // number of samples currently in buffer
 
             unsigned buffer_size;  // the number of elements in the buffer
-            SampleT* samples; // the actual ring array
+            std::vector<SampleT> samples; // the actual ring array
         
         public:
             /* The constructor allocates the ring array. If no size is
@@ -39,49 +40,69 @@ namespace ClickTrackUtils {
              * contain as many as its argument allows.
              */
             RingBuffer(unsigned n_buffer_size=1024)
+                : samples(n_buffer_size)
             {
                 start_t = 0;
                 end_t = 0;
-                samples_added = 0;
+                size = 0;
 
                 buffer_size = n_buffer_size;
-                samples = new SampleT[buffer_size];
             }
 
-            /* Deconstructor. Frees the memory allocated to the ring.
+            /* Allows you to ask for values in the currently available time
+             * range of the buffer. If you try to access a time point not
+             * available in the current range, throws exception.
              */
-            ~RingBuffer()
-            {
-                delete samples;
-            }
-
-            /* Adds a sample as the next time step in the buffer. May overwrite
-             * the oldest time step.
-             */
-            void add_sample(SampleT s)
-            {
-                //  Write the sample into the ring
-                unsigned i = end_t % buffer_size;
-                samples[i] = s;
-                end_t++;
-
-                // If we are at max capacity, we replace the oldest element
-                if(samples_added == buffer_size)
-                    start_t++;
-                else
-                    samples_added++;
-
-            }
-
-            /* Gets the sample at time t. If this is not in the range stored
-             * inside the buffer, throws OutOfRange exception.
-             */
-            SampleT get_sample(unsigned t)
+            SampleT get(const unsigned t)
             {
                 if(t < start_t || t >= end_t)
                     throw RingBufferOutOfRange();
 
-                return samples[t % buffer_size];
+                return samples[t % buffer_size];                
+            }
+
+            /* Copies a range of values into a provided buffer. If you try to
+             * access any time points not available in the current range, throws
+             * exception.
+             */
+            void get_range(SampleT* buffer, const unsigned start,
+                                            const unsigned end)
+            {
+                if(start < start_t || end >= end_t)
+                    throw RingBufferOutOfRange();
+
+                for(int i = 0; i < end-start; i++)
+                    buffer[i] = get(i+start);
+            }
+
+            /* Adds a sample as the next time step in the buffer. May overwrite
+             * the oldest time step. Returns the timestamp of the added value.
+             */
+            unsigned add(SampleT s)
+            {
+                // Drop the earliest time if nessecary
+                if(size == buffer_size)
+                    start_t++;
+                else
+                    size++;
+
+                // Write the sample into the ring
+                unsigned i = end_t % buffer_size;
+                samples[i] = s;
+                end_t++;
+
+                return end_t-1;
+            }
+
+            /* Getters to expose the lowest and high timestamp
+             */
+            unsigned get_lowest_timestamp()
+            {
+                return start_t;
+            }
+            unsigned get_highest_timestamp()
+            {
+                return end_t;
             }
     };
 }
