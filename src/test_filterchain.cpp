@@ -1,11 +1,13 @@
 #include <iostream>
 #include "ioelements.h"
+#include "oscillator.h"
 #include "unity.h"
 #include "delay.h"
 
 using namespace std;
 using namespace Portaudio;
 using namespace IOElements;
+using namespace Oscillators;
 using namespace Filters;
 
 int main()
@@ -20,12 +22,17 @@ int main()
     UnityFilter unity(1, &delay.get_output_channel(0));
     Speaker speak(out, &unity.get_output_channel(0));
 
+    SquareWave sq(440.0f);
+    SinWave si(440.0f);
+    TriangleWave tri(440.f);
+    Speaker amp(out, &si.get_output_channel(0));
+
     cout << "Entering process loop" << endl;
     while(true)
     {
         try
         {
-            speak.consume_inputs();
+            amp.consume_inputs();
         }
         catch(exception& e)
         {
