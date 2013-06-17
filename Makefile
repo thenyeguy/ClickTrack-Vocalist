@@ -1,6 +1,6 @@
 #Define compiler
 CC      = clang++
-CFLAGS  = -Wall -Werror
+CFLAGS  = -Wall -Werror -g
 LIBS    = -lportaudio
 
 #Define compile paths

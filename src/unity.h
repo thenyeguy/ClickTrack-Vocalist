@@ -1,5 +1,5 @@
-#ifndef DELAY_H
-#define DELAY_H
+#ifndef UNITY_H
+#define UNITY_H
 
 #include <vector>
 #include "filtergenerics.h"
