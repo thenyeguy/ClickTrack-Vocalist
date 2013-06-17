@@ -13,7 +13,7 @@ namespace IOElements
         public:
             Microphone(Portaudio::InputStream* inputs, unsigned num_channels = 1);
 
-            void generate_outputs();
+            void generate_outputs(SAMPLE** outputs);
     };
 
 

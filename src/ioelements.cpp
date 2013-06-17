@@ -12,15 +12,10 @@ Microphone::Microphone(Portaudio::InputStream* inputs, unsigned num_channels)
 }
 
 
-void Microphone::generate_outputs()
+void Microphone::generate_outputs(SAMPLE** outputs)
 {
-    SAMPLE buffer[DEFAULT_BLOCK_SIZE];
     for(int i = 0; i < num_output_channels; i++)
-    {
-        //Read one stream and copy to its output buffer
-        streams[i].readFromStream(buffer, DEFAULT_BLOCK_SIZE);
-        output_channels[i].fill_internal_buffer(buffer);
-    }
+        streams[i].readFromStream(outputs[i], DEFAULT_BLOCK_SIZE);
 }
 
 

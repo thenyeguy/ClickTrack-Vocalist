@@ -62,6 +62,9 @@ namespace FilterGenerics
             const unsigned num_output_channels;
             std::vector<OutputChannel> output_channels;
 
+            // statically allocated output buffer for speed
+            SAMPLE** output_buffer;
+
         public:
             AudioGenerator(const unsigned in_num_output_channels);
 
@@ -69,12 +72,17 @@ namespace FilterGenerics
              */
             OutputChannel& get_output_channel(int i);
 
+            /* Writes outputs into the buffer. Calls generate_outputs to
+             * determine what to write out.
+             */
+            void write_outputs();
+
             /* When called, updates the output channels with one more block of
              * audio data. Should only be called by output channels.
              *
              * Must be overwritten in subclasses.
              */
-            virtual void generate_outputs() = 0;
+            virtual void generate_outputs(SAMPLE** outputs) = 0;
     };
 
 
@@ -91,6 +99,9 @@ namespace FilterGenerics
 
             unsigned num_input_channels;
             std::vector<OutputChannel*> input_channels;
+
+            // statically allocated input buffer for speed
+            SAMPLE** input_buffer;
 
         public:
             AudioConsumer(unsigned in_num_input_channels,
@@ -124,7 +135,7 @@ namespace FilterGenerics
             /* Override the generator. When requested, use the consumer to
              * generate the next block of data.
              */
-            void generate_outputs();
+            void generate_outputs(SAMPLE** outputs);
 
             /* Override the consumer. Consumes the input and calls the filter
              * operation, then writes this to the outputs.
