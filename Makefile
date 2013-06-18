@@ -18,8 +18,8 @@ tests: test_ringbuffer test_portaudio test_filterchain
 
 
 # Macro the filter list
-IOCORE_SRC = portaudio_wrapper.cpp filtergenerics.cpp ioelements.cpp oscillator.cpp
-FILTER_SRC = unity.cpp delay.cpp
+IOCORE_SRC = portaudio_wrapper.cpp filter_generics.cpp io_elements.cpp oscillator.cpp
+FILTER_SRC = elementary_filters.cpp delay.cpp
 
 
 #Define test target and dependencides

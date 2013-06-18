@@ -1,5 +1,5 @@
-#ifndef UNITY_H
-#define UNITY_H
+#ifndef ELEMENTARYFILTERS_H
+#define ELEMENTARYFILTERS_H
 
 #include <vector>
 #include "filtergenerics.h"
@@ -18,6 +18,22 @@ namespace Filters
         public:
             UnityFilter(OutputChannel* in_input_channels,
                         unsigned in_num_channels = 1);
+
+            void filter(SAMPLE** input, SAMPLE** output);
+    };
+
+
+    /* The gain filter takes a multiplier coefficient, and multiplies all its
+     * inputs by the gain factor;
+     */
+    class GainFilter : public AudioFilter
+    {
+        private:
+            float gain;
+        public:
+            GainFilter(float in_gain,
+                       OutputChannel* in_input_channels,
+                       unsigned in_num_channels = 1);
 
             void filter(SAMPLE** input, SAMPLE** output);
     };

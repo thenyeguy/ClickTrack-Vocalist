@@ -1,0 +1,55 @@
+#ifndef ELEMENTARYFILTERS_H
+#define ELEMENTARYFILTERS_H
+
+#include <vector>
+#include "filter_generics.h"
+#include "ringbuffer.h"
+
+using namespace FilterGenerics;
+
+
+namespace Filters
+{
+    /* The unity filter is the simplest possible AudioFilter. It simply directly
+     * mirrors its input to its output.
+     */
+    class UnityFilter : public AudioFilter
+    {
+        public:
+            UnityFilter(OutputChannel** in_input_channels,
+                        unsigned in_num_channels = 1);
+
+            void filter(SAMPLE** input, SAMPLE** output);
+    };
+
+
+    /* The gain filter takes a multiplier coefficient, and multiplies all its
+     * inputs by the gain factor.
+     */
+    class GainFilter : public AudioFilter
+    {
+        private:
+            float gain;
+        public:
+            GainFilter(float in_gain,
+                       OutputChannel** in_input_channels,
+                       unsigned in_num_channels = 1);
+
+            void filter(SAMPLE** input, SAMPLE** output);
+    };
+
+
+    /* The adder takes in a set of inputs and returns a single output that is
+     * the sum of all its inputs
+     */
+    class Adder : public AudioFilter
+    {
+        public:
+            Adder(OutputChannel** in_input_channels,
+                  unsigned in_num_channels);
+
+            void filter(SAMPLE** input, SAMPLE** output);
+    };
+}
+
+#endif

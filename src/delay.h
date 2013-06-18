@@ -2,7 +2,7 @@
 #define DELAY_H
 
 #include <vector>
-#include "filtergenerics.h"
+#include "filter_generics.h"
 #include "ringbuffer.h"
 
 using namespace FilterGenerics;
@@ -19,7 +19,7 @@ namespace Filters
             std::vector<ClickTrackUtils::RingBuffer<SAMPLE> > last_second;
 
         public:
-            SimpleDelay(OutputChannel* in_input_channels,
+            SimpleDelay(OutputChannel** in_input_channels,
                         unsigned in_num_channels = 1);
 
             void filter(SAMPLE** input, SAMPLE** output);

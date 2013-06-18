@@ -1,7 +1,7 @@
 #include <iostream>
-#include "ioelements.h"
+#include "io_elements.h"
 #include "oscillator.h"
-#include "unity.h"
+#include "elementary_filters.h"
 #include "delay.h"
 
 using namespace std;
@@ -9,6 +9,14 @@ using namespace Portaudio;
 using namespace IOElements;
 using namespace Oscillators;
 using namespace Filters;
+
+
+OutputChannel** singleToList(OutputChannel* item)
+{
+    OutputChannel** result = new OutputChannel*[1];
+    result[0] = item;
+    return result;
+}
 
 int main()
 {
@@ -18,21 +26,27 @@ int main()
 
     cout << "Initializing signal chain" << endl;
     Microphone mic(in);
-    SimpleDelay delay(&mic.get_output_channel());
-    UnityFilter unity(&delay.get_output_channel());
-    Speaker speak(out, &unity.get_output_channel());
+    SimpleDelay delay(singleToList(mic.get_output_channel()));
+    GainFilter mic_gain(0.5, singleToList(delay.get_output_channel()));
 
-    SquareWave sq(440.0f);
-    SinWave si(440.0f);
     TriangleWave tri(440.f);
-    Speaker amp(out, &tri.get_output_channel());
+    GainFilter tri_gain(0.5, singleToList(tri.get_output_channel()));
+
+    OutputChannel* channels[2] =
+        {mic_gain.get_output_channel(), tri_gain.get_output_channel()};
+    Adder add(channels, 2);
+    UnityFilter unity(singleToList(add.get_output_channel()));
+    Speaker speaker(out, singleToList(unity.get_output_channel()));
+
+
+
 
     cout << "Entering process loop" << endl;
     while(true)
     {
         try
         {
-            amp.consume_inputs();
+            speaker.consume_inputs();
         }
         catch(exception& e)
         {
