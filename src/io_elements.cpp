@@ -108,12 +108,8 @@ WavReader::WavReader(const char* in_filename)
     samples_total = container.four / byte_depth;
     if(stereo) samples_total /= 2;
 
-    // Start unread
+    // Start with nothing played
     samples_read = 0;
-
-    std::cout << "Stereo: " << stereo << std::endl;
-    std::cout << "Byte depth: " << byte_depth << std::endl;
-    std::cout << "Samples: " << samples_total << std::endl;
 }
 
 
@@ -126,11 +122,15 @@ void WavReader::generate_outputs(SAMPLE** outputs)
     } left, right;
     left.val = 0; right.val = 0;
 
-    for(int i = 0; i < num_output_channels; i++)
+    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
     {
-        // Stop at end
+        // Silence at end
         if(samples_read >= samples_total)
-            exit(0);
+        {
+            outputs[0][i] = 0;
+            outputs[1][i] = 0;
+            continue;
+        }
 
         // If we have stereo audio, read right channel
         // Otherwise copy left channel
@@ -142,8 +142,6 @@ void WavReader::generate_outputs(SAMPLE** outputs)
 
         outputs[0][i] = ((SAMPLE)left.val) / 32768;
         outputs[1][i] = ((SAMPLE)right.val) / 32768;
-
-        std::cout << outputs[0][i] << " " << outputs[1][i] << std::endl;
 
         samples_read++;
     }
