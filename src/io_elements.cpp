@@ -5,32 +5,135 @@ using namespace FilterGenerics;
 using namespace IOElements;
 
 
-Microphone::Microphone(Portaudio::InputStream* inputs, unsigned num_channels)
-    : AudioGenerator(num_channels)
-{
-    streams = inputs;
-}
+Microphone::Microphone(unsigned num_channels)
+    : AudioGenerator(num_channels),
+      stream(num_channels)
+{}
 
 
 void Microphone::generate_outputs(SAMPLE** outputs)
 {
     for(int i = 0; i < num_output_channels; i++)
-        streams[i].readFromStream(outputs[i], DEFAULT_BLOCK_SIZE);
+        stream.readFromStream(outputs[i], DEFAULT_BLOCK_SIZE);
 }
 
 
 
-Speaker::Speaker(Portaudio::OutputStream* outputs,
-                 FilterGenerics::OutputChannel** inputs,
+Speaker::Speaker(FilterGenerics::OutputChannel** inputs,
                  unsigned num_inputs)
-    : AudioConsumer(num_inputs, inputs)
-{
-    streams = outputs;
-}
+    : AudioConsumer(num_inputs, inputs),
+      stream(num_inputs)
+{}
 
 
 void Speaker::process_inputs(SAMPLE** inputs)
 {
-    for(int i = 0; i < num_input_channels; i++)
-        streams[i].writeToStream(inputs[i], DEFAULT_BLOCK_SIZE);
+    stream.writeToStream(inputs[0], DEFAULT_BLOCK_SIZE);
+}
+
+
+
+WavReader::WavReader(const char* in_filename)
+    : AudioGenerator(2), filename(in_filename) // always stereo
+{
+    // Set up file to read
+    file.open(filename, std::ios::in|std::ios::binary);
+    union {
+        char raw[4];
+        unsigned short two[2];
+        unsigned int four;
+    } container;
+
+
+    // Parse RIFF HEADER
+    file.read(container.raw, 4);
+    if(container.four != 0x46464952)
+        throw InvalidWavFile("No RIFF identifier");
+
+    file.read(container.raw, 4); // toss size
+
+    file.read(container.raw, 4);
+    if(container.four != 0x45564157)
+        throw InvalidWavFile("No WAV identifier");
+
+
+    // Parse fmt header
+    file.read(container.raw, 4);
+    if(container.four != 0x20746d66)
+        throw InvalidWavFile("No fmt section");
+
+    // Parse size
+    file.read(container.raw, 4);
+    if(container.four != 16)
+        throw InvalidWavFile("Invalid fmt length");
+
+    // Read format and channel count
+    file.read(container.raw, 4);
+    if(container.two[0] != 1)
+        throw InvalidWavFile("No support for nonlinear quantization");
+    stereo = container.two[1] == 2;
+
+    // Read sample rate
+    file.read(container.raw, 4);
+    if(container.four != 44100)
+        throw InvalidWavFile("No support for nonlinear quantization");
+
+    file.read(container.raw, 4); // toss byte rate
+
+    // Read alignment
+    file.read(container.raw, 4); // toss byte rate
+    byte_depth = container.two[1]/8;
+    if(byte_depth != 2)
+        throw InvalidWavFile("Unsupported byte depth");
+
+
+    // Parse data header
+    file.read(container.raw, 4);
+    if(container.four != 0x61746164)
+        throw InvalidWavFile("No data section");
+
+    // Parse size
+    file.read(container.raw, 4);
+    samples_total = container.four / byte_depth;
+    if(stereo) samples_total /= 2;
+
+    // Start unread
+    samples_read = 0;
+
+    std::cout << "Stereo: " << stereo << std::endl;
+    std::cout << "Byte depth: " << byte_depth << std::endl;
+    std::cout << "Samples: " << samples_total << std::endl;
+}
+
+
+void WavReader::generate_outputs(SAMPLE** outputs)
+{
+    // TODO: support more than 16-bit
+    union {
+        char raw[2];
+        signed short val;
+    } left, right;
+    left.val = 0; right.val = 0;
+
+    for(int i = 0; i < num_output_channels; i++)
+    {
+        // Stop at end
+        if(samples_read >= samples_total)
+            break;
+
+        // If we have stereo audio, read right channel
+        // Otherwise copy left channel
+        file.read(left.raw, byte_depth);
+        if(stereo)
+            file.read(right.raw, byte_depth);
+        else
+            right.val = left.val;
+
+        outputs[0][i] = ((SAMPLE)left.val) / 32768;
+        outputs[1][i] = ((SAMPLE)right.val) / 32768;
+
+        std::cout << "(" << outputs[0][i] << "," << outputs[1][i] << ") "  << std::endl;
+
+        samples_read++;
+    }
 }

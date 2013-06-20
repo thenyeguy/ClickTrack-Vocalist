@@ -15,7 +15,8 @@ int error_check(string location, int err)
 }
 
 
-InputStream::InputStream()
+InputStream::InputStream(unsigned in_channels)
+    : channels(in_channels)
 {
     // Initialize portaudio
     error_check("PaInitialize", Pa_Initialize());
@@ -24,7 +25,7 @@ InputStream::InputStream()
     PaStreamParameters inputParams;
 
     inputParams.device = Pa_GetDefaultInputDevice();
-    inputParams.channelCount = 1;
+    inputParams.channelCount = channels;
     inputParams.sampleFormat = PA_SAMPLE_TYPE;
     inputParams.suggestedLatency =
         Pa_GetDeviceInfo(inputParams.device)->defaultLowInputLatency;
@@ -47,7 +48,8 @@ InputStream::~InputStream()
 }
 
 
-OutputStream::OutputStream()
+OutputStream::OutputStream(unsigned in_channels)
+    : channels(in_channels)
 {
     // Initialize portaudio
     error_check("PaInitialize", Pa_Initialize());
@@ -56,7 +58,7 @@ OutputStream::OutputStream()
     PaStreamParameters outputParams;
 
     outputParams.device = Pa_GetDefaultOutputDevice();
-    outputParams.channelCount = 1;
+    outputParams.channelCount = channels;
     outputParams.sampleFormat = PA_SAMPLE_TYPE;
     outputParams.suggestedLatency =
         Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;

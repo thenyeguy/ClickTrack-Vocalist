@@ -20,12 +20,8 @@ OutputChannel** singleToList(OutputChannel* item)
 
 int main()
 {
-    cout << "Initializing IO streams" << endl;
-    InputStream* in = new InputStream();
-    OutputStream* out = new OutputStream();
-
     cout << "Initializing signal chain" << endl;
-    Microphone mic(in);
+    Microphone mic;
     SimpleDelay delay(singleToList(mic.get_output_channel()));
     GainFilter mic_gain(0.5, singleToList(delay.get_output_channel()));
 
@@ -36,7 +32,7 @@ int main()
         {mic_gain.get_output_channel(), tri_gain.get_output_channel()};
     Adder add(channels, 2);
     UnityFilter unity(singleToList(add.get_output_channel()));
-    Speaker speaker(out, singleToList(unity.get_output_channel()));
+    Speaker speaker(singleToList(unity.get_output_channel()), 2);
 
 
 

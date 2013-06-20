@@ -26,12 +26,13 @@ namespace Portaudio {
     class InputStream {
         private:
             PaStream* stream;
+            const unsigned channels;
 
         public:
             /* Constructor and destructor automatically open and close the portaudio
              * streams for us. Uses default sample rate and buffer size
              */
-            InputStream();
+            InputStream(unsigned in_channels = 1);
             ~InputStream();
 
             /* Given the location to store our data and the number of samples, reads
@@ -47,15 +48,16 @@ namespace Portaudio {
     class OutputStream {
         private:
             PaStream* stream;
+            const unsigned channels;
 
         public:
             /* Constructor and destructor automatically open and close the portaudio
              * streams for us. Uses default sample rate and buffer size
              */
-            OutputStream();
+            OutputStream(unsigned in_channels = 1);
             ~OutputStream();
 
-            /* Given a buffer and number of samples, writes those samples to our
+            /* Given a list of buffers and number of samples, writes those samples to our
              * output buffer.
              */
             void writeToStream(SAMPLE*, int);
