@@ -28,7 +28,18 @@ Speaker::Speaker(FilterGenerics::OutputChannel** inputs,
 
 void Speaker::process_inputs(SAMPLE** inputs)
 {
-    stream.writeToStream(inputs[0], DEFAULT_BLOCK_SIZE);
+    // Interleave channels
+    unsigned num_samples = num_input_channels * DEFAULT_BLOCK_SIZE;
+    SAMPLE buffer[num_samples];
+
+    for(int i = 0; i < num_input_channels; i++)
+    {
+        for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+            buffer[num_input_channels*j + i] = inputs[i][j];
+    }
+
+    // Write out
+    stream.writeToStream(buffer, DEFAULT_BLOCK_SIZE);
 }
 
 
@@ -119,7 +130,7 @@ void WavReader::generate_outputs(SAMPLE** outputs)
     {
         // Stop at end
         if(samples_read >= samples_total)
-            break;
+            exit(0);
 
         // If we have stereo audio, read right channel
         // Otherwise copy left channel
@@ -132,7 +143,7 @@ void WavReader::generate_outputs(SAMPLE** outputs)
         outputs[0][i] = ((SAMPLE)left.val) / 32768;
         outputs[1][i] = ((SAMPLE)right.val) / 32768;
 
-        std::cout << "(" << outputs[0][i] << "," << outputs[1][i] << ") "  << std::endl;
+        std::cout << outputs[0][i] << " " << outputs[1][i] << std::endl;
 
         samples_read++;
     }

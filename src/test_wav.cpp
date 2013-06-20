@@ -16,11 +16,9 @@ int main()
     {
         cout << "Initializing signal chain" << endl;
         WavReader wav("test.wav");
-        TriangleWave tri(440);
-        SinWave sin(880);
         FilterGenerics::OutputChannel* chans[2] =
-            {wav.get_output_channel(0), sin.get_output_channel(1)};
-        Speaker speaker(chans, 1);
+            {wav.get_output_channel(0), wav.get_output_channel(1)};
+        Speaker speaker(chans, 2);
 
         cout << "Entering process loop" << endl;
         while(true)
