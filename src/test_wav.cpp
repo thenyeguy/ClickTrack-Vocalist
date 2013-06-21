@@ -19,10 +19,17 @@ int main()
         FilterGenerics::OutputChannel* chans[2] =
             {wav.get_output_channel(0), wav.get_output_channel(1)};
         Speaker speaker(chans, 2);
+        WavWriter write("out.wav", chans, 2);
 
         cout << "Entering process loop" << endl;
         while(true)
+        {
             speaker.consume_inputs();
+            write.consume_inputs();
+            if(wav.isDone())
+                break;
+        }
+        cout << "Exiting" << "\n" << endl;
     }
     catch(exception& e)
     {

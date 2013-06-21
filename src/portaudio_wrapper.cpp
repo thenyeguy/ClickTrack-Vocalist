@@ -36,14 +36,14 @@ InputStream::InputStream(unsigned in_channels)
         Pa_OpenStream(&stream, &inputParams, NULL,
             DEFAULT_SAMPLE_RATE, DEFAULT_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
-    error_check("StartStream", Pa_StartStream(stream));
+    error_check("Pa_StartStream", Pa_StartStream(stream));
 }
 
 
 InputStream::~InputStream()
 {
-    error_check("StopStream", Pa_StartStream(stream));
-    error_check("Pa_CloseStream", Pa_CloseStream(&stream));
+    error_check("Pa_StopStream", Pa_StopStream(stream));
+    error_check("Pa_CloseStream", Pa_CloseStream(stream));
     error_check("Pa_Terminate", Pa_Terminate());
 }
 
@@ -69,14 +69,14 @@ OutputStream::OutputStream(unsigned in_channels)
         Pa_OpenStream(&stream, NULL, &outputParams,
             DEFAULT_SAMPLE_RATE, DEFAULT_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
-    error_check("StartStream", Pa_StartStream(stream));
+    error_check("Pa_StartStream", Pa_StartStream(stream));
 }
 
 
 OutputStream::~OutputStream()
 {
-    error_check("StopStream", Pa_StartStream(stream));
-    error_check("Pa_CloseStream", Pa_CloseStream(&stream));
+    error_check("Pa_StopStream", Pa_StopStream(stream));
+    error_check("Pa_CloseStream", Pa_CloseStream(stream));
     error_check("Pa_Terminate", Pa_Terminate());
 }
 
