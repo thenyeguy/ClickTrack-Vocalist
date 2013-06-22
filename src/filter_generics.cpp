@@ -14,16 +14,25 @@ OutputChannel::OutputChannel(AudioGenerator* in_parent)
 }
 
 
-void OutputChannel::fill_external_buffer(SAMPLE* buffer, const unsigned t)
+void OutputChannel::get_block(SAMPLE* buffer, const unsigned t)
 {
-    while(start_t < t || end_t < t+DEFAULT_BLOCK_SIZE)
+    // If this block already fell out of the buffer, just return silence
+    if(start_t >= t+DEFAULT_BLOCK_SIZE)
+    {
+        for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+            buffer[i] = 0.0;
+        return;
+    }
+
+    // Otherwise generate enough audio
+    while(end_t < t+DEFAULT_BLOCK_SIZE)
         parent->write_outputs();
 
     out.get_range(buffer, start_t, start_t+DEFAULT_BLOCK_SIZE);
 }
 
 
-void OutputChannel::fill_internal_buffer(const SAMPLE* buffer)
+void OutputChannel::push_block(const SAMPLE* buffer)
 {
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
         out.add(buffer[i]);
@@ -57,7 +66,7 @@ void AudioGenerator::write_outputs()
 
     //Write the outputs into the channel
     for(int i = 0; i < num_output_channels; i++)
-        output_channels[i].fill_internal_buffer(output_buffer[i]);
+        output_channels[i].push_block(output_buffer[i]);
 }
 
 
@@ -83,7 +92,7 @@ void AudioConsumer::consume_inputs()
 {
     // Read in each channel
     for(int i = 0; i < num_input_channels; i++)
-        input_channels[i]->fill_external_buffer(input_buffer[i], next_t);
+        input_channels[i]->get_block(input_buffer[i], next_t);
     next_t += DEFAULT_BLOCK_SIZE;
 
     // Process

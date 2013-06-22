@@ -158,8 +158,6 @@ void WavReader::generate_outputs(SAMPLE** outputs)
 
         samples_read++;
     }
-
-    std::cout << "Read: " << samples_read << std::endl;
 }
 
 
@@ -221,5 +219,4 @@ void WavWriter::process_inputs(SAMPLE** inputs)
         }
         samples_written++;
     }
-    std::cout << "Written: " << samples_written << std::endl;
 }

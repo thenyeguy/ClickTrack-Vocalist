@@ -40,12 +40,12 @@ namespace FilterGenerics
             /* Fills an incoming buffer with one block worth of audio data
              * beginning at the requested time.
              */
-            void fill_external_buffer(SAMPLE* buffer, const unsigned t);
+            void get_block(SAMPLE* buffer, const unsigned t);
 
             /* Fills the OutputChannel's internal buffer with a new block of
              * audio data. Called only by parent AudioGenerator.
              */
-            void fill_internal_buffer(const SAMPLE* buffer);
+            void push_block(const SAMPLE* buffer);
     };
 
 
