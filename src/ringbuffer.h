@@ -57,12 +57,7 @@ namespace ClickTrackUtils {
             SampleT get(const unsigned t)
             {
                 if(t < start_t || t >= end_t)
-                {
-                    std::cout << "Asking for t=" << t;
-                    std::cout << " from (" << start_t << "," << end_t << ")";
-                    std::cout << std::endl;
                     throw RingBufferOutOfRange();
-                }
 
                 return samples[t % buffer_size];                
             }
@@ -95,6 +90,17 @@ namespace ClickTrackUtils {
                 end_t++;
 
                 return end_t-1;
+            }
+
+            /* Exposes a reference to an element in the buffer so that you can
+             * manually write to and modify a buffer point.
+             */
+            SampleT& operator[] (unsigned t)
+            {
+                if(t < start_t || t >= end_t)
+                    throw RingBufferOutOfRange();
+
+                return samples[t % buffer_size];                
             }
 
             /* Getters to expose the lowest and high timestamp

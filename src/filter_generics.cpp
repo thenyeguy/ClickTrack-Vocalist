@@ -93,10 +93,10 @@ void AudioConsumer::consume_inputs()
     // Read in each channel
     for(int i = 0; i < num_input_channels; i++)
         input_channels[i]->get_block(input_buffer[i], next_t);
-    next_t += DEFAULT_BLOCK_SIZE;
 
     // Process
     process_inputs(input_buffer);
+    next_t += DEFAULT_BLOCK_SIZE;
 }
 
 

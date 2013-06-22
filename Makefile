@@ -14,12 +14,13 @@ vpath %.cpp $(SRCDIR)
 all: tests
 full: clean all
 
-tests: test_ringbuffer test_filterchain test_wav
+tests: test_ringbuffer test_fft test_convolve test_filterchain test_wav
 
 
 # Macro the filter list
-IOCORE_SRC = portaudio_wrapper.cpp filter_generics.cpp io_elements.cpp oscillator.cpp
-FILTER_SRC = elementary_filters.cpp delay.cpp
+IOCORE_SRC = portaudio_wrapper.cpp fft.cpp filter_generics.cpp \
+             io_elements.cpp oscillator.cpp
+FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp
 
 
 #Define test target and dependencides
@@ -28,6 +29,20 @@ TEST_RINGBUFFER_OBJ = $(addprefix $(OBJDIR)/, $(TEST_RINGBUFFER_SRC:.cpp=.o))
 test_ringbuffer: $(TEST_RINGBUFFER_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_RINGBUFFER_OBJ) -o $(BINDIR)/$@
+
+
+TEST_FFT_SRC = fft.cpp test_fft.cpp
+TEST_FFT_OBJ = $(addprefix $(OBJDIR)/, $(TEST_FFT_SRC:.cpp=.o))
+test_fft: $(TEST_FFT_OBJ) $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TEST_FFT_OBJ) -o $(BINDIR)/$@
+
+
+TEST_CONVOLVE_SRC = $(IOCORE_SRC) $(FILTER_SRC) test_convolve.cpp
+TEST_CONVOLVE_OBJ = $(addprefix $(OBJDIR)/, $(TEST_CONVOLVE_SRC:.cpp=.o))
+test_convolve: $(TEST_CONVOLVE_OBJ) $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TEST_CONVOLVE_OBJ) -o $(BINDIR)/$@
 
 
 TEST_FILTERCHAIN_SRC = $(IOCORE_SRC) $(FILTER_SRC) test_filterchain.cpp

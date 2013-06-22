@@ -81,6 +81,16 @@ int main()
     }
 
 
+    // Test overwrite
+    ring[2] = 10;
+    ring.get_range(buffer, 1, 4);
+    cout << "\n" << "Getting range:" << endl;
+    for(unsigned i = 0; i < 3; i++)
+    {
+        cout << "Time t=" << i+1 << ": " << buffer[i] << endl;
+    }
+
+
     cout << "\n\n" << "All tests passed!" << endl;
 
     return 0;
