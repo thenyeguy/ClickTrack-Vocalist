@@ -14,13 +14,10 @@ namespace Oscillators
      */
     class Oscillator : public FilterGenerics::AudioGenerator
     {
-        protected:
-            unsigned next_i; // next sample time
-            float freq;      //hz
-
         public:
             Oscillator(float in_freq);
 
+        protected:
             // Overridden method for AudioGenerator to provide basic time
             // tracking and output for oscillators
             void generate_outputs(SAMPLE** outputs);
@@ -30,6 +27,10 @@ namespace Oscillators
              * at that time.
              */
             virtual float f(float t) = 0;
+
+
+            unsigned next_i; // next sample time
+            float freq;      //hz
     };
 
 
@@ -39,6 +40,8 @@ namespace Oscillators
     {
         public:
             SinWave(float in_freq);
+
+        private:
             float f(float t);
     };
 
@@ -49,6 +52,8 @@ namespace Oscillators
     {
         public:
             SquareWave(float in_freq);
+
+        private:
             float f(float t);
     };
 
@@ -59,6 +64,8 @@ namespace Oscillators
     {
         public:
             TriangleWave(float in_freq);
+
+        private:
             float f(float t);
     };
 }

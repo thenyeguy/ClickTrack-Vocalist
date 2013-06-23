@@ -14,6 +14,7 @@ int main()
 {
     try
     {
+        /*
         TriangleWave t(440.0f); 
         OutputChannel* tout[1] = {t.get_output_channel()};
         GainFilter g(0.4f, tout, 1);
@@ -34,6 +35,9 @@ int main()
         s.consume_inputs();
         w.consume_inputs();
         s.consume_inputs();
+        */
+
+        WavReader in("test.wav");
     }
     catch(exception& e)
     {

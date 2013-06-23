@@ -54,6 +54,14 @@ AudioGenerator::AudioGenerator(const unsigned in_num_output_channels)
 }
 
 
+AudioGenerator::~AudioGenerator()
+{
+    for(int i = 0; i < num_output_channels; i++)
+        delete output_buffer[i];
+    delete output_buffer;
+}
+
+
 OutputChannel* AudioGenerator::get_output_channel(int i)
 {
     return &output_channels[i];
@@ -85,6 +93,14 @@ AudioConsumer::AudioConsumer(unsigned in_num_input_channels,
     input_buffer = new SAMPLE*[num_input_channels];
     for(int i = 0; i < num_input_channels; i++)
         input_buffer[i] = new SAMPLE[DEFAULT_BLOCK_SIZE];
+}
+
+
+AudioConsumer::~AudioConsumer()
+{
+    for(int i = 0; i < num_input_channels; i++)
+        delete input_buffer[i];
+    delete input_buffer;
 }
 
 

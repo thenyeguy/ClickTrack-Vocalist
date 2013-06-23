@@ -19,6 +19,7 @@ namespace Filters
             UnityFilter(OutputChannel** in_input_channels,
                         unsigned in_num_channels = 1);
 
+        private:
             void filter(SAMPLE** input, SAMPLE** output);
     };
 
@@ -28,14 +29,16 @@ namespace Filters
      */
     class GainFilter : public AudioFilter
     {
-        private:
-            float gain;
         public:
             GainFilter(float in_gain,
                        OutputChannel** in_input_channels,
                        unsigned in_num_channels = 1);
 
+        private:
             void filter(SAMPLE** input, SAMPLE** output);
+
+
+            float gain;
     };
 
 
@@ -48,6 +51,7 @@ namespace Filters
             Adder(OutputChannel** in_input_channels,
                   unsigned in_num_channels);
 
+        private:
             void filter(SAMPLE** input, SAMPLE** output);
     };
 }

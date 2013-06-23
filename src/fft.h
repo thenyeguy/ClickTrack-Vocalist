@@ -15,13 +15,6 @@ namespace FFT
      */
     class Transformer
     {
-        private:
-            const unsigned size;
-            const unsigned buffer_size;
-
-            vector<unsigned> bit_reverses;
-            vector<complex<SAMPLE> > twiddles;
-
         public:
             Transformer(unsigned in_size);
 
@@ -30,6 +23,13 @@ namespace FFT
              * buffer. */
             void fft(complex<SAMPLE>* in, complex<SAMPLE>* out);
             void ifft(complex<SAMPLE>* in, complex<SAMPLE>* out);
+
+        private:
+            const unsigned size;
+            const unsigned buffer_size;
+
+            vector<unsigned> bit_reverses;
+            vector<complex<SAMPLE> > twiddles;
     };
 
 

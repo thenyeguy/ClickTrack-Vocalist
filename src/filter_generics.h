@@ -26,26 +26,29 @@ namespace FilterGenerics
     class AudioGenerator;
     class OutputChannel
     {
-        private:
-            AudioGenerator* parent;
-
-            unsigned start_t;
-            unsigned end_t;
-            ClickTrackUtils::RingBuffer<SAMPLE> out;
+        friend class AudioGenerator;
 
         public:
-            // Called only by parent AudioGenerator
-            OutputChannel(AudioGenerator* in_parent);
-
             /* Fills an incoming buffer with one block worth of audio data
              * beginning at the requested time.
              */
             void get_block(SAMPLE* buffer, const unsigned t);
 
+        private:
+            // Called only by parent AudioGenerator
+            OutputChannel(AudioGenerator* in_parent);
+
             /* Fills the OutputChannel's internal buffer with a new block of
-             * audio data. Called only by parent AudioGenerator.
+             * audio data.
              */
             void push_block(const SAMPLE* buffer);
+
+
+            AudioGenerator* parent;
+
+            unsigned start_t;
+            unsigned end_t;
+            ClickTrackUtils::RingBuffer<SAMPLE> out;
     };
 
 
@@ -56,31 +59,35 @@ namespace FilterGenerics
      */
     class AudioGenerator
     {
-        protected:
-            const unsigned num_output_channels;
-            std::vector<OutputChannel> output_channels;
-
-            // statically allocated output buffer for speed
-            SAMPLE** output_buffer;
+        friend class OutputChannel;
 
         public:
             AudioGenerator(unsigned in_num_output_channels);
+            ~AudioGenerator();
 
             /* Returns the requested output channel by number
              */
             OutputChannel* get_output_channel(int i = 0);
 
+        protected:
             /* Writes outputs into the buffer. Calls generate_outputs to
-             * determine what to write out.
+             * determine what to write out. Used by the output channel
              */
             void write_outputs();
 
             /* When called, updates the output channels with one more block of
-             * audio data. Should only be called by output channels.
+             * audio data.
              *
              * Must be overwritten in subclasses.
              */
             virtual void generate_outputs(SAMPLE** outputs) = 0;
+
+
+            const unsigned num_output_channels;
+            std::vector<OutputChannel> output_channels;
+
+            // statically allocated output buffer for speed
+            SAMPLE** output_buffer;
     };
 
 
@@ -92,7 +99,23 @@ namespace FilterGenerics
      */
     class AudioConsumer
     {
+        public:
+            AudioConsumer(unsigned in_num_input_channels,
+                          OutputChannel** in_input_channels);
+            ~AudioConsumer();
+
+            /* When called, reads in the next block from the input channels
+             * and calls the process_inputs function.
+             */
+            void consume_inputs();
+
         protected:
+            /* When called on input data, processes it. Must be overwritten in
+             * subclass.
+             */
+            virtual void process_inputs(SAMPLE** inputs) = 0;
+
+
             unsigned next_t; // Starting time unit of next block
 
             const unsigned num_input_channels;
@@ -100,20 +123,6 @@ namespace FilterGenerics
 
             // statically allocated input buffer for speed
             SAMPLE** input_buffer;
-
-        public:
-            AudioConsumer(unsigned in_num_input_channels,
-                          OutputChannel** in_input_channels);
-
-            /* When called, reads in the next block from the input channels
-             * and calls the process_inputs function.
-             */
-            void consume_inputs();
-
-            /* When called on input data, processes it. Must be overwritten in
-             * subclass.
-             */
-            virtual void process_inputs(SAMPLE** inputs) = 0;
     };
 
 
@@ -130,6 +139,7 @@ namespace FilterGenerics
                         unsigned in_num_input_channels,
                         OutputChannel** in_input_channels);
 
+        protected:
             /* Override the generator. When requested, use the consumer to
              * generate the next block of data.
              */
@@ -145,6 +155,20 @@ namespace FilterGenerics
              */
             virtual void filter(SAMPLE** input, SAMPLE** output) = 0;
     };
+
+
+    /* The FilterBank is a hybrid signal chain element. It both consumes and
+     * generates audio, but does so by internally connecting many filters
+     * together.
+    class FilterBank : public AudioGenerator, public AudioConsumer
+    {
+        public:
+            FilterBank(unsigned in_num_output_channels,
+                       unsigned in_num_input_channels,
+                       OutputChannel** in_input_channels);
+
+    };
+     */
 }
 
 #endif

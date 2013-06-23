@@ -15,13 +15,14 @@ namespace IOElements
      */
     class Microphone : public FilterGenerics::AudioGenerator
     {
-        private:
-            Portaudio::InputStream stream;
-
         public:
             Microphone(unsigned num_channels = 1);
 
+        private:
             void generate_outputs(SAMPLE** outputs);
+
+
+            Portaudio::InputStream stream;
     };
 
 
@@ -30,14 +31,15 @@ namespace IOElements
      */
     class Speaker : public FilterGenerics::AudioConsumer
     {
-        private:
-            Portaudio::OutputStream stream;
-
         public:
             Speaker(FilterGenerics::OutputChannel** inputs,
                     unsigned num_inputs = 1);
 
+        private:
             void process_inputs(SAMPLE** inputs);
+
+
+            Portaudio::OutputStream stream;
     };
 
 
@@ -45,9 +47,6 @@ namespace IOElements
      */
     class InvalidWavFile: public std::exception
     {
-        private:
-            const char* error;
-
         public:
             InvalidWavFile(const char* in_error)
                 : error(in_error) {}
@@ -56,6 +55,9 @@ namespace IOElements
             {
                 return error;
             }
+
+        private:
+            const char* error;
     };
 
 
@@ -64,7 +66,15 @@ namespace IOElements
      */
     class WavReader : public FilterGenerics::AudioGenerator
     {
+        public:
+            WavReader(const char* in_filename);
+            bool isDone();
+            void restart();
+
         private:
+            void generate_outputs(SAMPLE** outputs);
+
+
             const char* filename;
             std::ifstream file;
 
@@ -73,13 +83,6 @@ namespace IOElements
 
             unsigned samples_total; // total samples
             unsigned samples_read;
-
-        public:
-            WavReader(const char* in_filename);
-            bool isDone();
-            void restart();
-
-            void generate_outputs(SAMPLE** outputs);
     };
 
 
@@ -91,19 +94,20 @@ namespace IOElements
      */
     class WavWriter : public FilterGenerics::AudioConsumer
     {
-        private:
-            const char* filename;
-            std::ofstream file;
-
-            unsigned samples_written; // number of frames of samples
-
         public:
             WavWriter(const char* in_filename,
                       FilterGenerics::OutputChannel** inputs,
                       unsigned short num_inputs = 1);
             ~WavWriter();
 
+        private:
             void process_inputs(SAMPLE** inputs);
+
+
+            const char* filename;
+            std::ofstream file;
+
+            unsigned samples_written; // number of frames of samples
     };
 }
 

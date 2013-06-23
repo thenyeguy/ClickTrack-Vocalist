@@ -24,10 +24,6 @@ namespace Portaudio {
      * streams for us, and provide the ability to read from an audio stream.
      */
     class InputStream {
-        private:
-            PaStream* stream;
-            const unsigned channels;
-
         public:
             /* Constructor and destructor automatically open and close the portaudio
              * streams for us. Uses default sample rate and buffer size
@@ -39,6 +35,10 @@ namespace Portaudio {
              * samples into a buffer.
              */
             void readFromStream(SAMPLE*, int);
+
+        private:
+            PaStream* stream;
+            const unsigned channels;
     };
 
 
@@ -46,10 +46,6 @@ namespace Portaudio {
      * streams for us, and provide the ability to write to the audio stream.
      */
     class OutputStream {
-        private:
-            PaStream* stream;
-            const unsigned channels;
-
         public:
             /* Constructor and destructor automatically open and close the portaudio
              * streams for us. Uses default sample rate and buffer size
@@ -61,6 +57,10 @@ namespace Portaudio {
              * output buffer.
              */
             void writeToStream(SAMPLE*, int);
+
+        private:
+            PaStream* stream;
+            const unsigned channels;
     };
 }
 

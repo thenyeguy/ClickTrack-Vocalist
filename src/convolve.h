@@ -17,7 +17,16 @@ namespace FilterGenerics
      */
     class ConvolutionFilter : public AudioFilter
     {
+        public:
+            ConvolutionFilter(OutputChannel* in_input_channel,
+                              unsigned impulse_length,
+                              SAMPLE* in_impulse_response);
+            ~ConvolutionFilter();
+
         private:
+            void filter(SAMPLE** input, SAMPLE** output);
+
+
             const unsigned output_length;
             ClickTrackUtils::RingBuffer<SAMPLE> overlaps;
 
@@ -27,14 +36,6 @@ namespace FilterGenerics
             // Preallocate buffers for speed
             complex<SAMPLE>* input_buffer;
             complex<SAMPLE>* output_buffer;
-            
-        public:
-            ConvolutionFilter(OutputChannel* in_input_channel,
-                              unsigned impulse_length,
-                              SAMPLE* in_impulse_response);
-            ~ConvolutionFilter();
-
-            void filter(SAMPLE** input, SAMPLE** output);
     };
 }
 

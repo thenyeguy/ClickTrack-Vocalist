@@ -27,14 +27,6 @@ namespace ClickTrackUtils {
     template <class SampleT>
     class RingBuffer
     {
-        private:
-            unsigned start_t; // earliest time still in the buffer
-            unsigned end_t;   // latest time still in the buffer
-            unsigned size;    // number of samples currently in buffer
-
-            unsigned buffer_size;  // the number of elements in the buffer
-            std::vector<SampleT> samples; // the actual ring array
-        
         public:
             /* The constructor allocates the ring array. If no size is
              * specified, it can contain at most 1024 elements, otherwise it can
@@ -113,6 +105,14 @@ namespace ClickTrackUtils {
             {
                 return end_t;
             }
+
+        private:
+            unsigned start_t; // earliest time still in the buffer
+            unsigned end_t;   // latest time still in the buffer
+            unsigned size;    // number of samples currently in buffer
+
+            unsigned buffer_size;  // the number of elements in the buffer
+            std::vector<SampleT> samples; // the actual ring array
     };
 }
 

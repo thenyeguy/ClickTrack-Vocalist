@@ -15,14 +15,15 @@ namespace Filters
      */
     class SimpleDelay : public AudioFilter
     {
-        private:
-            std::vector<ClickTrackUtils::RingBuffer<SAMPLE> > last_second;
-
         public:
             SimpleDelay(OutputChannel** in_input_channels,
                         unsigned in_num_channels = 1);
 
+        private:
             void filter(SAMPLE** input, SAMPLE** output);
+
+
+            std::vector<ClickTrackUtils::RingBuffer<SAMPLE> > last_second;
     };
 }
 
