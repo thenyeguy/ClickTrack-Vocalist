@@ -3,6 +3,7 @@
 #include "oscillator.h"
 #include "elementary_filters.h"
 #include "convolve.h"
+#include "reverb.h"
 
 using namespace FilterGenerics;
 using namespace IOElements;
@@ -37,7 +38,22 @@ int main()
         s.consume_inputs();
         */
 
-        WavReader in("test.wav");
+        std::cout << "Reading in impulse" << std::endl;
+        impulse_pair* imp = impulse_from_wav("wav/test_impulse.wav");
+
+        std::cout << "Establishing signal chain" << std::endl;
+        WavReader in("wav/test.wav");
+        Reverb revl(imp->num_samples, imp->left, 0.5, in.get_output_channel(0));
+        Reverb revr(imp->num_samples, imp->right, 0.5, in.get_output_channel(1));
+        //ConvolutionFilter f(in.get_output_channel(0), imp->num_samples, imp->left);
+
+        OutputChannel* outch[2] = {revl.get_output_channel(), revr.get_output_channel()};
+        Speaker out(outch, 2);
+
+        std::cout << "Playing" << std::endl;
+        while(!in.is_done())
+            out.consume_inputs();
+        std::cout << "Done" << std::endl;
     }
     catch(exception& e)
     {

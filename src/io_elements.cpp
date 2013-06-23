@@ -113,7 +113,7 @@ WavReader::WavReader(const char* in_filename)
 }
 
 
-bool WavReader::isDone()
+bool WavReader::is_done()
 {
     return samples_read >= samples_total;
 }
@@ -123,6 +123,12 @@ void WavReader::restart()
 {
     samples_read = 0;
     file.seekg(44); // move to end of headers
+}
+
+
+unsigned WavReader::get_total_samples()
+{
+    return samples_total;
 }
 
 

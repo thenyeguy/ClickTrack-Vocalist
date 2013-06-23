@@ -32,7 +32,7 @@ namespace FilterGenerics
             /* Fills an incoming buffer with one block worth of audio data
              * beginning at the requested time.
              */
-            void get_block(SAMPLE* buffer, const unsigned t);
+            void get_block(SAMPLE* buffer, unsigned t);
 
         private:
             // Called only by parent AudioGenerator
@@ -68,6 +68,7 @@ namespace FilterGenerics
             /* Returns the requested output channel by number
              */
             OutputChannel* get_output_channel(int i = 0);
+            const unsigned get_num_output_channels();
 
         protected:
             /* Writes outputs into the buffer. Calls generate_outputs to
@@ -109,6 +110,8 @@ namespace FilterGenerics
              */
             void consume_inputs();
 
+            const unsigned get_num_input_channels();
+
         protected:
             /* When called on input data, processes it. Must be overwritten in
              * subclass.
@@ -138,6 +141,7 @@ namespace FilterGenerics
             AudioFilter(unsigned in_num_output_channels,
                         unsigned in_num_input_channels,
                         OutputChannel** in_input_channels);
+            virtual ~AudioFilter();
 
         protected:
             /* Override the generator. When requested, use the consumer to
@@ -160,15 +164,28 @@ namespace FilterGenerics
     /* The FilterBank is a hybrid signal chain element. It both consumes and
      * generates audio, but does so by internally connecting many filters
      * together.
-    class FilterBank : public AudioGenerator, public AudioConsumer
+     *
+     * To implement a FilterBank, one must initialize their elements in the
+     * constructor, as well as insert their output channels into the vector.
+     */
+    class FilterBank
     {
         public:
             FilterBank(unsigned in_num_output_channels,
-                       unsigned in_num_input_channels,
-                       OutputChannel** in_input_channels);
+                       unsigned in_num_input_channels);
+        
+            /* Returns the requested output channel by number
+             */
+            OutputChannel* get_output_channel(int i = 0);
 
+            const unsigned get_num_output_channels();
+            const unsigned get_num_input_channels();
+
+        protected:
+            const unsigned num_input_channels;
+            const unsigned num_output_channels;
+            std::vector<OutputChannel*> output_channels;
     };
-     */
 }
 
 #endif

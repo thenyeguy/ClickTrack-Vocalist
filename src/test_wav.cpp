@@ -15,19 +15,17 @@ int main()
     try
     {
         cout << "Initializing signal chain" << endl;
-        WavReader wav("test.wav");
+        WavReader wav("wav/test.wav");
         FilterGenerics::OutputChannel* chans[2] =
             {wav.get_output_channel(0), wav.get_output_channel(1)};
         Speaker speaker(chans, 2);
-        WavWriter write("out.wav", chans, 2);
+        WavWriter write("wav/out.wav", chans, 2);
 
         cout << "Entering process loop" << endl;
-        while(true)
+        while(!wav.is_done())
         {
             speaker.consume_inputs();
             write.consume_inputs();
-            if(wav.isDone())
-                break;
         }
         cout << "Exiting" << "\n" << endl;
     }

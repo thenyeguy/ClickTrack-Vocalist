@@ -68,8 +68,18 @@ namespace IOElements
     {
         public:
             WavReader(const char* in_filename);
-            bool isDone();
+
+            /* Returns true once we have read out the entire wav file.
+             */ 
+            bool is_done();
+
+            /* Resets the WavReader to point to the head of the file.
+             */ 
             void restart();
+
+            /* Returns the number of samples in the wav file
+             */
+            unsigned get_total_samples();
 
         private:
             void generate_outputs(SAMPLE** outputs);

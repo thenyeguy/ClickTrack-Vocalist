@@ -3,6 +3,7 @@
 #include "convolve.h"
 
 using namespace FilterGenerics;
+using namespace Filters;
 
 
 ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,

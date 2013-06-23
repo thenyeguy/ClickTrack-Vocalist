@@ -20,7 +20,7 @@ tests: test_ringbuffer test_fft test_convolve test_filterchain test_wav
 # Macro the filter list
 IOCORE_SRC = portaudio_wrapper.cpp fft.cpp filter_generics.cpp \
              io_elements.cpp oscillator.cpp
-FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp
+FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp reverb.cpp
 
 
 #Define test target and dependencides

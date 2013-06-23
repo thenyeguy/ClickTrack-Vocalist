@@ -68,6 +68,12 @@ OutputChannel* AudioGenerator::get_output_channel(int i)
 }
 
 
+const unsigned AudioGenerator::get_num_output_channels()
+{
+    return num_output_channels;
+}
+
+
 void AudioGenerator::write_outputs()
 {
     generate_outputs(output_buffer);
@@ -116,6 +122,12 @@ void AudioConsumer::consume_inputs()
 }
 
 
+const unsigned AudioConsumer::get_num_input_channels()
+{
+    return num_input_channels;
+}
+
+
 
 
 AudioFilter::AudioFilter(unsigned in_num_output_channels,
@@ -123,6 +135,7 @@ AudioFilter::AudioFilter(unsigned in_num_output_channels,
                          OutputChannel** in_input_channels)
     : AudioGenerator(in_num_output_channels),
       AudioConsumer(in_num_input_channels, in_input_channels) {}
+AudioFilter::~AudioFilter() {}
 
 
 void AudioFilter::generate_outputs(SAMPLE** outputs)
@@ -134,4 +147,31 @@ void AudioFilter::generate_outputs(SAMPLE** outputs)
 void AudioFilter::process_inputs(SAMPLE** inputs)
 {
     filter(inputs, output_buffer);
+}
+
+
+
+
+FilterBank::FilterBank(unsigned in_num_output_channels,
+                       unsigned in_num_input_channels)
+    : num_input_channels(in_num_input_channels),
+      num_output_channels(in_num_output_channels),
+      output_channels() {}
+
+
+OutputChannel* FilterBank::get_output_channel(int i)
+{
+    return output_channels[i];
+}
+
+
+const unsigned FilterBank::get_num_output_channels()
+{
+    return num_output_channels;
+}
+
+
+const unsigned FilterBank::get_num_input_channels()
+{
+    return num_input_channels;
 }

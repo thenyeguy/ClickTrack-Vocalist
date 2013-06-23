@@ -5,8 +5,10 @@
 #include "filter_generics.h"
 #include "fft.h"
 
+using namespace FilterGenerics;
 
-namespace FilterGenerics
+
+namespace Filters
 {
     /* The ConvolutionFilter implements a real time convolution of the input
      * signal with a precomputed impulse response.
