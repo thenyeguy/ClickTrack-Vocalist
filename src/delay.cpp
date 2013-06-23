@@ -16,7 +16,7 @@ SimpleDelay::SimpleDelay(OutputChannel** in_input_channels,
 void SimpleDelay::filter(SAMPLE** input, SAMPLE** output)
 {
     // Calculate offset
-    unsigned last_t = next_t - DEFAULT_BLOCK_SIZE - 44100;
+    unsigned last_t = next_t - 44100;
 
     // Sum in the output
     for(int i = 0; i < num_input_channels; i++)
