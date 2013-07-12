@@ -48,7 +48,8 @@ int main()
         //ConvolutionFilter f(in.get_output_channel(0), imp->num_samples, imp->left);
 
         OutputChannel* outch[2] = {revl.get_output_channel(), revr.get_output_channel()};
-        Speaker out(outch, 2);
+        //Speaker out(outch, 2);
+        WavWriter out("wav/conv_out.wav", outch, 2);
 
         std::cout << "Playing" << std::endl;
         while(!in.is_done())
