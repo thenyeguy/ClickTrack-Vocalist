@@ -90,7 +90,11 @@ namespace ClickTrackUtils {
             SampleT& operator[] (unsigned t)
             {
                 if(t < start_t || t >= end_t)
+                {
+                    std::cout << "out of range: " << start_t << " "
+                      << t << " " << end_t << std::endl;
                     throw RingBufferOutOfRange();
+                }
 
                 return samples[t % buffer_size];                
             }

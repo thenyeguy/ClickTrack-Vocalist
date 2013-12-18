@@ -15,42 +15,60 @@ ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,
                                      SAMPLE* in_impulse_response)
     : AudioFilter(1, 1, &in_input_channel),
       transformer(DEFAULT_BLOCK_SIZE),
-      output_length(DEFAULT_BLOCK_SIZE + impulse_length - 1),
-      overlaps(output_length+DEFAULT_BLOCK_SIZE),
-      num_impulse_blocks(2*((impulse_length - 1)/DEFAULT_BLOCK_SIZE + 1)),
+
+      num_impulse_blocks((impulse_length - 1)/(DEFAULT_BLOCK_SIZE/2) + 1),
         // shift by one so perfect powers of two don't get overallocated
-      impulse_response(num_impulse_blocks, NULL)
+      impulse_response(num_impulse_blocks, NULL),
+
+      left_buffer(num_impulse_blocks * DEFAULT_BLOCK_SIZE),
+      right_buffer(num_impulse_blocks * DEFAULT_BLOCK_SIZE),
+      output_overflow(DEFAULT_BLOCK_SIZE/2, 0.0f)
 {
-    // Preallocate the input buffer for speed
+    // Preallocate the buffers
     input_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
     output_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
 
-    // Zero the input buffer to use it shortly
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
-        input_buffer[i] = 0.0f;
+    left_out_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
+    right_out_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
 
-    // Split the impulse into blocks and find their FFTs
-    for(int i = 0; i < num_impulse_blocks; i++)
+    // Zero the input buffers
+    for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
     {
-        // Get one block of samples
-        for(int j = 0; j < DEFAULT_BLOCK_SIZE/2; j++)
-        {
-            if(j == num_impulse_blocks - 1)
-                input_buffer[j] = 0;
-            else
-                input_buffer[j] =
-                    in_impulse_response[i*DEFAULT_BLOCK_SIZE/2 + j];
-        }
-
-        // FFT and store it
-        complex<SAMPLE>* out = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
-        transformer.fft(input_buffer, out);
-        impulse_response[i] = out;
+        input_buffer[i] = 0.0;
+        output_buffer[i] = 0.0;
+        left_out_buffer[i] = 0.0;
+        right_out_buffer[i] = 0.0;
     }
 
-    // Fill the overlap buffer with 0s for the -1th block of samples
-    for(int i = 0; i < output_length; i++)
-        overlaps.add(0.0);
+
+    // Compute impulse energy to normalize
+    float energy = 0.0f;
+    for(int i=0; i < impulse_length; i++)
+        energy += pow(in_impulse_response[i], 2);
+    energy = sqrt(energy);
+
+
+    // Split the impulse response into segments
+    for(int i=0; i < num_impulse_blocks; i++)
+    {
+        // For each segment, take its FFT
+        for(int j=0; j < DEFAULT_BLOCK_SIZE/2; j++)
+            input_buffer[j] = in_impulse_response[DEFAULT_BLOCK_SIZE/2*i + j];
+        transformer.fft(input_buffer, output_buffer);
+
+        // Copy it into the impulse array
+        impulse_response[i] = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
+        for(int j=0; j < DEFAULT_BLOCK_SIZE; j++)
+            impulse_response[i][j] = output_buffer[j];
+    }
+
+
+    // Initialize the output buffers
+    for(int i=0; i < DEFAULT_BLOCK_SIZE * num_impulse_blocks; i++)
+    {
+        left_buffer.add(0);
+        right_buffer.add(0);
+    }
 }
 
 
@@ -65,38 +83,59 @@ ConvolutionFilter::~ConvolutionFilter()
 
 void ConvolutionFilter::filter(SAMPLE** input, SAMPLE** output)
 {
-    // First add space for the last block of samples in the buffer
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
-        overlaps.add(0);
-
-    // Populate the input buffer for half one
+    // First take the FFT of the input signal's halves
     for(int i = 0; i < DEFAULT_BLOCK_SIZE/2; i++)
-        input_buffer[i] = complex<SAMPLE>(input[0][i]);
-    for(int i = DEFAULT_BLOCK_SIZE/2; i < DEFAULT_BLOCK_SIZE; i++)
-        input_buffer[i] = complex<SAMPLE>(0,0);
-
-    // Grab its FFT
-    transformer.fft(input_buffer, output_buffer);
-
-    // For each block in the impulse response, we multiply in the
-    // frequency domain, then add it to the output buffer
-    for(int i = 0; i < num_impulse_blocks; i++)
     {
-        for(int j = 0; j < DEFAULT_BLOCK_SIZE/2; j++)
+        input_buffer[i] = input[0][i];
+        transformer.fft(input_buffer, left_out_buffer);
+
+        input_buffer[i] = input[0][i+DEFAULT_BLOCK_SIZE/2];
+        transformer.fft(input_buffer, right_out_buffer);
+    }
+
+    // Then perform the frequency multiplications
+    for(int i=0; i < num_impulse_blocks; i++)
+    {
+        for(int j=0; j < DEFAULT_BLOCK_SIZE; j++)
         {
-            overlaps[next_t + i*DEFAULT_BLOCK_SIZE + j] =
-                output_buffer[j] * impulse_response[i][j];
+            left_buffer[next_t + j] += left_out_buffer[j] * 
+                impulse_response[i][j];
+            right_buffer[next_t + j] += right_out_buffer[j] * 
+                impulse_response[i][j];
         }
     }
 
-    // Grab the next block of outputs from the buffer
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
-        input_buffer[i] = overlaps[next_t + i];
 
-    transformer.fft(input_buffer, output_buffer);
+    // First add the last block's overflow
+    for(int i=0; i < DEFAULT_BLOCK_SIZE/2; i++)
+        output[0][i] = output_overflow[i];
 
+    // Grab the next output set
+    for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
+    {
+        left_out_buffer[i] = left_buffer[next_t + i];
+        right_out_buffer[i] = right_buffer[next_t + i];
+    }
+    
+    // Reverse the left half
+    transformer.ifft(left_out_buffer, output_buffer);
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
         output[0][i] = output_buffer[i].real();
+
+    // Reverse the right half
+    transformer.ifft(right_out_buffer, output_buffer);
+    for(int i = 0; i < DEFAULT_BLOCK_SIZE/2; i++)
+        output[0][i+DEFAULT_BLOCK_SIZE/2] += output_buffer[i].real();
+    for(int i = DEFAULT_BLOCK_SIZE/2; i < DEFAULT_BLOCK_SIZE; i++)
+        output_overflow[i - DEFAULT_BLOCK_SIZE/2] = output_buffer[i].real();
+
+
+    // Push the next set of empty values to buffer
+    for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
+    {
+        left_buffer.add(0.0);
+        right_buffer.add(0.0);
+    }
 }
 
 /*

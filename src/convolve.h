@@ -36,15 +36,20 @@ namespace Filters
 
             FFT::Transformer transformer;
 
-            const unsigned output_length;
-            ClickTrackUtils::RingBuffer<complex<SAMPLE> > overlaps;
-
             const unsigned num_impulse_blocks;
             std::vector<complex<SAMPLE>*> impulse_response;
+
+            ClickTrackUtils::RingBuffer<complex<SAMPLE> > left_buffer;
+            ClickTrackUtils::RingBuffer<complex<SAMPLE> > right_buffer;
+            std::vector<SAMPLE> output_overflow;
+
 
             // Preallocate buffers for speed
             complex<SAMPLE>* input_buffer;
             complex<SAMPLE>* output_buffer;
+
+            complex<SAMPLE>* left_out_buffer;
+            complex<SAMPLE>* right_out_buffer;
     };
 }
 
