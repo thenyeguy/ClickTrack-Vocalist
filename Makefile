@@ -1,7 +1,7 @@
 #Define compiler
 CC      = clang++
-CFLAGS  = -Wall -Werror -g
-LIBS    = -lportaudio
+CFLAGS  = -I/usr/local/include -Wall -Werror -g 
+LIBS    = -L/usr/local/lib -lportaudio
 
 #Define compile paths
 SRCDIR  = src
