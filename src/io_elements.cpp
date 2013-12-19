@@ -35,7 +35,12 @@ void Speaker::process_inputs(SAMPLE** inputs)
     for(int i = 0; i < num_input_channels; i++)
     {
         for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
-            buffer[num_input_channels*j + i] = inputs[i][j];
+        {
+            SAMPLE sample = inputs[i][j];
+            if(sample > 1.0) sample = 1.0;
+            if(sample < -1.0) sample = -1.0;
+            buffer[num_input_channels*j + i] = sample;
+        }
     }
 
     // Write out
@@ -87,7 +92,7 @@ WavReader::WavReader(const char* in_filename)
     // Read sample rate
     file.read(container.raw, 4);
     if(container.four != 44100)
-        throw InvalidWavFile("No support for nonlinear quantization");
+        throw InvalidWavFile("No support for sample rates other than 44100");
 
     file.read(container.raw, 4); // toss byte rate
 
@@ -220,8 +225,11 @@ void WavWriter::process_inputs(SAMPLE** inputs)
     {
         for(int j = 0; j < num_input_channels; j++)
         {
-            signed short sample = inputs[j][i] * 32768;
-            file.write((char*) &sample, 2);
+            SAMPLE sample = inputs[j][i];
+            if(sample > 1.0) sample = 1.0;
+            if(sample < -1.0) sample = -1.0;
+            signed short quantized = inputs[j][i] * 32768;
+            file.write((char*) &quantized, 2);
         }
         samples_written++;
     }
