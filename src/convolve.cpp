@@ -53,13 +53,18 @@ ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,
     {
         // For each segment, take its FFT
         for(int j=0; j < DEFAULT_BLOCK_SIZE/2; j++)
-            input_buffer[j] = in_impulse_response[DEFAULT_BLOCK_SIZE/2*i + j];
+        {
+            if(DEFAULT_BLOCK_SIZE/2*i + j < impulse_length)
+                input_buffer[j] = in_impulse_response[DEFAULT_BLOCK_SIZE/2*i + j];
+            else
+                input_buffer[j] = 0;
+        }
         transformer.fft(input_buffer, output_buffer);
 
         // Copy it into the impulse array
         impulse_response[i] = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
         for(int j=0; j < DEFAULT_BLOCK_SIZE; j++)
-            impulse_response[i][j] = output_buffer[j];
+            impulse_response[i][j] = output_buffer[j]/energy;
     }
 
 
@@ -85,23 +90,22 @@ void ConvolutionFilter::filter(SAMPLE** input, SAMPLE** output)
 {
     // First take the FFT of the input signal's halves
     for(int i = 0; i < DEFAULT_BLOCK_SIZE/2; i++)
-    {
         input_buffer[i] = input[0][i];
-        transformer.fft(input_buffer, left_out_buffer);
+    transformer.fft(input_buffer, left_out_buffer);
 
+    for(int i = 0; i < DEFAULT_BLOCK_SIZE/2; i++)
         input_buffer[i] = input[0][i+DEFAULT_BLOCK_SIZE/2];
-        transformer.fft(input_buffer, right_out_buffer);
-    }
+    transformer.fft(input_buffer, right_out_buffer);
 
     // Then perform the frequency multiplications
     for(int i=0; i < num_impulse_blocks; i++)
     {
         for(int j=0; j < DEFAULT_BLOCK_SIZE; j++)
         {
-            left_buffer[next_t + j] += left_out_buffer[j] * 
-                impulse_response[i][j];
-            right_buffer[next_t + j] += right_out_buffer[j] * 
-                impulse_response[i][j];
+            left_buffer[next_t + i*DEFAULT_BLOCK_SIZE/2 + j] +=
+                left_out_buffer[j] * impulse_response[i][j];
+            right_buffer[next_t + i*DEFAULT_BLOCK_SIZE/2 + j] +=
+                right_out_buffer[j] * impulse_response[i][j];
         }
     }
 

@@ -4,17 +4,18 @@
 using namespace Filters;
 
 
-Reverb::Reverb(unsigned impulse_length, SAMPLE* impulse, float in_wetness,
+Reverb::Reverb(unsigned impulse_length, SAMPLE* impulse,
+               float in_gain, float in_wetness,
                OutputChannel* in_input_channel)
-    : FilterBank(1,1), wetness(in_wetness)
+    : FilterBank(1,1), gain(in_gain), wetness(in_wetness)
 {
     // Set up reverb
     conv = new ConvolutionFilter(in_input_channel, impulse_length, impulse);
     OutputChannel* conv_out = conv->get_output_channel();
 
     // Set up wetness parameters
-    wet = new GainFilter(wetness, &conv_out);
-    dry = new GainFilter(1.0-wetness, &in_input_channel);
+    wet = new GainFilter(wetness*gain, &conv_out);
+    dry = new GainFilter((1.0-wetness)*gain, &in_input_channel);
 
     // Set up output adder
     OutputChannel* wetdry[2] =
@@ -23,7 +24,6 @@ Reverb::Reverb(unsigned impulse_length, SAMPLE* impulse, float in_wetness,
 
     // Add the output channel
     output_channels.push_back(out->get_output_channel());
-    //output_channels.push_back(out->get_output_channel());
 }
 
 

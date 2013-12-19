@@ -14,11 +14,13 @@ namespace Filters
     class Reverb : public FilterBank
     {
         public:
-            Reverb(unsigned impulse_length, SAMPLE* impulse, float wetness,
+            Reverb(unsigned impulse_length, SAMPLE* impulse,
+                   float gain, float wetness,
                    OutputChannel* in_input_channel);
             ~Reverb();
 
         private:
+            float gain;
             float wetness;
             
             ConvolutionFilter* conv; 

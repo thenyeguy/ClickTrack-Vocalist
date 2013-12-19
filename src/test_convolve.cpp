@@ -43,8 +43,9 @@ int main()
 
         std::cout << "Establishing signal chain" << std::endl;
         WavReader in("wav/test.wav");
-        Reverb revl(imp->num_samples, imp->left, 0.5, in.get_output_channel(0));
-        Reverb revr(imp->num_samples, imp->right, 0.5, in.get_output_channel(1));
+
+        Reverb revl(imp->num_samples, imp->left, 0.2, 0.5, in.get_output_channel(0));
+        Reverb revr(imp->num_samples, imp->right, 0.2, 0.5, in.get_output_channel(1));
         //ConvolutionFilter f(in.get_output_channel(0), imp->num_samples, imp->left);
 
         OutputChannel* outch[2] = {revl.get_output_channel(), revr.get_output_channel()};
