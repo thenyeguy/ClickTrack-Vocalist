@@ -1,7 +1,39 @@
+#include <cmath>
 #include "reverb.h"
 #include "io_elements.h"
 
 using namespace Filters;
+using namespace Portaudio;
+
+
+SimpleReverb::SimpleReverb(float in_decay_time, float in_gain, float in_wetness,
+                           unsigned in_num_channels,
+                           OutputChannel** in_input_channels)
+    : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
+      sample_rollover(in_num_channels, 0.0), gain(in_gain), wetness(in_wetness),
+      decay_ratio(pow(.01, 1/(DEFAULT_SAMPLE_RATE*in_decay_time)))
+{}
+
+
+SimpleReverb::~SimpleReverb()
+{}
+      
+
+void SimpleReverb::filter(SAMPLE** input, SAMPLE** output)
+{
+    for(int i = 0; i < num_input_channels; i++)
+    {
+        for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+        {
+            SAMPLE last;
+            if(j == 0) last = sample_rollover[i];
+            else       last = input[i][j-1];
+
+            output[i][j] = gain*(input[i][j] + wetness*decay_ratio*last);
+        }
+    }
+}
+
 
 
 ConvolutionReverb::ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,

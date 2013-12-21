@@ -9,7 +9,27 @@ using namespace FilterGenerics;
 
 namespace Filters
 {
-    /* Reverb is a simple one channel convolution reverb filter. 
+    /* A simple IIR reverb filter.
+     */
+    class SimpleReverb : public AudioFilter
+    {
+        public:
+            SimpleReverb(float decay_time, float gain, float wetness,
+                         unsigned num_channels, OutputChannel** input_channels);
+            ~SimpleReverb();
+
+        private:
+            void filter(SAMPLE** input, SAMPLE** output);
+
+            std::vector<SAMPLE> sample_rollover;
+
+            float gain;
+            float wetness;
+            float decay_ratio;
+    };
+
+
+    /* A simple one channel convolution reverb filter.
      */
     class ConvolutionReverb : public FilterBank
     {
