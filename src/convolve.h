@@ -22,6 +22,7 @@ namespace Filters
      * is equivalent to multiplication in frequency. Uses linearity of the FFT
      * to only perform a single transform into and out of frequency domain.
      */
+    const unsigned fft_multiplier = 16;
     class ConvolutionFilter : public AudioFilter
     {
         public:
@@ -39,12 +40,12 @@ namespace Filters
             const unsigned num_impulse_blocks;
             std::vector<complex<SAMPLE>*> impulse_response;
 
+            ClickTrackUtils::RingBuffer<complex<SAMPLE>*> frequency_buffer;
             ClickTrackUtils::RingBuffer<SAMPLE> reverb_buffer;
 
 
             // Preallocate buffers for speed
             complex<SAMPLE>* input_buffer;
-            complex<SAMPLE>* middle_buffer;
             complex<SAMPLE>* output_buffer;
     };
 }
