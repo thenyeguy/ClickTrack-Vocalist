@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include <complex>
 #include "convolve.h"
 
@@ -6,39 +7,29 @@ using namespace FilterGenerics;
 using namespace Filters;
 
 
-// We will use portions of the input and impulse response of size
-// DEFAULT_BLOCK_SIZE/2, so that their individual convolution is
-// not larger than DEFAULT_BLOCK_SIZE. This allows us to IFFT
-// one block size at a time for returns
 ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,
                                      unsigned impulse_length,
                                      SAMPLE* in_impulse_response)
     : AudioFilter(1, 1, &in_input_channel),
-      transformer(DEFAULT_BLOCK_SIZE),
 
-      num_impulse_blocks((impulse_length - 1)/(DEFAULT_BLOCK_SIZE/2) + 1),
+      transform_size(8*DEFAULT_BLOCK_SIZE),
+      transformer(transform_size),
+
+      num_impulse_blocks((impulse_length - 1) / 
+                         (transform_size-DEFAULT_BLOCK_SIZE) + 1),
         // shift by one so perfect powers of two don't get overallocated
       impulse_response(num_impulse_blocks, NULL),
 
-      left_buffer(num_impulse_blocks * DEFAULT_BLOCK_SIZE),
-      right_buffer(num_impulse_blocks * DEFAULT_BLOCK_SIZE),
-      output_overflow(DEFAULT_BLOCK_SIZE/2, 0.0f)
+      reverb_buffer(num_impulse_blocks * transform_size)
 {
     // Preallocate the buffers
-    input_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
-    output_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
+    input_buffer = new complex<SAMPLE>[transform_size];
+    middle_buffer = new complex<SAMPLE>[transform_size];
+    output_buffer = new complex<SAMPLE>[transform_size];
 
-    left_out_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
-    right_out_buffer = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
-
-    // Zero the input buffers
-    for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
-    {
+    // Zero the input buffer
+    for(int i=0; i < transform_size; i++)
         input_buffer[i] = 0.0;
-        output_buffer[i] = 0.0;
-        left_out_buffer[i] = 0.0;
-        right_out_buffer[i] = 0.0;
-    }
 
 
     // Compute impulse energy to normalize
@@ -52,27 +43,29 @@ ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,
     for(int i=0; i < num_impulse_blocks; i++)
     {
         // For each segment, take its FFT
-        for(int j=0; j < DEFAULT_BLOCK_SIZE/2; j++)
+        for(int j=0; j < transform_size-DEFAULT_BLOCK_SIZE; j++)
         {
-            if(DEFAULT_BLOCK_SIZE/2*i + j < impulse_length)
-                input_buffer[j] = in_impulse_response[DEFAULT_BLOCK_SIZE/2*i + j];
+            int t = (transform_size-DEFAULT_BLOCK_SIZE)*i + j;
+            if(t < impulse_length)
+                input_buffer[j] = in_impulse_response[t] / energy;
             else
-                input_buffer[j] = 0;
+                input_buffer[j] = 0.0;
         }
-        transformer.fft(input_buffer, output_buffer);
 
-        // Copy it into the impulse array
-        impulse_response[i] = new complex<SAMPLE>[DEFAULT_BLOCK_SIZE];
-        for(int j=0; j < DEFAULT_BLOCK_SIZE; j++)
-            impulse_response[i][j] = output_buffer[j]/energy;
+        impulse_response[i] = new complex<SAMPLE>[transform_size];
+        transformer.fft(input_buffer, impulse_response[i]);
     }
 
 
+    // Rezero the input buffer
+    for(int i=0; i < transform_size; i++)
+        input_buffer[i] = 0.0;
+
+
     // Initialize the output buffers
-    for(int i=0; i < DEFAULT_BLOCK_SIZE * num_impulse_blocks; i++)
+    for(int i=0; i < num_impulse_blocks * transform_size; i++)
     {
-        left_buffer.add(0);
-        right_buffer.add(0);
+        reverb_buffer.add(0);
     }
 }
 
@@ -88,86 +81,33 @@ ConvolutionFilter::~ConvolutionFilter()
 
 void ConvolutionFilter::filter(SAMPLE** input, SAMPLE** output)
 {
-    // First take the FFT of the input signal's halves
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE/2; i++)
+    // First take the FFT of the input signal
+    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
         input_buffer[i] = input[0][i];
-    transformer.fft(input_buffer, left_out_buffer);
+    transformer.fft(input_buffer, middle_buffer);
 
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE/2; i++)
-        input_buffer[i] = input[0][i+DEFAULT_BLOCK_SIZE/2];
-    transformer.fft(input_buffer, right_out_buffer);
 
-    // Then perform the frequency multiplications
+    // Then perform each overlap add step by...
     for(int i=0; i < num_impulse_blocks; i++)
     {
-        for(int j=0; j < DEFAULT_BLOCK_SIZE; j++)
-        {
-            left_buffer[next_t + i*DEFAULT_BLOCK_SIZE/2 + j] +=
-                left_out_buffer[j] * impulse_response[i][j];
-            right_buffer[next_t + i*DEFAULT_BLOCK_SIZE/2 + j] +=
-                right_out_buffer[j] * impulse_response[i][j];
-        }
+        // Frequency multiply
+        for(int j=0; j < transform_size; j++)
+            input_buffer[j] = middle_buffer[j] * impulse_response[i][j];
+
+        //  Inverse transform
+        transformer.ifft(input_buffer, output_buffer);
+        for(int j=0; j < transform_size; j++)
+            reverb_buffer[next_t + DEFAULT_BLOCK_SIZE*i + j] += 
+                output_buffer[j].real();
     }
 
 
-    // First add the last block's overflow
-    for(int i=0; i < DEFAULT_BLOCK_SIZE/2; i++)
-        output[0][i] = output_overflow[i];
-
-    // Grab the next output set
+    // Extract the new output set
     for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
-    {
-        left_out_buffer[i] = left_buffer[next_t + i];
-        right_out_buffer[i] = right_buffer[next_t + i];
-    }
-    
-    // Reverse the left half
-    transformer.ifft(left_out_buffer, output_buffer);
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
-        output[0][i] = output_buffer[i].real();
-
-    // Reverse the right half
-    transformer.ifft(right_out_buffer, output_buffer);
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE/2; i++)
-        output[0][i+DEFAULT_BLOCK_SIZE/2] += output_buffer[i].real();
-    for(int i = DEFAULT_BLOCK_SIZE/2; i < DEFAULT_BLOCK_SIZE; i++)
-        output_overflow[i - DEFAULT_BLOCK_SIZE/2] = output_buffer[i].real();
+        output[0][i] = reverb_buffer[next_t + i];
 
 
     // Push the next set of empty values to buffer
     for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
-    {
-        left_buffer.add(0.0);
-        right_buffer.add(0.0);
-    }
+        reverb_buffer.add(0.0);
 }
-
-/*
-void ConvolutionFilter::filter(SAMPLE** input, SAMPLE** output)
-{
-    // Populate the input buffer
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
-        input_buffer[i] = complex<SAMPLE>(input[0][i]);
-    for(int i = DEFAULT_BLOCK_SIZE; i < output_length; i++)
-        input_buffer[i] = complex<SAMPLE>(0,0);
-
-    // FFT then convolve
-    transformer.fft(input_buffer, output_buffer);
-
-    for(int i = 0; i < output_length; i++)
-        input_buffer[i] = output_buffer[i] * impulse_response[i];
-    transformer.ifft(input_buffer, output_buffer);
-
-    // Write the result into the output buffer
-    // Add in the overlapping portions
-    for(int i = 0; i < output_length; i++)
-        overlaps[next_t + i] += std::abs(output_buffer[i]);
-
-    // Enqueue the new results
-    for(int i = output_length - DEFAULT_BLOCK_SIZE; i < output_length; i++)
-        overlaps.add(std::abs(output_buffer[i]));
-
-    // Grab the next block of outputs from the buffer
-    overlaps.get_range(output[0], next_t, next_t+DEFAULT_BLOCK_SIZE);
-}
-*/

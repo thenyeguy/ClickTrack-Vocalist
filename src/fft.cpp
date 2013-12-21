@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "fft.h"
 
 using namespace std;
@@ -18,7 +19,7 @@ Transformer::Transformer(unsigned in_size)
 
     // Populate the twiddles factors w_n^i
     // w_n = exp(j*2*pi*n/N)
-    complex<SAMPLE> exponent(0,2*PI/buffer_size);
+    complex<SAMPLE> exponent(0,-2*PI/buffer_size);
     for(int i = 0; i < buffer_size; i++)
         twiddles.push_back(exp(exponent * complex<SAMPLE>(i,0)));
 }

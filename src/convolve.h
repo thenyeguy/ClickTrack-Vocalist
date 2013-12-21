@@ -20,7 +20,7 @@ namespace Filters
      *
      * Computes circular convolution using the property that convolution in time
      * is equivalent to multiplication in frequency. Uses linearity of the FFT
-     * to only perform a single ransform into and out of frequency domain.
+     * to only perform a single transform into and out of frequency domain.
      */
     class ConvolutionFilter : public AudioFilter
     {
@@ -33,23 +33,19 @@ namespace Filters
         private:
             void filter(SAMPLE** input, SAMPLE** output);
 
-
+            const unsigned transform_size;
             FFT::Transformer transformer;
 
             const unsigned num_impulse_blocks;
             std::vector<complex<SAMPLE>*> impulse_response;
 
-            ClickTrackUtils::RingBuffer<complex<SAMPLE> > left_buffer;
-            ClickTrackUtils::RingBuffer<complex<SAMPLE> > right_buffer;
-            std::vector<SAMPLE> output_overflow;
+            ClickTrackUtils::RingBuffer<SAMPLE> reverb_buffer;
 
 
             // Preallocate buffers for speed
             complex<SAMPLE>* input_buffer;
+            complex<SAMPLE>* middle_buffer;
             complex<SAMPLE>* output_buffer;
-
-            complex<SAMPLE>* left_out_buffer;
-            complex<SAMPLE>* right_out_buffer;
     };
 }
 

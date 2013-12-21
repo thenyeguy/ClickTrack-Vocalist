@@ -225,9 +225,11 @@ void WavWriter::process_inputs(SAMPLE** inputs)
     {
         for(int j = 0; j < num_input_channels; j++)
         {
+            // Clip instead of overflowing
             SAMPLE sample = inputs[j][i];
-            if(sample > 1.0) sample = 1.0;
+            if(sample > 1.0)  sample = 1.0;
             if(sample < -1.0) sample = -1.0;
+
             signed short quantized = inputs[j][i] * 32768;
             file.write((char*) &quantized, 2);
         }
