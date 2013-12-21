@@ -11,13 +11,13 @@ namespace Filters
 {
     /* Reverb is a simple one channel convolution reverb filter. 
      */
-    class Reverb : public FilterBank
+    class ConvolutionReverb : public FilterBank
     {
         public:
-            Reverb(unsigned impulse_length, SAMPLE* impulse,
+            ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,
                    float gain, float wetness,
                    OutputChannel* in_input_channel);
-            ~Reverb();
+            ~ConvolutionReverb();
 
         private:
             float gain;

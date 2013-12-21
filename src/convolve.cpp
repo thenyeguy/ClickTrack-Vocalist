@@ -22,6 +22,11 @@ ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,
       frequency_buffer(num_impulse_blocks),
       reverb_buffer(transform_size)
 {
+    // PROVIDE WARNING
+    cout << endl <<
+        "WARNING: Convolution reverb is still too slow to run in realtime." <<
+        endl << endl;
+
     // Preallocate the buffers
     input_buffer = new complex<SAMPLE>[transform_size];
     output_buffer = new complex<SAMPLE>[transform_size];

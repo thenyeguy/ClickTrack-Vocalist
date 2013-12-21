@@ -4,7 +4,7 @@
 using namespace Filters;
 
 
-Reverb::Reverb(unsigned impulse_length, SAMPLE* impulse,
+ConvolutionReverb::ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,
                float in_gain, float in_wetness,
                OutputChannel* in_input_channel)
     : FilterBank(1,1), gain(in_gain), wetness(in_wetness)
@@ -27,7 +27,7 @@ Reverb::Reverb(unsigned impulse_length, SAMPLE* impulse,
 }
 
 
-Reverb::~Reverb()
+ConvolutionReverb::~ConvolutionReverb()
 {
     delete conv;
     delete wet;
