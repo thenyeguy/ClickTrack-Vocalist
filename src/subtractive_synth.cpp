@@ -11,7 +11,7 @@ SubtractiveSynthNote::SubtractiveSynthNote()
     : osc(440)
 {
     OutputChannel* ch = osc.get_output_channel();
-    adsr = new ADSRFilter(.1, .1, .5, .1, &ch);
+    adsr = new ADSRFilter(.1, .1, .8, .1, &ch);
 }
 
 

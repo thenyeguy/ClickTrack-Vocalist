@@ -55,6 +55,40 @@ namespace Filters
         private:
             void filter(SAMPLE** input, SAMPLE** output);
     };
+
+
+    /* The multiplier takes in a set of inputs and returns a single output that
+     * is the product of all its inputs
+     */
+    class Multiplier : public AudioFilter
+    {
+        public:
+            Multiplier();
+            Multiplier(OutputChannel** in_input_channels,
+                  unsigned in_num_channels);
+
+        private:
+            void filter(SAMPLE** input, SAMPLE** output);
+    };
+
+
+    /* The clip detector monitors a channel for clipping, and will print to the
+     * console if it occurs. Rate limited
+     */
+    class ClipDetector : public AudioFilter
+    {
+        public:
+            ClipDetector(float rate, OutputChannel** in_input_channels,
+                         unsigned in_num_channels = 1);
+
+        private:
+            void filter(SAMPLE** input, SAMPLE** output);
+
+            /* Measures "time" in samples
+             */
+            const unsigned rate;
+            unsigned next_time;
+    };
 }
 
 #endif

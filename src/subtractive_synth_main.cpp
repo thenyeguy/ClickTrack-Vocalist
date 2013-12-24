@@ -8,11 +8,14 @@ int main()
     using namespace std;
 
     cout << "Initializing MIDI instrument" << endl;
-    Instruments::SubtractiveSynth inst(3,1);
+    Instruments::SubtractiveSynth inst(10,1);
 
     cout << "Initializing signal chain" << endl;
     FilterGenerics::OutputChannel* instOut = inst.get_output_channel();
-    IOElements::Speaker out(&instOut);
+    Filters::ClipDetector clip(1.0, &instOut);
+
+    FilterGenerics::OutputChannel* clipOut = clip.get_output_channel();
+    IOElements::Speaker out(&clipOut);
 
     cout << "Entering playback loop..." << endl;
     while(true)
