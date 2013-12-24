@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <random>
 #include "portaudio_wrapper.h"
 #include "oscillator.h"
 
@@ -73,4 +74,14 @@ float TriangleWave::f(float t)
     float tprime = fmod(t*freq, 1.0);
 
     return 2*(fabs(tprime - 0.5));
+}
+
+
+WhiteNoise::WhiteNoise(float in_freq)
+    : Oscillator(in_freq) {}
+float WhiteNoise::f(float t)
+{
+    int si = rand();
+    float sf = ((float) si) / RAND_MAX;
+    return 2*sf - 1;
 }

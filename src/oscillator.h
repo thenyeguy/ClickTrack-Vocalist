@@ -74,6 +74,20 @@ namespace Oscillators
         protected:
             float f(float t);
     };
+
+
+    /* A simple white noise "oscillator"
+     * Has frequency for compatibility with other oscillators, but it is ignored
+     * internally
+     */
+    class WhiteNoise : public Oscillator
+    {
+        public:
+            WhiteNoise(float in_freq);
+
+        protected:
+            float f(float t);
+    };
 }
 
 #endif
