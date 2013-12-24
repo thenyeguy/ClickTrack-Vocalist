@@ -2,8 +2,42 @@
 
 
 using namespace std;
+using namespace Filters;
 using namespace Oscillators;
 using namespace Instruments;
+
+
+SubtractiveSynthNote::SubtractiveSynthNote()
+    : osc(440)
+{
+    OutputChannel* ch = osc.get_output_channel();
+    adsr = new ADSRFilter(.1, .1, .5, .1, &ch);
+}
+
+
+SubtractiveSynthNote::~SubtractiveSynthNote()
+{
+    delete adsr;
+}
+
+
+OutputChannel* SubtractiveSynthNote::get_output_channel()
+{
+    return adsr->get_output_channel();
+}
+
+
+void SubtractiveSynthNote::on_note_down(float freq, float velocity)
+{
+    osc.set_freq(freq);
+    adsr->on_note_down();
+}
+
+
+void SubtractiveSynthNote::on_note_up()
+{
+    adsr->on_note_up();
+}
 
 
 SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
@@ -14,8 +48,7 @@ SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
     OutputChannel** outputs = new OutputChannel*[num_oscs];
     for(int i=0; i < num_oscs; i++)
     {
-        TriangleWave* osc = new TriangleWave(440);
-        osc->pause();
+        SubtractiveSynthNote* osc = new SubtractiveSynthNote();
 
         all_oscs.push_back(osc);
         free_oscs.push(osc);
@@ -35,15 +68,18 @@ SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
 SubtractiveSynth::~SubtractiveSynth()
 {
     for(int i=0; i < num_oscs; i++)
+    {
         delete all_oscs[i];
+    }
     delete sum;
+    delete gain;
 }
 
 
 void SubtractiveSynth::on_note_down(unsigned note, float velocity)
 {
     // To play a note, we need an oscillator to trigger 
-    Oscillator* osc;
+    SubtractiveSynthNote* osc;
     if(!free_oscs.empty())
     {
         // If there are free oscillators, simply take on off the queue
@@ -64,18 +100,17 @@ void SubtractiveSynth::on_note_down(unsigned note, float velocity)
     playing_oscs[note] = osc; playing_notes.push_back(note);
 
     // Trigger it and continue
-    osc->set_freq(Midi::noteToFreq(note));
-    osc->unpause();
+    osc->on_note_down(Midi::noteToFreq(note), velocity);
 }
 
 
 void SubtractiveSynth::on_note_up(unsigned note, float velocity)
 {
     // Get the oscillator, pause it and mark it as free if playing
-    Oscillator* osc = playing_oscs[note];
+    SubtractiveSynthNote* osc = playing_oscs[note];
     if(osc != NULL)
     {
-        osc->pause();
+        osc->on_note_up();
         free_oscs.push(osc);
 
         // Remove this note from the map

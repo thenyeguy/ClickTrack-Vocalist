@@ -11,17 +11,19 @@ OBJDIR  = obj
 vpath %.cpp $(SRCDIR):$(TSTDIR)
 
 # Primary target
-all: tests
+all: targets tests
 full: clean all
 
+targets: subtractive_synth
 tests: test_ringbuffer test_fft test_filterchain test_wav test_convolve \
-       test_reverb test_midi test_subtractive_synth
+       test_reverb test_midi 
 
 
 # Macro the filter list
 IOCORE_SRC = portaudio_wrapper.cpp fft.cpp filter_generics.cpp \
              io_elements.cpp oscillator.cpp
-FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp reverb.cpp
+FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp reverb.cpp \
+             adsr.cpp
 
 INSTRUMENTCORE_SRC = midi_wrapper.cpp generic_instrument.cpp
 INSTRUMENT_SRC = simple_midi_instrument.cpp subtractive_synth.cpp
@@ -29,7 +31,17 @@ INSTRUMENT_SRC = simple_midi_instrument.cpp subtractive_synth.cpp
 ALL_SRC = $(IOCORE_SRC) $(FILTER_SRC) $(INSTRUMENTCORE_SRC) $(INSTRUMENT_SRC)
 
 
-#Define test target and dependencides
+
+# Define targets
+SUBTRACTIVE_SYNTH_SRC = $(ALL_SRC) subtractive_synth_main.cpp
+SUBTRACTIVE_SYNTH_OBJ = $(addprefix $(OBJDIR)/, $(SUBTRACTIVE_SYNTH_SRC:.cpp=.o))
+subtractive_synth: $(SUBTRACTIVE_SYNTH_OBJ) | $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(SUBTRACTIVE_SYNTH_OBJ) -o $(BINDIR)/$@
+
+
+
+# Define test target and dependencides
 TEST_RINGBUFFER_SRC = test_ringbuffer.cpp
 TEST_RINGBUFFER_OBJ = $(addprefix $(OBJDIR)/, $(TEST_RINGBUFFER_SRC:.cpp=.o))
 test_ringbuffer: $(TEST_RINGBUFFER_OBJ) | $(BINDIR)
@@ -78,12 +90,6 @@ test_midi: $(TEST_MIDI_OBJ) | $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_MIDI_OBJ) -o $(BINDIR)/$@
 
-
-TEST_SUBTRACTIVE_SYNTH_SRC = $(ALL_SRC) test_subtractive_synth.cpp
-TEST_SUBTRACTIVE_SYNTH_OBJ = $(addprefix $(OBJDIR)/, $(TEST_SUBTRACTIVE_SYNTH_SRC:.cpp=.o))
-test_subtractive_synth: $(TEST_SUBTRACTIVE_SYNTH_OBJ) | $(BINDIR)
-	@echo "Linking $(BINDIR)/$@...\n"
-	@$(CC) $(CFLAGS) $(LIBS) $(TEST_SUBTRACTIVE_SYNTH_OBJ) -o $(BINDIR)/$@
 
 
 #Define helper macros

@@ -7,6 +7,7 @@
 #include "filter_generics.h"
 #include "elementary_filters.h"
 #include "oscillator.h"
+#include "adsr.h"
 #include "generic_instrument.h"
 
 
@@ -15,6 +16,25 @@ namespace Instruments
     /* This is a subtractive synthesizer controlled over MIDI. It has support
      * for a varying number of oscillators.
      */
+    class SubtractiveSynthNote
+    {
+        public:
+            /* Constructor/destructor
+             */
+            SubtractiveSynthNote();
+            ~SubtractiveSynthNote();
+
+            OutputChannel* get_output_channel();
+
+            void on_note_down(float freq, float velocity);
+            void on_note_up();
+
+        private:
+            Oscillators::TriangleWave osc;
+            Filters::ADSRFilter* adsr;
+    };
+
+
     class SubtractiveSynth : public GenericInstrument
     {
         public:
@@ -35,12 +55,12 @@ namespace Instruments
              * indexed by the MIDI note number identifying them.
              */
             const unsigned num_oscs;
-            std::vector<Oscillators::TriangleWave*> all_oscs;
+            std::vector<SubtractiveSynthNote*> all_oscs;
 
-            std::queue<Oscillators::Oscillator*> free_oscs;
+            std::queue<SubtractiveSynthNote*> free_oscs;
 
             std::list<unsigned> playing_notes;
-            std::map<unsigned, Oscillators::Oscillator*> playing_oscs;
+            std::map<unsigned, SubtractiveSynthNote*> playing_oscs;
 
             /* The rest of the signal chain follows...
              */
