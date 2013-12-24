@@ -22,6 +22,11 @@ void GenericInstrument::add_output_channel(OutputChannel* channel)
 FilterGenerics::OutputChannel*
 GenericInstrument::get_output_channel(int channel)
 {
+    if(channel > output_channels.size())
+    {
+        std::cerr << "The instrument does not have a channel " << channel <<
+                     "." << std::endl;
+    }
     return output_channels[channel];
 }
 

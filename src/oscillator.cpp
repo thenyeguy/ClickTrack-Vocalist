@@ -11,6 +11,12 @@ Oscillator::Oscillator(float in_freq)
 {}
 
 
+bool Oscillator::is_paused()
+{
+    return paused;
+}
+
+
 void Oscillator::pause()
 {
     paused = true;

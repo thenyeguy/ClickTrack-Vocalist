@@ -17,6 +17,7 @@ namespace Oscillators
         public:
             Oscillator(float in_freq);
 
+            bool is_paused();
             void pause();
             void unpause();
 
@@ -46,7 +47,7 @@ namespace Oscillators
         public:
             SinWave(float in_freq);
 
-        private:
+        protected:
             float f(float t);
     };
 
@@ -58,7 +59,7 @@ namespace Oscillators
         public:
             SquareWave(float in_freq);
 
-        private:
+        protected:
             float f(float t);
     };
 
@@ -70,7 +71,7 @@ namespace Oscillators
         public:
             TriangleWave(float in_freq);
 
-        private:
+        protected:
             float f(float t);
     };
 }

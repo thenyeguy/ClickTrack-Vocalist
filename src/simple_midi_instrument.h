@@ -8,8 +8,8 @@
 
 namespace Instruments
 {
-    /* This is an instrument that is triggered by the computer keyboard. It
-     * is a very simple monophonic, single channel subtractive synthesizer
+    /* This is an instrument that is triggered by MIDI input. It is a very
+     * simple monophonic, single channel subtractive synthesizer
      */
     class SimpleMidiInstrument : public GenericInstrument
     {

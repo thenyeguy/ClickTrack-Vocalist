@@ -1,6 +1,6 @@
-#Define compiler
+#Define compiler and flags
 CC      = clang++
-CFLAGS  = -I/usr/local/include -Wall -Werror -g 
+CFLAGS  = -I/usr/local/include -Wall -Wno-delete-non-virtual-dtor -Werror -g 
 LIBS    = -L/usr/local/lib -lportaudio -lrtmidi
 
 #Define compile paths
@@ -15,7 +15,7 @@ all: tests
 full: clean all
 
 tests: test_ringbuffer test_fft test_filterchain test_wav test_convolve \
-       test_reverb test_midi
+       test_reverb test_midi test_subtractive_synth
 
 
 # Macro the filter list
@@ -24,7 +24,7 @@ IOCORE_SRC = portaudio_wrapper.cpp fft.cpp filter_generics.cpp \
 FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp reverb.cpp
 
 INSTRUMENTCORE_SRC = midi_wrapper.cpp generic_instrument.cpp
-INSTRUMENT_SRC = simple_midi_instrument.cpp
+INSTRUMENT_SRC = simple_midi_instrument.cpp subtractive_synth.cpp
 
 ALL_SRC = $(IOCORE_SRC) $(FILTER_SRC) $(INSTRUMENTCORE_SRC) $(INSTRUMENT_SRC)
 
@@ -78,6 +78,12 @@ test_midi: $(TEST_MIDI_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_MIDI_OBJ) -o $(BINDIR)/$@
 
+
+TEST_MIDI_SRC = $(ALL_SRC) test_subtractive_synth.cpp
+TEST_MIDI_OBJ = $(addprefix $(OBJDIR)/, $(TEST_MIDI_SRC:.cpp=.o))
+test_subtractive_synth: $(TEST_MIDI_OBJ) $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TEST_MIDI_OBJ) -o $(BINDIR)/$@
 
 
 #Define helper macros

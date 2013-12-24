@@ -48,6 +48,7 @@ namespace Filters
     class Adder : public AudioFilter
     {
         public:
+            Adder();
             Adder(OutputChannel** in_input_channels,
                   unsigned in_num_channels);
 
