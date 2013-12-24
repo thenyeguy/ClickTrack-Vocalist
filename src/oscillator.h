@@ -17,6 +17,11 @@ namespace Oscillators
         public:
             Oscillator(float in_freq);
 
+            void pause();
+            void unpause();
+
+            void set_freq(float freq);
+
         protected:
             // Overridden method for AudioGenerator to provide basic time
             // tracking and output for oscillators
@@ -28,9 +33,9 @@ namespace Oscillators
              */
             virtual float f(float t) = 0;
 
-
             unsigned next_i; // next sample time
             float freq;      //hz
+            bool paused;
     };
 
 

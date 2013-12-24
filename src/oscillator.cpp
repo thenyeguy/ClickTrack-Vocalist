@@ -7,9 +7,24 @@ using namespace Oscillators;
 const double PI = 4.0*atan(1.0);
 
 Oscillator::Oscillator(float in_freq)
-    : FilterGenerics::AudioGenerator(1)
+    : FilterGenerics::AudioGenerator(1), next_i(0), freq(in_freq), paused(false)
+{}
+
+
+void Oscillator::pause()
 {
-    next_i = 0;
+    paused = true;
+}
+
+
+void Oscillator::unpause()
+{
+    paused = false;
+}
+
+
+void Oscillator::set_freq(float in_freq)
+{
     freq = in_freq;
 }
 
@@ -19,7 +34,7 @@ void Oscillator::generate_outputs(SAMPLE** outputs)
     for(int i = 0; i < FilterGenerics::DEFAULT_BLOCK_SIZE; i++)
     {
         float next_t = ((float)next_i) / Portaudio::DEFAULT_SAMPLE_RATE;
-        outputs[0][i] = f(next_t);
+        outputs[0][i] = paused ? 0.0 : f(next_t);
         next_i++;
     }
 }

@@ -15,13 +15,18 @@ all: tests
 full: clean all
 
 tests: test_ringbuffer test_fft test_filterchain test_wav test_convolve \
-       test_reverb
+       test_reverb test_midi
 
 
 # Macro the filter list
-IOCORE_SRC = portaudio_wrapper.cpp midi_wrapper.cpp fft.cpp \
-			 filter_generics.cpp io_elements.cpp oscillator.cpp
+IOCORE_SRC = portaudio_wrapper.cpp fft.cpp filter_generics.cpp \
+             io_elements.cpp oscillator.cpp
 FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp reverb.cpp
+
+INSTRUMENTCORE_SRC = midi_wrapper.cpp generic_instrument.cpp
+INSTRUMENT_SRC = simple_midi_instrument.cpp
+
+ALL_SRC = $(IOCORE_SRC) $(FILTER_SRC) $(INSTRUMENTCORE_SRC) $(INSTRUMENT_SRC)
 
 
 #Define test target and dependencides
@@ -67,7 +72,7 @@ test_reverb: $(TEST_REVERB_OBJ) $(BINDIR)
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_REVERB_OBJ) -o $(BINDIR)/$@
 
 
-TEST_MIDI_SRC = midi_wrapper.cpp test_midi.cpp
+TEST_MIDI_SRC = $(ALL_SRC) test_midi.cpp
 TEST_MIDI_OBJ = $(addprefix $(OBJDIR)/, $(TEST_MIDI_SRC:.cpp=.o))
 test_midi: $(TEST_MIDI_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"

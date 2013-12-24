@@ -1,5 +1,6 @@
 #ifndef FILTERGENERICS_H
 #define FILTERGENERICS_H
+
 #include <vector>
 #include "portaudio_wrapper.h"
 #include "ringbuffer.h"
