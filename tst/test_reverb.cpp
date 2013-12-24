@@ -1,9 +1,9 @@
 #include <iostream>
-#include "io_elements.h"
-#include "oscillator.h"
-#include "elementary_filters.h"
-#include "convolve.h"
-#include "reverb.h"
+#include "../src/io_elements.h"
+#include "../src/oscillator.h"
+#include "../src/elementary_filters.h"
+#include "../src/convolve.h"
+#include "../src/reverb.h"
 
 using namespace FilterGenerics;
 using namespace IOElements;

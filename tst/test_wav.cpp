@@ -1,7 +1,7 @@
 #include <iostream>
-#include "filter_generics.h"
-#include "io_elements.h"
-#include "oscillator.h"
+#include "../src/filter_generics.h"
+#include "../src/io_elements.h"
+#include "../src/oscillator.h"
 
 using namespace std;
 using namespace Portaudio;

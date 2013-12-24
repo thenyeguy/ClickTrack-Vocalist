@@ -1,14 +1,14 @@
 #Define compiler
 CC      = clang++
 CFLAGS  = -I/usr/local/include -Wall -Werror -g 
-LIBS    = -L/usr/local/lib -lportaudio
+LIBS    = -L/usr/local/lib -lportaudio -lrtmidi
 
 #Define compile paths
 SRCDIR  = src
 TSTDIR  = tst
 BINDIR  = bin
 OBJDIR  = obj
-vpath %.cpp $(SRCDIR)
+vpath %.cpp $(SRCDIR):$(TSTDIR)
 
 # Primary target
 all: tests
@@ -19,8 +19,8 @@ tests: test_ringbuffer test_fft test_filterchain test_wav test_convolve \
 
 
 # Macro the filter list
-IOCORE_SRC = portaudio_wrapper.cpp fft.cpp filter_generics.cpp \
-             io_elements.cpp oscillator.cpp
+IOCORE_SRC = portaudio_wrapper.cpp midi_wrapper.cpp fft.cpp \
+			 filter_generics.cpp io_elements.cpp oscillator.cpp
 FILTER_SRC = elementary_filters.cpp convolve.cpp delay.cpp reverb.cpp
 
 
@@ -65,6 +65,13 @@ TEST_REVERB_OBJ = $(addprefix $(OBJDIR)/, $(TEST_REVERB_SRC:.cpp=.o))
 test_reverb: $(TEST_REVERB_OBJ) $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $(TEST_REVERB_OBJ) -o $(BINDIR)/$@
+
+
+TEST_MIDI_SRC = midi_wrapper.cpp test_midi.cpp
+TEST_MIDI_OBJ = $(addprefix $(OBJDIR)/, $(TEST_MIDI_SRC:.cpp=.o))
+test_midi: $(TEST_MIDI_OBJ) $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $(TEST_MIDI_OBJ) -o $(BINDIR)/$@
 
 
 

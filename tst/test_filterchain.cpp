@@ -1,8 +1,8 @@
 #include <iostream>
-#include "io_elements.h"
-#include "oscillator.h"
-#include "elementary_filters.h"
-#include "delay.h"
+#include "../src/io_elements.h"
+#include "../src/oscillator.h"
+#include "../src/elementary_filters.h"
+#include "../src/delay.h"
 
 using namespace std;
 using namespace Portaudio;

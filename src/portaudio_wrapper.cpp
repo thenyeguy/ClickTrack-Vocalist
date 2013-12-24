@@ -5,7 +5,7 @@ using namespace std;
 using namespace Portaudio;
 
 
-int error_check(string location, int err)
+int pa_error_check(string location, int err)
 {
     if(err == paNoError) return err;
 
@@ -19,7 +19,7 @@ InputStream::InputStream(unsigned in_channels)
     : channels(in_channels)
 {
     // Initialize portaudio
-    error_check("PaInitialize", Pa_Initialize());
+    pa_error_check("PaInitialize", Pa_Initialize());
 
     //Use default input and output devices on the computer
     PaStreamParameters inputParams;
@@ -32,19 +32,19 @@ InputStream::InputStream(unsigned in_channels)
     inputParams.hostApiSpecificStreamInfo = NULL;
 
     //Open the stream!
-    error_check("Pa_OpenStream",
+    pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, &inputParams, NULL,
             DEFAULT_SAMPLE_RATE, DEFAULT_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
-    error_check("Pa_StartStream", Pa_StartStream(stream));
+    pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 }
 
 
 InputStream::~InputStream()
 {
-    error_check("Pa_StopStream", Pa_StopStream(stream));
-    error_check("Pa_CloseStream", Pa_CloseStream(stream));
-    error_check("Pa_Terminate", Pa_Terminate());
+    pa_error_check("Pa_StopStream", Pa_StopStream(stream));
+    pa_error_check("Pa_CloseStream", Pa_CloseStream(stream));
+    pa_error_check("Pa_Terminate", Pa_Terminate());
 }
 
 
@@ -52,7 +52,7 @@ OutputStream::OutputStream(unsigned in_channels)
     : channels(in_channels)
 {
     // Initialize portaudio
-    error_check("PaInitialize", Pa_Initialize());
+    pa_error_check("PaInitialize", Pa_Initialize());
 
     //Use default input and output devices on the computer
     PaStreamParameters outputParams;
@@ -65,19 +65,19 @@ OutputStream::OutputStream(unsigned in_channels)
     outputParams.hostApiSpecificStreamInfo = NULL;
 
     //Open the stream!
-    error_check("Pa_OpenStream",
+    pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, NULL, &outputParams,
             DEFAULT_SAMPLE_RATE, DEFAULT_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
-    error_check("Pa_StartStream", Pa_StartStream(stream));
+    pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 }
 
 
 OutputStream::~OutputStream()
 {
-    error_check("Pa_StopStream", Pa_StopStream(stream));
-    error_check("Pa_CloseStream", Pa_CloseStream(stream));
-    error_check("Pa_Terminate", Pa_Terminate());
+    pa_error_check("Pa_StopStream", Pa_StopStream(stream));
+    pa_error_check("Pa_CloseStream", Pa_CloseStream(stream));
+    pa_error_check("Pa_Terminate", Pa_Terminate());
 }
 
 
