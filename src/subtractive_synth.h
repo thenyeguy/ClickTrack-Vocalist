@@ -48,6 +48,9 @@ namespace Instruments
             void on_note_down(unsigned note, float velocity);
             void on_note_up(unsigned note, float velocity);
 
+            void on_sustain_down();
+            void on_sustain_up();
+
         private:
             /* Oscillators are tracked as either available (i.e. paused), or
              * currently playing. All oscillators are either in the free queue,
@@ -61,6 +64,10 @@ namespace Instruments
 
             std::list<unsigned> playing_notes;
             std::map<unsigned, SubtractiveSynthNote*> playing_oscs;
+
+            /* Tracks internal state from control signals
+             */
+            bool sustained;
 
             /* The rest of the signal chain follows...
              */

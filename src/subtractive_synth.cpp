@@ -1,4 +1,5 @@
 #include "subtractive_synth.h"
+#include <iterator>
 
 
 using namespace std;
@@ -42,7 +43,8 @@ void SubtractiveSynthNote::on_note_up()
 
 SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
     : GenericInstrument(channel), num_oscs(oscillators),
-      all_oscs(), free_oscs(), playing_oscs()
+      all_oscs(), free_oscs(), playing_oscs(),
+      sustained(false)
 {
     // Add all our oscillators to the free queue to start
     OutputChannel** outputs = new OutputChannel*[num_oscs];
@@ -106,6 +108,14 @@ void SubtractiveSynth::on_note_down(unsigned note, float velocity)
 
 void SubtractiveSynth::on_note_up(unsigned note, float velocity)
 {
+    cout << "       entering" << endl;
+    // If we are holding the sustain pedal, don't stop
+    if(sustained)
+    {
+        cout << "       sustained" << endl;
+        return;
+    }
+
     // Get the oscillator, pause it and mark it as free if playing
     SubtractiveSynthNote* osc = playing_oscs[note];
     if(osc != NULL)
@@ -119,4 +129,35 @@ void SubtractiveSynth::on_note_up(unsigned note, float velocity)
         // Remove it from the queue
         playing_notes.remove(note);
     }
+
+    cout << "       exiting" << endl;
+}
+
+
+void SubtractiveSynth::on_sustain_down()
+{
+    // Just set sustained to true, and note_ups are ignored
+    sustained = true;
+}
+
+
+
+void SubtractiveSynth::on_sustain_up()
+{
+    cout << "entering" << endl;
+
+    // Remove sustain
+    sustained = false;
+
+    // Generate artificial note ups
+    while(!playing_notes.empty())
+    {
+        unsigned note = playing_notes.front();
+        playing_notes.pop_front();
+
+        cout << "    killing: " << note << endl;
+        on_note_up(note, 0.0);
+    }
+
+    cout << "exiting" << endl;
 }

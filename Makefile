@@ -1,6 +1,7 @@
 #Define compiler and flags
 CC      = clang++
-CFLAGS  = -I/usr/local/include -Wall -Wno-delete-non-virtual-dtor -Werror -g 
+CFLAGS  = -std=c++11 -Wall -Wno-delete-non-virtual-dtor -Werror -g \
+          -I/usr/local/include
 LIBS    = -L/usr/local/lib -lportaudio -lrtmidi
 
 #Define compile paths

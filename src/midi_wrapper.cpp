@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include "midi_wrapper.h"
 #include "generic_instrument.h"
@@ -61,8 +62,10 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
 
     // Cast listener to correct type, then case on message type
     MidiIn* midi = (MidiIn*) in_midi;
-    unsigned char type = message->at(0);
-    switch(type >> 4)
+    unsigned char first = message->at(0);
+    unsigned char type = first >> 4;
+    //unsigned char channel = first & 0x0F;
+    switch(type)
     {
         case 0x9: // Note down
         {
@@ -79,8 +82,36 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
             midi->inst->on_note_up(note, veloc);
             break;
         }
+
+        case 0xB: // Control message 
+        {
+            switch(message->at(1))
+            {
+                case 0x40: // sustain pedal
+                {
+                    if(message->at(2) < 63)
+                        midi->inst->on_sustain_up();
+                    else
+                        midi->inst->on_sustain_down();
+
+                    break;
+                }
+
+                default:
+                    goto UNHANDLED;
+                    break;
+            }
+                
+            break;
+        }
         
+        UNHANDLED:
         default:
-            cout << "Ignoring messsage of type:" << type << endl;
+        {
+            cout << "Ignoring messsage: 0x";
+            for(int i=0; i < message->size(); i++)
+                cout << hex << setfill('0') << setw(2) << (unsigned) message->at(i);
+            cout << endl;
+        }
     }
 }

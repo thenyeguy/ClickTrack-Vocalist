@@ -28,12 +28,15 @@ namespace Instruments
             const unsigned get_num_output_channels();
 
         protected:
-            /* The following two functions are called by our MIDI callback. They
+            /* The following functions are called by our MIDI callback. They
              * are responsible for handling the keypresses of our MIDI
              * instrument. Must be overrideen
              */
             virtual void on_note_down(unsigned note, float velocity) = 0;
             virtual void on_note_up(unsigned note, float velocity) = 0;
+
+            virtual void on_sustain_down();
+            virtual void on_sustain_up();
 
             /* Used by subclasses to add their own output channels
              */
