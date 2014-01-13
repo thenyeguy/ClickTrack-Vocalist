@@ -10,11 +10,10 @@ ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
                        float in_sustain_level, float in_release_time,
                        OutputChannel** in_input_channels,
                        unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels, in_input_channels)
+    : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
+      state(silent), t(0), trigger_time(0), end_time(0),
+      multiplier(0), delta_mult(0)
 {
-    state = silent;
-    triggerTime = 0;
-
     attack_time  = in_attack_time  * Portaudio::DEFAULT_SAMPLE_RATE;
     decay_time   = in_decay_time   * Portaudio::DEFAULT_SAMPLE_RATE;
     release_time = in_release_time * Portaudio::DEFAULT_SAMPLE_RATE;
@@ -26,14 +25,20 @@ ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
 void ADSRFilter::on_note_down()
 {
     state = attack;
-    triggerTime = t;
+    trigger_time = t;
+    end_time = t + attack_time;
+
+    delta_mult = (1.0 - multiplier)/attack_time;
 }
 
 
 void ADSRFilter::on_note_up()
 {
     state = release;
-    triggerTime = t;
+    trigger_time = t;
+    end_time = t + release_time;
+
+    delta_mult = (0.0 - multiplier)/release_time;
 }
 
 
@@ -41,61 +46,50 @@ void ADSRFilter::filter(SAMPLE** input, SAMPLE** output)
 {
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
     {
-        // Update the state if nessecary, compute multiplier
+        // Update the time and multiplier
         t = next_t+i;
-        float multiplier;
-        switch(state)
+        multiplier += delta_mult;
+
+        // Update the state if nessecary
+        if(t >= end_time)
         {
-            case silent:
-                multiplier = 0.0;
-                break;
-
-            case attack:
-                if(t >= triggerTime + attack_time)
-                {
+            switch(state)
+            {
+                case attack:
                     state = decay;
-                    triggerTime = t;
+                    trigger_time = t;
+                    end_time = t + decay_time;
+
                     multiplier = 1.0;
-                }
-                else
-                {
-                    multiplier = ((float)t-triggerTime)/attack_time;
-                }
-                break;
+                    delta_mult = (sustain_level - 1.0)/decay_time;
+                    break;
 
-            case decay:
-                if(t >= triggerTime + decay_time)
-                {
+                case decay:
                     state = sustain;
-                    triggerTime = t;
+                    trigger_time = t;
+                    end_time = t;
+
                     multiplier = sustain_level;
-                }
-                else
-                {
-                    float time_p = ((float)t-triggerTime)/attack_time;
-                    multiplier = 1.0 - (1.0-sustain_level)*time_p;
-                }
-                break;
+                    delta_mult = 0.0;
+                    break;
 
-            case sustain:
-                multiplier = sustain_level;
-                break;
-
-            case release:
-                if(t >= triggerTime + release_time)
-                {
+                case release:
                     state = silent;
-                    triggerTime = t;
+                    trigger_time = t;
+                    end_time = t;
+
                     multiplier = 0.0;
-                }
-                else
-                {
-                    float time_p = ((float)t-triggerTime)/attack_time;
-                    multiplier = sustain_level - sustain_level*time_p;
-                }
-                break;
+                    delta_mult = 0.0;
+                    break;
+                
+                default:
+                    // Do nothing, no other states end themselves
+                    break;
+            }
         }
-        
+
+
+        // Copy the new set of samples to our output
         for(int j = 0; j < num_input_channels; j++)
         {
             output[j][i] = multiplier * input[j][i];

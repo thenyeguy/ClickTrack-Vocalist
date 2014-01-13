@@ -17,7 +17,7 @@ int main()
     FilterGenerics::OutputChannel* clipOut = clip.get_output_channel();
     IOElements::Speaker out(&clipOut);
 
-    cout << "Entering playback loop..." << endl;
+    cout << "Entering playback loop..." << endl << endl;
     while(true)
     {
         out.consume_inputs();

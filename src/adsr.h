@@ -1,5 +1,5 @@
-#ifndef DELAY_H
-#define DELAY_H
+#ifndef ADSR_H
+#define ADSR_H
 
 #include "filter_generics.h"
 
@@ -35,8 +35,17 @@ namespace Filters
              */
             enum ADSRState { silent, attack, decay, sustain, release };
             ADSRState state;
-            unsigned triggerTime;
+
             unsigned t;
+            unsigned trigger_time;
+            unsigned end_time;
+
+            /* Internally, we adjust the multiplier by a constant every time
+             * step. The multiplier is reset based on its target when we change
+             * state
+             */
+            float multiplier;
+            float delta_mult;
 
             /* The following "times" are expressed in samples
              */

@@ -45,12 +45,15 @@ void OutputChannel::push_block(const SAMPLE* buffer)
 
 AudioGenerator::AudioGenerator(const unsigned in_num_output_channels)
     : num_output_channels(in_num_output_channels),
-      output_channels(in_num_output_channels, OutputChannel(this))
+      output_channels()
 {
     // Allocate the buffer once for writing to
     output_buffer = new SAMPLE*[num_output_channels];
     for(int i = 0; i < num_output_channels; i++)
+    {
         output_buffer[i] = new SAMPLE[DEFAULT_BLOCK_SIZE];
+        output_channels.push_back(OutputChannel(this));
+    }
 }
 
 
