@@ -17,7 +17,7 @@ namespace Portaudio {
     /* Define some key constants that can be used throughout the program.
     */
     const unsigned DEFAULT_SAMPLE_RATE = 44100; //hz
-    const unsigned DEFAULT_BUFFER_SIZE = 256;
+    const unsigned DEFAULT_BUFFER_SIZE = 64;
 
 
     /* A wrapper for the portaudio boilerplate code. Should initialize and close the

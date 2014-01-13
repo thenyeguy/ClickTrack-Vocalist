@@ -15,12 +15,15 @@ namespace Instruments
     /* This is a subtractive synthesizer controlled over MIDI. It has support
      * for a varying number of oscillators.
      */
+    class SubtractiveSynth;
     class SubtractiveSynthNote
     {
+        friend class SubtractiveSynth;
+        
         public:
             /* Constructor/destructor
              */
-            SubtractiveSynthNote();
+            SubtractiveSynthNote(SubtractiveSynth* parent_synth);
             ~SubtractiveSynthNote();
 
             OutputChannel* get_output_channel();
@@ -42,6 +45,8 @@ namespace Instruments
             void on_sustain_up();
 
         private:
+            SubtractiveSynth* parent_synth;
+
             /* The MIDI note value being played
              */
             unsigned note;
@@ -59,6 +64,8 @@ namespace Instruments
 
     class SubtractiveSynth : public GenericInstrument
     {
+        friend class SubtractiveSynthNote;
+
         public:
             /* Constructor/destructor. Takes in how many oscillators to use, as
              * well as the MIDI channel
@@ -72,6 +79,8 @@ namespace Instruments
 
             void on_sustain_down();
             void on_sustain_up();
+
+            void osc_done(SubtractiveSynthNote* osc);
 
         private:
             /* Oscillators are tracked in two lists. First, all oscillators are
