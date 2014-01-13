@@ -35,8 +35,8 @@ namespace Instruments
             virtual void on_note_down(unsigned note, float velocity) = 0;
             virtual void on_note_up(unsigned note, float velocity) = 0;
 
-            virtual void on_sustain_down();
-            virtual void on_sustain_up();
+            virtual void on_sustain_down() = 0;
+            virtual void on_sustain_up() = 0;
 
             /* Used by subclasses to add their own output channels
              */

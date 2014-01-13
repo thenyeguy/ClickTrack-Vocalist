@@ -2,7 +2,6 @@
 #define SIMPLE_MIDI_INSTRUMENT_H
 
 #include <list>
-#include <queue>
 #include <map>
 #include "filter_generics.h"
 #include "elementary_filters.h"
@@ -26,10 +25,33 @@ namespace Instruments
 
             OutputChannel* get_output_channel();
 
-            void on_note_down(float freq, float velocity);
+            /* Returns if this oscillator is playing now
+             */
+            bool is_playing();
+
+            /* Returns the midi value of the playing note
+             */
+            unsigned get_note();
+
+            /* Callbacks for starting and stopping notes
+             */
+            void on_note_down(unsigned note, float velocity);
             void on_note_up();
 
+            void on_sustain_down();
+            void on_sustain_up();
+
         private:
+            /* The MIDI note value being played
+             */
+            unsigned note;
+
+            /* Current play status
+             */
+            bool playing;
+            bool sustained;
+            bool held;
+
             Oscillators::TriangleWave osc;
             Filters::ADSRFilter* adsr;
     };
@@ -52,22 +74,19 @@ namespace Instruments
             void on_sustain_up();
 
         private:
-            /* Oscillators are tracked as either available (i.e. paused), or
-             * currently playing. All oscillators are either in the free queue,
-             * or in the map of playing oscillators. In the map, oscillators are
-             * indexed by the MIDI note number identifying them.
+            /* Oscillators are tracked in two lists. First, all oscillators are
+             * kept in all_oscs, in ascending order of when they were last
+             * triggered. Then, oscillators that aren't playing are kept in
+             * free_oscs. This allows us to first take unused oscillators, and
+             * then recycle in the order they were triggered.
+             *
+             * In the map, oscillators are indexed by the MIDI note number
+             * identifying them.
              */
             const unsigned num_oscs;
-            std::vector<SubtractiveSynthNote*> all_oscs;
-
-            std::queue<SubtractiveSynthNote*> free_oscs;
-
-            std::list<unsigned> playing_notes;
-            std::map<unsigned, SubtractiveSynthNote*> playing_oscs;
-
-            /* Tracks internal state from control signals
-             */
-            bool sustained;
+            std::list<SubtractiveSynthNote*> all_oscs;
+            std::list<SubtractiveSynthNote*> free_oscs;
+            std::map<unsigned, SubtractiveSynthNote*> note_to_osc;
 
             /* The rest of the signal chain follows...
              */

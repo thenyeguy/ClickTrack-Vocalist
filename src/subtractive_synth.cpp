@@ -9,7 +9,7 @@ using namespace Instruments;
 
 
 SubtractiveSynthNote::SubtractiveSynthNote()
-    : osc(440)
+    :  note(0), playing(false), sustained(false), held(false), osc(440)
 {
     OutputChannel* ch = osc.get_output_channel();
     adsr = new ADSRFilter(.1, .1, .8, .1, &ch);
@@ -28,23 +28,68 @@ OutputChannel* SubtractiveSynthNote::get_output_channel()
 }
 
 
-void SubtractiveSynthNote::on_note_down(float freq, float velocity)
+bool SubtractiveSynthNote::is_playing()
 {
-    osc.set_freq(freq);
+    return playing;
+}
+
+
+unsigned SubtractiveSynthNote::get_note()
+{
+    return note;
+}
+
+
+void SubtractiveSynthNote::on_note_down(unsigned in_note, float velocity)
+{
+    held = true;
+    playing = true;
+    note = in_note;
+
+    osc.set_freq(Midi::noteToFreq(note));
     adsr->on_note_down();
 }
 
 
 void SubtractiveSynthNote::on_note_up()
 {
-    adsr->on_note_up();
+    if(held)
+    {
+        held = false;
+        if(playing && !sustained)
+        {
+            playing = false;
+            note = 0;
+            adsr->on_note_up();
+        }
+    }
+}
+
+
+void SubtractiveSynthNote::on_sustain_down()
+{
+    sustained = true;
+}
+
+
+void SubtractiveSynthNote::on_sustain_up()
+{
+    if(sustained)
+    {
+        sustained = false;
+        if(playing && !held) 
+        {
+            playing = false;
+            note = 0;
+            adsr->on_note_up();
+        }
+    }
 }
 
 
 SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
     : GenericInstrument(channel), num_oscs(oscillators),
-      all_oscs(), free_oscs(), playing_oscs(),
-      sustained(false)
+      all_oscs(), free_oscs(), note_to_osc()
 {
     // Add all our oscillators to the free queue to start
     OutputChannel** outputs = new OutputChannel*[num_oscs];
@@ -53,25 +98,27 @@ SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
         SubtractiveSynthNote* osc = new SubtractiveSynthNote();
 
         all_oscs.push_back(osc);
-        free_oscs.push(osc);
+        free_oscs.push_back(osc);
 
         outputs[i] = osc->get_output_channel();
     }
 
+    // Configure filter chain
     // Create adder and gain, and use its output
     sum = new Filters::Adder(outputs, num_oscs);
 
     OutputChannel* sumCh = sum->get_output_channel();
     gain = new Filters::GainFilter(0.3, & sumCh);
+
     add_output_channel(gain->get_output_channel()); 
 }
 
 
 SubtractiveSynth::~SubtractiveSynth()
 {
-    for(int i=0; i < num_oscs; i++)
+    for(auto osc : all_oscs)
     {
-        delete all_oscs[i];
+        delete osc;
     }
     delete sum;
     delete gain;
@@ -80,84 +127,74 @@ SubtractiveSynth::~SubtractiveSynth()
 
 void SubtractiveSynth::on_note_down(unsigned note, float velocity)
 {
-    // To play a note, we need an oscillator to trigger 
+    // To play a note, we need an oscillator to trigger. Pull the front
+    // oscillator, move it to the back and use it
     SubtractiveSynthNote* osc;
-    if(!free_oscs.empty())
+    if(free_oscs.empty())
     {
-        // If there are free oscillators, simply take on off the queue
-        osc = free_oscs.front();
-        free_oscs.pop();
+        osc = all_oscs.front();
+        all_oscs.pop_front();
+        all_oscs.push_back(osc);
+        
+        note_to_osc.erase(osc->get_note());
     }
     else
     {
-        // Otherwise, find the oldest note triggered and take it
-        unsigned old_note = playing_notes.front();
-        playing_notes.pop_front();
-
-        osc = playing_oscs[old_note];
-        playing_oscs.erase(old_note);
+        osc = free_oscs.front();
+        free_oscs.pop_front();
     }
 
-    // Mark this oscillator as used again
-    playing_oscs[note] = osc; playing_notes.push_back(note);
-
     // Trigger it and continue
-    osc->on_note_down(Midi::noteToFreq(note), velocity);
+    note_to_osc[note] = osc;
+    osc->on_note_down(note, velocity);
 }
 
 
 void SubtractiveSynth::on_note_up(unsigned note, float velocity)
 {
-    cout << "       entering" << endl;
-    // If we are holding the sustain pedal, don't stop
-    if(sustained)
-    {
-        cout << "       sustained" << endl;
-        return;
-    }
-
-    // Get the oscillator, pause it and mark it as free if playing
-    SubtractiveSynthNote* osc = playing_oscs[note];
+    // Get the oscillator, release and mark it as free if done playing
+    SubtractiveSynthNote* osc = note_to_osc[note];
     if(osc != NULL)
     {
+        // Check if it was playing
+        bool playing = osc->is_playing();
+
+        // Trigger the keyup
         osc->on_note_up();
-        free_oscs.push(osc);
 
-        // Remove this note from the map
-        playing_oscs.erase(note);
-
-        // Remove it from the queue
-        playing_notes.remove(note);
+        // If we just finished, remove from the playing map
+        if(playing && !osc->is_playing())
+        {
+            note_to_osc.erase(note);
+            free_oscs.push_back(osc);
+        }
     }
-
-    cout << "       exiting" << endl;
 }
 
 
 void SubtractiveSynth::on_sustain_down()
 {
-    // Just set sustained to true, and note_ups are ignored
-    sustained = true;
+    for(auto osc : all_oscs)
+        osc->on_sustain_down();
 }
 
 
 
 void SubtractiveSynth::on_sustain_up()
 {
-    cout << "entering" << endl;
-
-    // Remove sustain
-    sustained = false;
-
-    // Generate artificial note ups
-    while(!playing_notes.empty())
+    for(auto osc : all_oscs)
     {
-        unsigned note = playing_notes.front();
-        playing_notes.pop_front();
+        // Check if it was playing
+        bool playing = osc->is_playing();
 
-        cout << "    killing: " << note << endl;
-        on_note_up(note, 0.0);
+        // Trigger the sustain up
+        osc->on_sustain_up();
+
+        // If we just finished, remove from the playing map
+        if(playing && !osc->is_playing())
+        {
+            note_to_osc.erase(osc->get_note());
+            free_oscs.push_back(osc);
+        }
     }
-
-    cout << "exiting" << endl;
 }
