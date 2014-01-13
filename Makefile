@@ -6,8 +6,8 @@ LIBS    = -L/usr/local/lib -lportaudio -lrtmidi
 
 # Define compile paths
 SRCDIR = src
-TSTDIR = tst
-MAINDIR = tgt
+TSTDIR = test
+MAINDIR = main
 
 BINDIR = bin
 OBJDIR = obj
