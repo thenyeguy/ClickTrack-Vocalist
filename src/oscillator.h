@@ -54,6 +54,18 @@ namespace Oscillators
     };
 
 
+    /* A simple saw wave oscillator
+     */
+    class SawWave : public Oscillator
+    {
+        public:
+            SawWave(float in_freq);
+
+        protected:
+            float f();
+    };
+
+
     /* A simple square wave oscillator
      */
     class SquareWave : public Oscillator

@@ -60,6 +60,14 @@ float SinWave::f()
 }
 
 
+SawWave::SawWave(float in_freq)
+    : Oscillator(in_freq) {}
+float SawWave::f()
+{
+    return phase/(2*M_PI);
+}
+
+
 SquareWave::SquareWave(float in_freq)
     : Oscillator(in_freq) {}
 float SquareWave::f()
