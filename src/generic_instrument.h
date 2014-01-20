@@ -38,6 +38,8 @@ namespace Instruments
             virtual void on_sustain_down() = 0;
             virtual void on_sustain_up() = 0;
 
+            virtual void on_pitch_wheel(unsigned value) = 0;
+
             /* Used by subclasses to add their own output channels
              */
             void add_output_channel(FilterGenerics::OutputChannel* channel);

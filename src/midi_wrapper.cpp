@@ -87,6 +87,13 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
         {
             switch(message->at(1))
             {
+                case 0x01: // modulation wheel
+                {
+                    unsigned char value = message->at(2);
+                    cout << "Ignoring modulation message: " << ((unsigned)value) << endl;
+                    break;
+                }
+
                 case 0x40: // sustain pedal
                 {
                     if(message->at(2) < 63)
@@ -102,6 +109,13 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
                     break;
             }
                 
+            break;
+        }
+
+        case 0xE: // Pitch wheel
+        {
+            unsigned value = (message->at(2) << 7) | message->at(1);
+            midi->inst->on_pitch_wheel(value);
             break;
         }
         

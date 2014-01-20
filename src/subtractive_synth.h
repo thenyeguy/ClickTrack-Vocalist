@@ -40,9 +40,9 @@ namespace Instruments
              */
             void on_note_down(unsigned note, float velocity);
             void on_note_up();
-
             void on_sustain_down();
             void on_sustain_up();
+            void on_pitch_wheel(float value);
 
         private:
             SubtractiveSynth* parent_synth;
@@ -50,6 +50,8 @@ namespace Instruments
             /* The MIDI note value being played
              */
             unsigned note;
+            float freq;
+            float pitch_multiplier;
 
             /* Current play status
              */
@@ -76,9 +78,10 @@ namespace Instruments
         protected:
             void on_note_down(unsigned note, float velocity);
             void on_note_up(unsigned note, float velocity);
-
             void on_sustain_down();
             void on_sustain_up();
+            void on_pitch_wheel(unsigned value);
+            
 
             void osc_done(SubtractiveSynthNote* osc);
 

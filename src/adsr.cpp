@@ -25,9 +25,9 @@ ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
 void ADSRFilter::on_note_down()
 {
     state = attack;
-    trigger_time = t;
-    end_time = t + attack_time;
-
+    trigger_time = next_t;
+    end_time = next_t + attack_time;
+    
     delta_mult = (1.0 - multiplier)/attack_time;
 }
 
@@ -35,8 +35,8 @@ void ADSRFilter::on_note_down()
 void ADSRFilter::on_note_up()
 {
     state = release;
-    trigger_time = t;
-    end_time = t + release_time;
+    trigger_time = next_t;
+    end_time = next_t + release_time;
 
     delta_mult = (0.0 - multiplier)/release_time;
 }

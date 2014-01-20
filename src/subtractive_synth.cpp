@@ -1,5 +1,6 @@
 #include "subtractive_synth.h"
 #include <iterator>
+#include <cmath>
 
 
 using namespace std;
@@ -9,8 +10,8 @@ using namespace Instruments;
 
 
 SubtractiveSynthNote::SubtractiveSynthNote(SubtractiveSynth* in_parent_synth)
-    :  parent_synth(in_parent_synth), note(0), playing(false), sustained(false),
-       held(false), osc(440)
+    :  parent_synth(in_parent_synth), note(0), freq(0.0), pitch_multiplier(1.0),
+       playing(false), sustained(false), held(false), osc(440)
 {
     OutputChannel* ch = osc.get_output_channel();
     adsr = new ADSRFilter(.005, .3, .5, .3, &ch);
@@ -47,7 +48,8 @@ void SubtractiveSynthNote::on_note_down(unsigned in_note, float velocity)
     playing = true;
     note = in_note;
 
-    osc.set_freq(Midi::noteToFreq(note));
+    freq = Midi::noteToFreq(note);
+    osc.set_freq(freq*pitch_multiplier);
     adsr->on_note_down();
 }
 
@@ -89,6 +91,13 @@ void SubtractiveSynthNote::on_sustain_up()
             note = 0;
         }
     }
+}
+
+
+void SubtractiveSynthNote::on_pitch_wheel(float value)
+{
+    pitch_multiplier = value;
+    osc.set_freq(freq * pitch_multiplier);
 }
 
 
@@ -182,6 +191,20 @@ void SubtractiveSynth::on_sustain_up()
 {
     for(auto osc : all_oscs)
         osc->on_sustain_up();
+}
+
+
+void SubtractiveSynth::on_pitch_wheel(unsigned value)
+{
+    // Convert pitch wheel value to signed representation
+    // Then allow a max bend of two steps
+    int centered = value - 0x2000;
+    float bend = pow(2, ((float)centered / 0x2000) * 4.0/12.0);
+    //cout << "Pitch bend: " << centered << ", " << bend << endl;
+
+    // Then apply to all oscillators
+    for(auto osc : all_oscs) 
+        osc->on_pitch_wheel(bend);
 }
 
 
