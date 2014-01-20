@@ -28,15 +28,17 @@ namespace Oscillators
             // tracking and output for oscillators
             void generate_outputs(SAMPLE** outputs);
 
-            /* The workhorse of an oscillator. It takes in an absolute time
-             * t (in seconds), and uses it to compute the value of the waveform
-             * at that time.
+            /* The workhorse of an oscillator. It uses the current phase of the
+             * wave in radians to compute the value of the waveform.
              */
-            virtual float f(float t) = 0;
+            virtual float f() = 0;
+            float phase;     // rads
 
-            unsigned next_i; // next sample time
-            float freq;      //hz
+        private: 
             bool paused;
+            float freq;      // hz
+            float phase_inc; // rads
+
     };
 
 
@@ -48,7 +50,7 @@ namespace Oscillators
             SinWave(float in_freq);
 
         protected:
-            float f(float t);
+            float f();
     };
 
 
@@ -60,7 +62,7 @@ namespace Oscillators
             SquareWave(float in_freq);
 
         protected:
-            float f(float t);
+            float f();
     };
 
 
@@ -72,7 +74,7 @@ namespace Oscillators
             TriangleWave(float in_freq);
 
         protected:
-            float f(float t);
+            float f();
     };
 
 
@@ -86,7 +88,7 @@ namespace Oscillators
             WhiteNoise(float in_freq);
 
         protected:
-            float f(float t);
+            float f();
     };
 }
 

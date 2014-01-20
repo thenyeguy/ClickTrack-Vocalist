@@ -5,10 +5,10 @@
 #include "oscillator.h"
 
 using namespace Oscillators;
-const double PI = 4.0*atan(1.0);
 
 Oscillator::Oscillator(float in_freq)
-    : FilterGenerics::AudioGenerator(1), next_i(0), freq(in_freq), paused(false)
+    : FilterGenerics::AudioGenerator(1), phase(0.0), paused(false),
+      freq(in_freq), phase_inc(freq * 2*M_PI/Portaudio::DEFAULT_SAMPLE_RATE)
 {}
 
 
@@ -32,7 +32,9 @@ void Oscillator::unpause()
 
 void Oscillator::set_freq(float in_freq)
 {
+    // Tracks the current phase to maintain phase during 
     freq = in_freq;
+    phase_inc = freq * 2*M_PI/Portaudio::DEFAULT_SAMPLE_RATE;
 }
 
 
@@ -40,27 +42,29 @@ void Oscillator::generate_outputs(SAMPLE** outputs)
 {
     for(int i = 0; i < FilterGenerics::DEFAULT_BLOCK_SIZE; i++)
     {
-        float next_t = ((float)next_i) / Portaudio::DEFAULT_SAMPLE_RATE;
-        outputs[0][i] = paused ? 0.0 : f(next_t);
-        next_i++;
+        // Generate this output
+        outputs[0][i] = paused ? 0.0 : f();
+
+        // Update the phase
+        phase += phase_inc;
+        if(phase > 2*M_PI) phase -= 2*M_PI;
     }
 }
 
 
 SinWave::SinWave(float in_freq)
     : Oscillator(in_freq) {}
-float SinWave::f(float t)
+float SinWave::f()
 {
-    return sin(2*PI*freq*t);
+    return sin(phase);
 }
 
 
 SquareWave::SquareWave(float in_freq)
     : Oscillator(in_freq) {}
-float SquareWave::f(float t)
+float SquareWave::f()
 {
-    float tprime = fmod(t*freq, 1.0);
-    if(tprime < .5)
+    if(phase < M_PI)
         return 1.0;
     else
         return 0.0;
@@ -69,17 +73,15 @@ float SquareWave::f(float t)
 
 TriangleWave::TriangleWave(float in_freq)
     : Oscillator(in_freq) {}
-float TriangleWave::f(float t)
+float TriangleWave::f()
 {
-    float tprime = fmod(t*freq, 1.0);
-
-    return 2*(fabs(tprime - 0.5));
+    return 2*(fabs(phase/(2*M_PI) - 0.5));
 }
 
 
 WhiteNoise::WhiteNoise(float in_freq)
     : Oscillator(in_freq) {}
-float WhiteNoise::f(float t)
+float WhiteNoise::f()
 {
     int si = rand();
     float sf = ((float) si) / RAND_MAX;
