@@ -34,6 +34,8 @@ namespace Filters
                        OutputChannel** in_input_channels,
                        unsigned in_num_channels = 1);
 
+            void set_gain(float gain);
+
         private:
             void filter(SAMPLE** input, SAMPLE** output);
 

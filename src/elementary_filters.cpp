@@ -35,6 +35,11 @@ GainFilter::GainFilter(float in_gain,
     gain = in_gain;    
 }
 
+void GainFilter::set_gain(float in_gain)
+{
+    gain = in_gain;
+}
+
 void GainFilter::filter(SAMPLE** input, SAMPLE** output)
 {
     // Sum in the output
