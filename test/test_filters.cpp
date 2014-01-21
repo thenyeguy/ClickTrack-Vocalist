@@ -24,10 +24,10 @@ int main()
     SawWave saw(440.f);
     GainFilter saw_gain(0.7, singleToList(saw.get_output_channel()));
 
-    ShelfFilter shelf(ShelfFilter::low, 1000, -10,
+    PassFilter pass(PassFilter::low, 5000,
         singleToList(saw_gain.get_output_channel()), 1);
 
-    Speaker speaker(singleToList(shelf.get_output_channel()), 1);
+    Speaker speaker(singleToList(pass.get_output_channel()), 1);
 
 
 
