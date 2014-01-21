@@ -72,6 +72,33 @@ namespace Filters
              */
             vector<float> x_last, y1_last;
     };
+
+
+    /* A peak filter is a filter that can either cut or boost frequencies,
+     * centered around a cutoff frequency.
+     *
+     * To initialize, one must simply specify the cutoff in Hz, the filter Q,
+     * and the gain in decibels.
+     */
+    class PeakFilter : public AudioFilter
+    {
+        public:
+            PeakFilter(float cutoff, float Q, float gain,
+                        OutputChannel** in_input_channels,
+                        unsigned in_num_channels = 1);
+
+        private:
+            void filter(SAMPLE** input, SAMPLE** output);
+
+            /* Specifies the filter coefficients
+             */
+            float H0, V0, d, a;
+             
+            /* Previous computation results. Used to implement a single pole in
+             * the filters
+             */
+            vector<float> x_last1, x_last2, y1_last1, y1_last2;
+    };
 }
 
 #endif
