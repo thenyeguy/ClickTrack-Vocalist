@@ -10,20 +10,6 @@ using namespace FilterGenerics;
 
 namespace Filters
 {
-    /* The unity filter is the simplest possible AudioFilter. It simply directly
-     * mirrors its input to its output.
-     */
-    class UnityFilter : public AudioFilter
-    {
-        public:
-            UnityFilter(OutputChannel** in_input_channels,
-                        unsigned in_num_channels = 1);
-
-        private:
-            void filter(SAMPLE** input, SAMPLE** output);
-    };
-
-
     /* The gain filter takes a multiplier coefficient, and multiplies all its
      * inputs by the gain factor.
      */
@@ -38,7 +24,6 @@ namespace Filters
 
         private:
             void filter(SAMPLE** input, SAMPLE** output);
-
 
             float gain;
     };

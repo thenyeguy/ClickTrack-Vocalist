@@ -166,9 +166,15 @@ void SubtractiveSynthOsc::on_note_down(unsigned in_note, float velocity)
     playing = true;
     note = in_note;
 
+    // Set oscillator state
     freq = Midi::noteToFreq(note);
     osc.set_freq(freq*pitch_multiplier);
-    gain->set_gain(velocity);
+
+    // Set velocity gain
+    // TODO: change this curve
+    gain->set_gain(pow(velocity,0.5));
+
+    // Trigger ADSR
     adsr->on_note_down();
 }
 

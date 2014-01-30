@@ -31,7 +31,6 @@ int main()
     OutputChannel* channels[2] =
         {mic_gain.get_output_channel(), tri_gain.get_output_channel()};
     Adder add(channels, 2);
-    UnityFilter unity(singleToList(add.get_output_channel()));
     Speaker speaker(channels, 2);
 
 

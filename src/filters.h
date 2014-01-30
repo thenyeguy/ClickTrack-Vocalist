@@ -29,12 +29,17 @@ namespace Filters
                         OutputChannel** in_input_channels,
                         unsigned in_num_channels = 1);
 
+            void set_cutoff(PassFilterMode mode, float cutoff);
+
         private:
             void filter(SAMPLE** input, SAMPLE** output);
 
             /* Specifies the filter coefficients
              */
+            void calculate_coefficients();
             PassFilterMode mode;
+            float cutoff;
+
             float a;
              
             /* Previous computation results. Used to implement a single pole in
@@ -59,12 +64,19 @@ namespace Filters
                         OutputChannel** in_input_channels,
                         unsigned in_num_channels = 1);
 
+            void set_cutoff(ShelfFilterMode mode, float cutoff);
+            void set_gain(float in_gain);
+
         private:
             void filter(SAMPLE** input, SAMPLE** output);
 
             /* Specifies the filter coefficients
              */
+            void calculate_coefficients();
+            
             ShelfFilterMode mode;
+            float cutoff, gain;
+
             float H0, V0, a;
              
             /* Previous computation results. Used to implement a single pole in
@@ -87,11 +99,18 @@ namespace Filters
                         OutputChannel** in_input_channels,
                         unsigned in_num_channels = 1);
 
+            void set_cutoff(float cutoff);
+            void set_Q(float Q);
+            void set_gain(float gain);
+
         private:
             void filter(SAMPLE** input, SAMPLE** output);
 
             /* Specifies the filter coefficients
              */
+            void calculate_coefficients();
+            float cutoff, Q, gain;
+
             float H0, V0, d, a;
              
             /* Previous computation results. Used to implement a single pole in

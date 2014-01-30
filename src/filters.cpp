@@ -9,12 +9,25 @@ using namespace Filters;
 PassFilter::PassFilter(PassFilterMode in_mode, float in_cutoff,
     OutputChannel** in_input_channels, unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
+      mode(in_mode), cutoff(in_cutoff),
       x_last(in_num_channels, 0.0), y1_last(in_num_channels, 0.0)
 {
-    // Initialize coefficients
+    calculate_coefficients();
+}
+
+
+void PassFilter::set_cutoff(PassFilterMode in_mode, float in_cutoff)
+{
     mode = in_mode;
-    a = (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-        (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+    cutoff = in_cutoff;
+    calculate_coefficients();
+}
+
+
+void PassFilter::calculate_coefficients()
+{
+    a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
+        (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
 }
 
 
@@ -51,11 +64,31 @@ void PassFilter::filter(SAMPLE** input, SAMPLE** output)
 ShelfFilter::ShelfFilter(ShelfFilterMode in_mode, float in_cutoff, float in_gain,
     OutputChannel** in_input_channels, unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
+      mode(in_mode), cutoff(in_cutoff), gain(in_gain),
       x_last(in_num_channels, 0.0), y1_last(in_num_channels, 0.0)
 {
-    // Initialize coefficients
+    calculate_coefficients();
+}
+
+
+void ShelfFilter::set_cutoff(ShelfFilterMode in_mode, float in_cutoff)
+{
     mode = in_mode;
-    V0 = pow(10,in_gain/20);
+    cutoff = in_cutoff;
+    calculate_coefficients();
+}
+
+
+void ShelfFilter::set_gain(float in_gain)
+{
+    gain = in_gain;
+    calculate_coefficients();
+}
+
+
+void ShelfFilter::calculate_coefficients()
+{
+    V0 = pow(10,gain/20);
     H0 = V0-1;
 
     // The a coefficient depends on the mode of operation
@@ -63,23 +96,23 @@ ShelfFilter::ShelfFilter(ShelfFilterMode in_mode, float in_cutoff, float in_gain
     {
         case low:
         {
-            if(in_gain < 0) //cut
-                a = (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - V0) /
-                    (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + V0);
+            if(gain < 0) //cut
+                a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - V0) /
+                    (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + V0);
             else            // boost
-                a = (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-                    (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+                a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
+                    (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
             break;
         }
 
         case high:
         {
-            if(in_gain < 0) //cut
-                a = (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-                    (tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+            if(gain < 0) //cut
+                a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
+                    (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
             else            // boost
-                a = (V0*tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-                    (V0*tan(M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+                a = (V0*tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
+                    (V0*tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
             break;
         }
     }
@@ -119,17 +152,44 @@ void ShelfFilter::filter(SAMPLE** input, SAMPLE** output)
 PeakFilter::PeakFilter(float in_cutoff, float in_Q, float in_gain,
     OutputChannel** in_input_channels, unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
+      cutoff(in_cutoff), Q(in_Q), gain(in_gain),
       x_last1(in_num_channels, 0.0), x_last2(in_num_channels, 0.0),
       y1_last1(in_num_channels, 0.0), y1_last2(in_num_channels, 0.0)
 {
-    // Initialize coefficients
-    V0 = pow(10,in_gain/20);
+    calculate_coefficients();
+}
+
+
+void PeakFilter::set_cutoff(float in_cutoff)
+{
+    cutoff = in_cutoff;
+    calculate_coefficients();
+}
+
+
+void PeakFilter::set_Q(float in_Q)
+{
+    Q = in_Q;
+    calculate_coefficients();
+}
+
+
+void PeakFilter::set_gain(float in_gain)
+{
+    gain = in_gain;
+    calculate_coefficients();
+}
+
+
+void PeakFilter::calculate_coefficients()
+{
+    V0 = pow(10,gain/20);
     H0 = V0-1;
 
-    d = -cos(2*M_PI*in_cutoff/Portaudio::DEFAULT_SAMPLE_RATE);
+    d = -cos(2*M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE);
 
-    float fs = in_cutoff / in_Q;
-    if(in_gain < 0) //cut
+    float fs = cutoff / Q;
+    if(gain < 0) //cut
         a = (tan(M_PI*fs/Portaudio::DEFAULT_SAMPLE_RATE) - V0) /
             (tan(M_PI*fs/Portaudio::DEFAULT_SAMPLE_RATE) + V0);
     else            // boost
