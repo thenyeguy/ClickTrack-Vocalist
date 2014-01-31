@@ -65,7 +65,6 @@ void Delay::filter(SAMPLE** input, SAMPLE** output)
 {
     for(int i = 0; i < num_input_channels; i++)
     {
-        std::cout << i << std::endl;
         for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
         {
             // Add the delayed version of the signal in, respecting wetness
