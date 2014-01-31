@@ -122,10 +122,12 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
         UNHANDLED:
         default:
         {
-            cout << "Ignoring messsage: 0x";
+            cout << "Unknown messsage: 0x";
             for(int i=0; i < message->size(); i++)
                 cout << hex << setfill('0') << setw(2) << (unsigned) message->at(i);
             cout << endl;
+
+            midi->inst->on_midi_message(message);
         }
     }
 }

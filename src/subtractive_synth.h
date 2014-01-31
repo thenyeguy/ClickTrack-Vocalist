@@ -33,6 +33,7 @@ namespace Instruments
             void on_sustain_down();
             void on_sustain_up();
             void on_pitch_wheel(unsigned value);
+            void on_midi_message(std::vector<unsigned char>* message);
             
 
             void osc_done(SubtractiveSynthOsc* osc);

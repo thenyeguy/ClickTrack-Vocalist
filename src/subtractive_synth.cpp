@@ -122,6 +122,13 @@ void SubtractiveSynth::osc_done(SubtractiveSynthOsc* osc)
 }
 
 
+void SubtractiveSynth::on_midi_message(std::vector<unsigned char>* message)
+{
+    // Do nothing
+    return;
+}
+
+
 
 
 
