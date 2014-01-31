@@ -49,7 +49,11 @@ namespace ClickTrackUtils {
             SampleT get(const unsigned t)
             {
                 if(t < start_t || t >= end_t)
+                {
+                    std::cout << "out of range: " << start_t << " "
+                      << t << " " << end_t << std::endl;
                     throw RingBufferOutOfRange();
+                }
 
                 return samples[t % buffer_size];                
             }
@@ -108,6 +112,17 @@ namespace ClickTrackUtils {
             unsigned get_highest_timestamp()
             {
                 return end_t;
+            }
+
+            /* WARNING: This function should not be used in ordinary
+             * circumstances. It exists only for adding a new buffer during
+             * runtime.
+             */
+            void set_new_startpoint(unsigned t)
+            {
+                start_t = t;
+                end_t = t;
+                size = 0;
             }
 
         private:

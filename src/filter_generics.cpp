@@ -5,7 +5,7 @@ using namespace FilterGenerics;
 
 
 OutputChannel::OutputChannel(AudioGenerator* in_parent)
-    : out(DEFAULT_BUFFER_SIZE)
+    : out(DEFAULT_RINGBUFFER_SIZE)
 {
     parent = in_parent;
 

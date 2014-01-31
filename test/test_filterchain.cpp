@@ -22,7 +22,7 @@ int main()
 {
     cout << "Initializing signal chain" << endl;
     Microphone mic;
-    SimpleDelay delay(singleToList(mic.get_output_channel()));
+    Delay delay(0.5, 0.5, 0.5, singleToList(mic.get_output_channel()));
     GainFilter mic_gain(0.5, singleToList(delay.get_output_channel()));
 
     TriangleWave tri(440.f);
