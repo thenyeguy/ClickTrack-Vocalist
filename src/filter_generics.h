@@ -13,8 +13,8 @@ namespace FilterGenerics
      * portaudio buffer size. For processing safety the buffer size should be
      * an integer multiple of  block size, greater than 1.
      */
-    extern const unsigned DEFAULT_BLOCK_SIZE = Portaudio::DEFAULT_BUFFER_SIZE;
-    extern const unsigned DEFAULT_RINGBUFFER_SIZE = 4*DEFAULT_BLOCK_SIZE;
+    const unsigned DEFAULT_BLOCK_SIZE = Portaudio::DEFAULT_BUFFER_SIZE;
+    const unsigned DEFAULT_RINGBUFFER_SIZE = 4*DEFAULT_BLOCK_SIZE;
 
 
     /* An output channel is the basic unit with which an object receives audio.
