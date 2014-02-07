@@ -32,98 +32,41 @@ namespace ClickTrackUtils {
              * specified, it can contain at most 1024 elements, otherwise it can
              * contain as many as its argument allows.
              */
-            RingBuffer(unsigned n_buffer_size=1024)
-                : samples(n_buffer_size)
-            {
-                start_t = 0;
-                end_t = 0;
-                size = 0;
-
-                buffer_size = n_buffer_size;
-            }
+            RingBuffer(unsigned n_buffer_size=1024);
 
             /* Allows you to ask for values in the currently available time
              * range of the buffer. If you try to access a time point not
              * available in the current range, throws exception.
              */
-            SampleT get(const unsigned t)
-            {
-                if(t < start_t || t >= end_t)
-                {
-                    std::cout << "out of range: " << start_t << " "
-                      << t << " " << end_t << std::endl;
-                    throw RingBufferOutOfRange();
-                }
-
-                return samples[t % buffer_size];                
-            }
+            SampleT get(const unsigned t);
 
             /* Copies a range of values into a provided buffer. If you try to
              * access any time points not available in the current range, throws
              * exception.
              */
             void get_range(SampleT* buffer, const unsigned start,
-                                            const unsigned end)
-            {
-                for(int i = 0; i < end-start; i++)
-                    buffer[i] = get(i+start);
-            }
+                                            const unsigned end);
 
             /* Adds a sample as the next time step in the buffer. May overwrite
              * the oldest time step. Returns the timestamp of the added value.
              */
-            unsigned add(SampleT s)
-            {
-                // Drop the earliest time if nessecary
-                if(size == buffer_size)
-                    start_t++;
-                else
-                    size++;
-
-                // Write the sample into the ring
-                unsigned i = end_t % buffer_size;
-                samples[i] = s;
-                end_t++;
-
-                return end_t-1;
-            }
+            unsigned add(SampleT s);
 
             /* Exposes a reference to an element in the buffer so that you can
              * manually write to and modify a buffer point.
              */
-            SampleT& operator[] (unsigned t)
-            {
-                if(t < start_t || t >= end_t)
-                {
-                    std::cout << "out of range: " << start_t << " "
-                      << t << " " << end_t << std::endl;
-                    throw RingBufferOutOfRange();
-                }
-
-                return samples[t % buffer_size];                
-            }
+            SampleT& operator[] (unsigned t);
 
             /* Getters to expose the lowest and high timestamp
              */
-            unsigned get_lowest_timestamp()
-            {
-                return start_t;
-            }
-            unsigned get_highest_timestamp()
-            {
-                return end_t;
-            }
+            unsigned get_lowest_timestamp();
+            unsigned get_highest_timestamp();
 
             /* WARNING: This function should not be used in ordinary
              * circumstances. It exists only for adding a new buffer during
              * runtime.
              */
-            void set_new_startpoint(unsigned t)
-            {
-                start_t = t;
-                end_t = t;
-                size = 0;
-            }
+            void set_new_startpoint(unsigned t);
 
         private:
             unsigned start_t; // earliest time still in the buffer
@@ -135,5 +78,6 @@ namespace ClickTrackUtils {
     };
 }
 
+#include "ringbuffer.cpp"
 
 #endif
