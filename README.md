@@ -16,8 +16,8 @@ are available on Homebrew. To install, run:
     brew install portaudio
     brew install rtmidi
 
-If you are not using on Mac using homebrew, you may have to modify the library
-path in the Makefile.
+If you are not on on Mac using homebrew, you may have to modify the library path
+in the Makefile.
 
 Once these libraries are installed, simply typing `make` will build all
 executables and tests.
