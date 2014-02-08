@@ -36,27 +36,38 @@ void SimpleReverb::filter(std::vector< std::vector<SAMPLE> >& input,
 
 
 
+
 ConvolutionReverb::ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,
                float in_gain, float in_wetness)
-    : gain(in_gain), wetness(in_wetness), conv(impulse_length, impulse),
-      wet(wetness*gain), dry((1.0-wetness)*gain), out(2)
+    : FilterBank(1,1), gain(in_gain), wetness(in_wetness),
+      conv(impulse_length, impulse), wet(wetness*gain), dry((1.0-wetness)*gain),
+      out(2)
 {
     // Connect our signal chain
     wet.set_input_channel(conv.get_output_channel());
     out.set_input_channel(wet.get_output_channel(), 0);
     out.set_input_channel(dry.get_output_channel(), 1);
+
+    output_channels.push_back(out.get_output_channel());
 }
 
 
-void ConvolutionReverb::set_input_channel(Channel* in_input_channel)
+void ConvolutionReverb::set_input_channel(Channel* in_input_channel,
+        unsigned channel_i)
 {
     dry.set_input_channel(in_input_channel);
 }
 
 
-Channel* ConvolutionReverb::get_output_channel()
+void ConvolutionReverb::remove_channel(unsigned channel_i)
 {
-    return out.get_output_channel();
+    conv.remove_channel(channel_i);
+}
+
+
+unsigned ConvolutionReverb::get_channel_index(Channel* channel)
+{
+    return conv.get_channel_index(channel);
 }
 
 

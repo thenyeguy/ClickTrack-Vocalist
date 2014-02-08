@@ -157,7 +157,7 @@ namespace FilterGenerics
 
         protected:
             /* The lock is used to prevent computing outputs and modifying the
-             * number of channels at the same time
+             * channels at the same time
              */
             std::mutex lock;
 
@@ -208,6 +208,43 @@ namespace FilterGenerics
              */
             virtual void filter(std::vector< std::vector<SAMPLE> >& input, 
                     std::vector< std::vector<SAMPLE> >& output) = 0;
+    };
+
+
+    /* The FilterBank is a hybrid signal chain element. It both consumes and
+     * generates audio, but does so by internally connecting many filters
+     * together.
+     *
+     * To implement a FilterBank, one must initialize their elements in the
+     * constructor, as well as insert their output channels into the vector.
+     */
+    class FilterBank
+    {
+        public:
+            FilterBank(unsigned in_num_output_channels,
+                       unsigned in_num_input_channels);
+            virtual ~FilterBank(); 
+
+            /* Returns the requested output channel by number
+             */
+            Channel* get_output_channel(int i = 0);
+
+            const unsigned get_num_output_channels();
+            const unsigned get_num_input_channels();
+
+            /* The following functions must be overriden to allow the
+             * setting and removal of IO channels
+             */
+            virtual void set_input_channel(Channel* channel,
+                    unsigned channel_i = 0) = 0;
+            virtual void remove_channel(unsigned channel_i) = 0;
+
+            virtual unsigned get_channel_index(Channel* channel) = 0;
+
+        protected:
+            const unsigned num_input_channels;
+            const unsigned num_output_channels;
+            std::vector<Channel*> output_channels;
     };
 }
 

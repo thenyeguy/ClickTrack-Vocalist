@@ -32,14 +32,17 @@ namespace Filters
 
     /* A simple one channel convolution reverb filter.
      */
-    class ConvolutionReverb
+    class ConvolutionReverb : FilterBank
     {
         public:
             ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,
                    float gain, float wetness);
 
-            void set_input_channel(Channel* input_channel);
-            Channel* get_output_channel();
+            void set_input_channel(Channel* channel,
+                    unsigned channel_i = 0);
+            void remove_channel(unsigned channel_i = 0);
+
+            unsigned get_channel_index(Channel* channel);
 
         private:
             float gain;
