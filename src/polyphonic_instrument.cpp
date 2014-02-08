@@ -7,36 +7,37 @@
 using namespace Instruments;
 
 
-PolyphonicInstrument::PolyphonicInstrument(int midi_channels)
-    : GenericInstrument(midi_channels), num_voices(0),
-      all_voices(), free_voices(), note_to_voice()
+PolyphonicInstrument::PolyphonicInstrument(int in_num_voices, int midi_channel)
+    : GenericInstrument(midi_channel), adder(in_num_voices),
+      num_voices(in_num_voices), all_voices(), free_voices(), note_to_voice()
 {}
 
 
 PolyphonicInstrument::~PolyphonicInstrument()
 {
-    delete adder;
+    for(auto voice : all_voices)
+        delete voice;
 }
 
 
-void PolyphonicInstrument::add_voices(std::vector<PolyphonicVoice>* voices)
+Channel* PolyphonicInstrument::get_output_channel()
+{
+    return adder.get_output_channel();
+}
+
+
+void PolyphonicInstrument::add_voices(std::vector<PolyphonicVoice*>& voices)
 {
     // Count our voices
-    num_voices = voices->size();
+    num_voices = voices.size();
 
     // Add all our oscillators to the free queue to start
-    OutputChannel** outputs = new OutputChannel*[num_voices];
     for(unsigned i = 0; i < num_voices; i++)
     {
         all_voices.push_back(voices[i]);
         free_voices.push_back(voices[i]);
-
-        outputs[i] = voices[i]->get_output_channel();
+        adder.set_input_channel(voices[i]->get_output_channel(),i);
     }
-
-    // Configure filter chain
-    // Create adder and gain, and use its output
-    adder = new Filters::Adder(outputs, num_voices);
 }
 
 
@@ -128,8 +129,6 @@ void PolyphonicInstrument::voice_done(PolyphonicVoice* voice)
 PolyphonicVoice::PolyphonicVoice(PolyphonicInstrument* in_parent)
     :  parent(in_parent), note(0), pitch_multiplier(1.0),
        playing(false), sustained(false), held(false)
-{}
-PolyphonicVoice::~PolyphonicVoice()
 {}
 
 

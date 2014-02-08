@@ -22,12 +22,12 @@ int main()
         WavReader in("wav/test.wav");
 
         ConvolutionReverb revl(imp->num_samples, imp->left,
-                               0.25, 0.5, in.get_output_channel(0));
+                               0.25, 0.5);
+        revl.set_input_channel(in.get_output_channel());
         //Reverb revr(imp->num_samples, imp->right, 0.2, 0.5, in.get_output_channel(1));
 
-        OutputChannel* outch[1] = {revl.get_output_channel()};
-        //Speaker out(outch, 2);
-        WavWriter out("wav/conv_out.wav", outch, 1);
+        WavWriter out("wav/conv_out.wav");
+        out.set_input_channel(revl.get_output_channel());
 
         std::cout << "Playing" << std::endl;
         while(!in.is_done())

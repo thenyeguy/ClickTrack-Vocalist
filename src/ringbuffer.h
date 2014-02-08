@@ -44,7 +44,7 @@ namespace ClickTrackUtils {
              * access any time points not available in the current range, throws
              * exception.
              */
-            void get_range(SampleT* buffer, const unsigned start,
+            void get_range(std::vector<SampleT>& buffer, const unsigned start,
                                             const unsigned end);
 
             /* Adds a sample as the next time step in the buffer. May overwrite

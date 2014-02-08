@@ -11,25 +11,18 @@ using namespace Oscillators;
 using namespace Filters;
 
 
-OutputChannel** singleToList(OutputChannel* item)
-{
-    OutputChannel** result = new OutputChannel*[1];
-    result[0] = item;
-    return result;
-}
-
 int main()
 {
     cout << "Initializing signal chain" << endl;
     SawWave saw(440.f);
-    GainFilter saw_gain(0.7, singleToList(saw.get_output_channel()));
+    GainFilter saw_gain(0.7);
+    saw_gain.set_input_channel(saw.get_output_channel());
 
-    PassFilter pass(PassFilter::low, 5000,
-        singleToList(saw_gain.get_output_channel()), 1);
+    PassFilter pass(PassFilter::low, 5000);
+    pass.set_input_channel(saw_gain.get_output_channel());
 
-    Speaker speaker(singleToList(pass.get_output_channel()), 1);
-
-
+    Speaker speaker;
+    speaker.set_input_channel(pass.get_output_channel());
 
 
     cout << "Entering process loop" << endl;

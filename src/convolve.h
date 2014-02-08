@@ -26,13 +26,13 @@ namespace Filters
     class ConvolutionFilter : public AudioFilter
     {
         public:
-            ConvolutionFilter(OutputChannel* in_input_channel,
-                              unsigned impulse_length,
+            ConvolutionFilter(unsigned impulse_length,
                               SAMPLE* in_impulse_response);
             ~ConvolutionFilter();
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input, 
+                    std::vector< std::vector<SAMPLE> >& output);
 
             const unsigned transform_size;
             FFT::Transformer transformer;

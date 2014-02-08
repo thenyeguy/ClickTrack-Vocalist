@@ -19,7 +19,7 @@ namespace IOElements
             Microphone(unsigned num_channels = 1);
 
         private:
-            void generate_outputs(SAMPLE** outputs);
+            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
 
 
             Portaudio::InputStream stream;
@@ -32,11 +32,10 @@ namespace IOElements
     class Speaker : public FilterGenerics::AudioConsumer
     {
         public:
-            Speaker(FilterGenerics::OutputChannel** inputs,
-                    unsigned num_inputs = 1);
+            Speaker(unsigned num_inputs = 1);
 
         private:
-            void process_inputs(SAMPLE** inputs);
+            void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);
 
 
             Portaudio::OutputStream stream;
@@ -82,7 +81,7 @@ namespace IOElements
             unsigned get_total_samples();
 
         private:
-            void generate_outputs(SAMPLE** outputs);
+            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
 
 
             const char* filename;
@@ -105,13 +104,11 @@ namespace IOElements
     class WavWriter : public FilterGenerics::AudioConsumer
     {
         public:
-            WavWriter(const char* in_filename,
-                      FilterGenerics::OutputChannel** inputs,
-                      unsigned short num_inputs = 1);
+            WavWriter(const char* in_filename, unsigned num_inputs = 1);
             ~WavWriter();
 
         private:
-            void process_inputs(SAMPLE** inputs);
+            void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);
 
 
             const char* filename;

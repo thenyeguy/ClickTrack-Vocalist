@@ -15,22 +15,22 @@ namespace Instruments
         friend class PolyphonicVoice;
 
         public:
-            PolyphonicInstrument(int midi_channels=-1);
+            PolyphonicInstrument(int voices, int midi_channel=-1);
             ~PolyphonicInstrument();
-
-            /* The constructor for an inherited class must call this function to
-             * add its voices to our internal queues.
-             */
-            void add_voices(std::vector<PolyphonicVoice>* voices);
 
             /* By default, the instrument feeds all its voices into an adder and
              * returns that as the output. If there is a signal chain after the
              * adder, you must override the following function to return the
              * output channel
              */
-            virtual OutputChannel* get_output_channel();
+            virtual Channel* get_output_channel();
 
         protected:
+            /* The constructor for an inherited class must call this function to
+             * add its voices to our internal queues.
+             */
+            void add_voices(std::vector<PolyphonicVoice*>& voices);
+
             /* The following callbacks are used to trigger and update the state
              * of our voices. They are entirely handled by this generic class
              */
@@ -51,7 +51,7 @@ namespace Instruments
 
             /* Sums the output of our voices
              */
-            Filters::Adder* adder;
+            Filters::Adder adder;
 
         private:
             /* Voices are tracked in two lists. First, all voices are kept in
@@ -76,7 +76,7 @@ namespace Instruments
 
         public:
             PolyphonicVoice(PolyphonicInstrument* parent);
-            ~PolyphonicVoice();
+            virtual ~PolyphonicVoice() {}
 
             /* Callbacks for starting and stopping notes. The superclass
              * will call the handlers to set audio properties
@@ -94,7 +94,7 @@ namespace Instruments
             /* The output channel must defined by the subclass, as we do not
              * know the signal chain
              */
-            virtual OutputChannel* get_output_channel() = 0;
+            virtual Channel* get_output_channel() = 0;
 
             /* Returns if this voice is playing now
              */

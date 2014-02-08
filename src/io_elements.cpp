@@ -11,22 +11,30 @@ Microphone::Microphone(unsigned num_channels)
 {}
 
 
-void Microphone::generate_outputs(SAMPLE** outputs)
+void Microphone::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
+    // Read from the sream
+    unsigned num_samples = num_output_channels * DEFAULT_BLOCK_SIZE;
+    SAMPLE buffer[num_samples];
+    stream.readFromStream(buffer, num_samples);
+
+    // Deinterleave our results
     for(int i = 0; i < num_output_channels; i++)
-        stream.readFromStream(outputs[i], DEFAULT_BLOCK_SIZE);
+    {
+        for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+            outputs[i][j] = buffer[num_output_channels*j + i];
+    }
 }
 
 
 
-Speaker::Speaker(FilterGenerics::OutputChannel** inputs,
-                 unsigned num_inputs)
-    : AudioConsumer(num_inputs, inputs),
+Speaker::Speaker(unsigned num_inputs)
+    : AudioConsumer(num_inputs),
       stream(num_inputs)
 {}
 
 
-void Speaker::process_inputs(SAMPLE** inputs)
+void Speaker::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
 {
     // Interleave channels
     unsigned num_samples = num_input_channels * DEFAULT_BLOCK_SIZE;
@@ -137,7 +145,7 @@ unsigned WavReader::get_total_samples()
 }
 
 
-void WavReader::generate_outputs(SAMPLE** outputs)
+void WavReader::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
     // TODO: support more than 16-bit
     union {
@@ -173,9 +181,8 @@ void WavReader::generate_outputs(SAMPLE** outputs)
 
 
 
-WavWriter::WavWriter(const char* in_filename, FilterGenerics::OutputChannel** inputs,
-                     unsigned short num_inputs)
-    : AudioConsumer(num_inputs, inputs), filename(in_filename)
+WavWriter::WavWriter(const char* in_filename, unsigned num_inputs)
+    : AudioConsumer(num_inputs), filename(in_filename)
 {
     // Set up file to write
     file.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
@@ -219,7 +226,7 @@ WavWriter::~WavWriter()
 }
 
 
-void WavWriter::process_inputs(SAMPLE** inputs)
+void WavWriter::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
 {
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
     {

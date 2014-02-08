@@ -18,8 +18,7 @@ namespace Filters
             /* Constructor... times are expressed in seconds */
             ADSRFilter(float attack_time, float decay_time,
                        float sustain_level, float release_time,
-                       OutputChannel** in_input_channels,
-                       unsigned in_num_channels = 1);
+                       unsigned num_channels=1);
 
             /* These functions are used to trigger the envelope to begin or end
              */
@@ -27,7 +26,8 @@ namespace Filters
             void on_note_up();
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             /* ADSR filter is in several states, and transitions in order
              * through these states during its operation. When transitioning to

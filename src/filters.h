@@ -26,13 +26,13 @@ namespace Filters
         public:
             enum PassFilterMode { low, high };
             PassFilter(PassFilterMode mode, float cutoff,
-                        OutputChannel** in_input_channels,
-                        unsigned in_num_channels = 1);
+                    unsigned num_channels = 1);
 
             void set_cutoff(PassFilterMode mode, float cutoff);
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             /* Specifies the filter coefficients
              */
@@ -61,14 +61,14 @@ namespace Filters
         public:
             enum ShelfFilterMode { low, high };
             ShelfFilter(ShelfFilterMode mode, float cutoff, float gain,
-                        OutputChannel** in_input_channels,
-                        unsigned in_num_channels = 1);
+                    unsigned num_channels = 1);
 
             void set_cutoff(ShelfFilterMode mode, float cutoff);
             void set_gain(float in_gain);
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             /* Specifies the filter coefficients
              */
@@ -96,15 +96,15 @@ namespace Filters
     {
         public:
             PeakFilter(float cutoff, float Q, float gain,
-                        OutputChannel** in_input_channels,
-                        unsigned in_num_channels = 1);
-
+                    unsigned num_channels = 1);
+            
             void set_cutoff(float cutoff);
             void set_Q(float Q);
             void set_gain(float gain);
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             /* Specifies the filter coefficients
              */

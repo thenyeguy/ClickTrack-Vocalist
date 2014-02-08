@@ -19,7 +19,7 @@ namespace Filters
     {
         public:
             Delay(float delay_time, float feedback, float wetness,
-                  OutputChannel** in_input_channels, unsigned in_num_channels = 1);
+                    unsigned num_channels = 1);
             ~Delay();
 
             /* Setters for parameters.
@@ -31,7 +31,8 @@ namespace Filters
             void set_wetness(float wetness);
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             unsigned delay;
             float feedback;

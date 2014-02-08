@@ -69,7 +69,7 @@ int main()
 
 
     // Test get range
-    short buffer[3];
+    std::vector<short> buffer(3);
     ring.get_range(buffer, 1, 4);
 
     cout << "\n" << "Getting range:" << endl;

@@ -9,8 +9,7 @@
 
 namespace Instruments
 {
-    /* This is a subtractive synthesizer controlled over MIDI. It has support
-     * for a varying number of oscillators.
+    /* This is a subtractive synthesizer controlled over MIDI. It is polyphonic
      */
     class SubtractiveSynthVoice;
     class SubtractiveSynth : public PolyphonicInstrument
@@ -20,17 +19,15 @@ namespace Instruments
              * well as the MIDI channel
              */
             SubtractiveSynth(int oscillators=1, int midi_channel=-1);
-            ~SubtractiveSynth();
 
-            OutputChannel* get_output_channel();
+            /* Override because we have added more signal chain
+             */
+            Channel* get_output_channel();
 
         private:
-            /* This contains our set of synth voices so we can free them
+            /* Add a gain to prevent clipping
              */
-            std::vector<SubtractiveSynthVoice> subtractive_voices;
-            /* The rest of the signal chain follows...
-             */
-            Filters::GainFilter* gain;
+            Filters::GainFilter gain;
     };
 
 
@@ -40,7 +37,6 @@ namespace Instruments
             /* Constructor/destructor
              */
             SubtractiveSynthVoice(SubtractiveSynth* parent_synth);
-            ~SubtractiveSynthVoice();
 
             /* Callbacks for starting and stopping notes
              */
@@ -48,14 +44,14 @@ namespace Instruments
             void handle_note_up();
             void handle_pitch_wheel(float value);
 
-            OutputChannel* get_output_channel();
+            Channel* get_output_channel();
 
         private:
             /* Define our signal chain
              */
             Oscillators::SawWave osc;
-            Filters::ADSRFilter* adsr;
-            Filters::GainFilter* gain;
+            Filters::ADSRFilter adsr;
+            Filters::GainFilter gain;
     };
 }
 

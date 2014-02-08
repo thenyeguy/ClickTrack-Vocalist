@@ -7,9 +7,8 @@ using namespace Portaudio;
 
 
 SimpleReverb::SimpleReverb(float in_decay_time, float in_gain, float in_wetness,
-                           unsigned in_num_channels,
-                           OutputChannel** in_input_channels)
-    : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
+                           unsigned in_num_channels)
+    : AudioFilter(in_num_channels, in_num_channels),
       sample_rollover(in_num_channels, 0.0), gain(in_gain), wetness(in_wetness),
       decay_ratio(pow(.01, 1/(DEFAULT_SAMPLE_RATE*in_decay_time)))
 {}
@@ -19,7 +18,8 @@ SimpleReverb::~SimpleReverb()
 {}
       
 
-void SimpleReverb::filter(SAMPLE** input, SAMPLE** output)
+void SimpleReverb::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     for(int i = 0; i < num_input_channels; i++)
     {
@@ -37,35 +37,29 @@ void SimpleReverb::filter(SAMPLE** input, SAMPLE** output)
 
 
 ConvolutionReverb::ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,
-               float in_gain, float in_wetness,
-               OutputChannel* in_input_channel)
-    : FilterBank(1,1), gain(in_gain), wetness(in_wetness)
+               float in_gain, float in_wetness)
+    : gain(in_gain), wetness(in_wetness), conv(impulse_length, impulse),
+      wet(wetness*gain), dry((1.0-wetness)*gain), out(2)
 {
-    // Set up reverb
-    conv = new ConvolutionFilter(in_input_channel, impulse_length, impulse);
-    OutputChannel* conv_out = conv->get_output_channel();
-
-    // Set up wetness parameters
-    wet = new GainFilter(wetness*gain, &conv_out);
-    dry = new GainFilter((1.0-wetness)*gain, &in_input_channel);
-
-    // Set up output adder
-    OutputChannel* wetdry[2] =
-        {wet->get_output_channel(), dry->get_output_channel()};
-    out = new Adder(wetdry, 2);
-
-    // Add the output channel
-    output_channels.push_back(out->get_output_channel());
+    // Connect our signal chain
+    wet.set_input_channel(conv.get_output_channel());
+    out.set_input_channel(wet.get_output_channel(), 0);
+    out.set_input_channel(dry.get_output_channel(), 1);
 }
 
 
-ConvolutionReverb::~ConvolutionReverb()
+void ConvolutionReverb::set_input_channel(Channel* in_input_channel)
 {
-    delete conv;
-    delete wet;
-    delete dry;
-    delete out;
+    dry.set_input_channel(in_input_channel);
 }
+
+
+Channel* ConvolutionReverb::get_output_channel()
+{
+    return out.get_output_channel();
+}
+
+
 
 
 impulse_pair* Filters::impulse_from_wav(const char* filename)
@@ -77,10 +71,18 @@ impulse_pair* Filters::impulse_from_wav(const char* filename)
     out->left = new SAMPLE[out->num_samples];
     out->right = new SAMPLE[out->num_samples];
 
+    std::vector<SAMPLE> buffer(DEFAULT_BLOCK_SIZE);
     for(unsigned t = 0; t < out->num_samples; t += FilterGenerics::DEFAULT_BLOCK_SIZE)
     {
-        wav.get_output_channel(0)->get_block(&out->left[t], t);
-        wav.get_output_channel(1)->get_block(&out->right[t], t);
+        // Read left and copy in
+        wav.get_output_channel(0)->get_block(buffer, t);
+        for(unsigned i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+            out->left[t+i] = buffer[i];
+
+        // Read right and copy in
+        wav.get_output_channel(1)->get_block(buffer, t);
+        for(unsigned i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+            out->right[t+i] = buffer[i];
     }
 
     return out;

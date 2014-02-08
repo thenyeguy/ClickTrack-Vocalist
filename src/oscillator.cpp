@@ -38,7 +38,7 @@ void Oscillator::set_freq(float in_freq)
 }
 
 
-void Oscillator::generate_outputs(SAMPLE** outputs)
+void Oscillator::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
     for(int i = 0; i < FilterGenerics::DEFAULT_BLOCK_SIZE; i++)
     {

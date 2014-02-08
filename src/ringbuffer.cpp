@@ -22,7 +22,7 @@ SampleT RingBuffer<SampleT>::get(const unsigned t)
 {
     if(t < start_t || t >= end_t)
     {
-        std::cout << "out of range: " << start_t << " "
+        std::cerr << "out of range: " << start_t << " "
             << t << " " << end_t << std::endl;
         throw RingBufferOutOfRange();
     }
@@ -32,8 +32,8 @@ SampleT RingBuffer<SampleT>::get(const unsigned t)
 
 
 template <class SampleT>
-void RingBuffer<SampleT>::get_range(SampleT* buffer, const unsigned start,
-        const unsigned end)
+void RingBuffer<SampleT>::get_range(std::vector<SampleT>& buffer,
+        const unsigned start, const unsigned end)
 {
     for(int i = 0; i < end-start; i++)
         buffer[i] = get(i+start);
@@ -63,7 +63,7 @@ SampleT& RingBuffer<SampleT>::operator[] (unsigned t)
 {
     if(t < start_t || t >= end_t)
     {
-        std::cout << "out of range: " << start_t << " "
+        std::cerr << "out of range: " << start_t << " "
             << t << " " << end_t << std::endl;
         throw RingBufferOutOfRange();
     }
