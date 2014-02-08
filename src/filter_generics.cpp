@@ -1,24 +1,29 @@
+#include <iostream>
 #include "filter_generics.h"
 
 
 using namespace FilterGenerics;
 
 
-OutputChannel::OutputChannel(AudioGenerator* in_parent)
+Channel::Channel(AudioGenerator* in_parent, unsigned in_start_t)
     : out(DEFAULT_RINGBUFFER_SIZE)
 {
     parent = in_parent;
 
-    start_t = 0;
-    end_t = 0;
+    start_t = in_start_t;
+    end_t = in_start_t;
+
+    out.set_new_startpoint(start_t);
 }
 
 
-void OutputChannel::get_block(SAMPLE* buffer, const unsigned t)
+void Channel::get_block(std::vector<SAMPLE>& buffer, const unsigned t)
 {
     // If this block already fell out of the buffer, just return silence
     if(start_t >= t+DEFAULT_BLOCK_SIZE)
     {
+        std::cerr << "Channel has requested a time older than is in "
+            << "its buffer." << std::endl;
         for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
             buffer[i] = 0.0;
         return;
@@ -32,7 +37,7 @@ void OutputChannel::get_block(SAMPLE* buffer, const unsigned t)
 }
 
 
-void OutputChannel::push_block(const SAMPLE* buffer)
+void Channel::push_block(const std::vector<SAMPLE>& buffer)
 {
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
         out.add(buffer[i]);
@@ -43,35 +48,28 @@ void OutputChannel::push_block(const SAMPLE* buffer)
 
 
 
-AudioGenerator::AudioGenerator(const unsigned in_num_output_channels)
-    : num_output_channels(in_num_output_channels),
-      output_channels()
+
+AudioGenerator::AudioGenerator(unsigned in_num_output_channels)
+    : next_out_t(0), num_output_channels(in_num_output_channels),
+      output_channels(), output_buffer()
 {
-    // Allocate the buffer once for writing to
-    output_buffer = new SAMPLE*[num_output_channels];
-    for(int i = 0; i < num_output_channels; i++)
+    for(unsigned i = 0; i < in_num_output_channels; i++)
     {
-        output_buffer[i] = new SAMPLE[DEFAULT_BLOCK_SIZE];
-        output_channels.push_back(OutputChannel(this));
+        output_channels.push_back(Channel(this));
+        output_buffer.push_back(std::vector<SAMPLE>(DEFAULT_BLOCK_SIZE));
     }
 }
 
 
-AudioGenerator::~AudioGenerator()
+Channel* AudioGenerator::get_output_channel(unsigned i)
 {
-    for(int i = 0; i < num_output_channels; i++)
-        delete output_buffer[i];
-    delete output_buffer;
-}
-
-
-OutputChannel* AudioGenerator::get_output_channel(int i)
-{
+    if(i >= num_output_channels)
+        throw ChannelOutOfRange();
     return &output_channels[i];
 }
 
 
-const unsigned AudioGenerator::get_num_output_channels()
+unsigned AudioGenerator::get_num_output_channels()
 {
     return num_output_channels;
 }
@@ -80,6 +78,7 @@ const unsigned AudioGenerator::get_num_output_channels()
 void AudioGenerator::write_outputs()
 {
     generate_outputs(output_buffer);
+    next_out_t += DEFAULT_BLOCK_SIZE;
 
     //Write the outputs into the channel
     for(int i = 0; i < num_output_channels; i++)
@@ -89,35 +88,62 @@ void AudioGenerator::write_outputs()
 
 
 
-AudioConsumer::AudioConsumer(unsigned in_num_input_channels,
-        OutputChannel** in_input_channels)
-    : num_input_channels(in_num_input_channels)
+AudioConsumer::AudioConsumer(unsigned in_num_input_channels)
+    : next_t(0), num_input_channels(in_num_input_channels),
+      input_channels(num_input_channels, NULL), input_buffer()
 {
-    next_t = 0;
-    
-    for(int i = 0; i < num_input_channels; i++)
-        input_channels.push_back(in_input_channels[i]);
-
-    // Allocate the buffer once for reading in
-    input_buffer = new SAMPLE*[num_input_channels];
-    for(int i = 0; i < num_input_channels; i++)
-        input_buffer[i] = new SAMPLE[DEFAULT_BLOCK_SIZE];
+    for(unsigned i = 0; i < num_input_channels; i++)
+        input_buffer.push_back(std::vector<SAMPLE>(DEFAULT_BLOCK_SIZE));
 }
 
 
-AudioConsumer::~AudioConsumer()
+void AudioConsumer::set_input_channel(Channel* channel, unsigned channel_i)
 {
-    for(int i = 0; i < num_input_channels; i++)
-        delete input_buffer[i];
-    delete input_buffer;
+    lock.lock();
+    input_channels[channel_i] = channel;
+    lock.unlock();
+}
+
+
+void AudioConsumer::remove_channel(unsigned channel_i)
+{
+    lock.lock();
+    input_channels[channel_i] = NULL;
+    lock.unlock();
+}
+
+
+unsigned AudioConsumer::get_channel_index(Channel* channel)
+{
+    for(unsigned i = 0; i < num_input_channels; i++)
+    {
+        if(input_channels[i] == channel)
+            return i;
+    }
+
+    throw ChannelNotFound();
 }
 
 
 void AudioConsumer::consume_inputs()
 {
     // Read in each channel
-    for(int i = 0; i < num_input_channels; i++)
-        input_channels[i]->get_block(input_buffer[i], next_t);
+    lock.lock();
+    for(unsigned i = 0; i < num_input_channels; i++)
+    {
+        // If there is no channel currently, read in silence
+        if(input_channels[i] == NULL)
+        {
+            std::cerr << "The requested channel is not connected" << std::endl;
+            for(unsigned j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+                input_buffer[i][j] = 0.0;
+        }
+        else
+        {
+            input_channels[i]->get_block(input_buffer[i], next_t);
+        }
+    }
+    lock.unlock();
 
     // Process
     process_inputs(input_buffer);
@@ -125,7 +151,7 @@ void AudioConsumer::consume_inputs()
 }
 
 
-const unsigned AudioConsumer::get_num_input_channels()
+unsigned AudioConsumer::get_num_input_channels()
 {
     return num_input_channels;
 }
@@ -133,48 +159,20 @@ const unsigned AudioConsumer::get_num_input_channels()
 
 
 
-AudioFilter::AudioFilter(unsigned in_num_output_channels,
-                         unsigned in_num_input_channels,
-                         OutputChannel** in_input_channels)
+AudioFilter::AudioFilter(unsigned in_num_input_channels,
+        unsigned in_num_output_channels)
     : AudioGenerator(in_num_output_channels),
-      AudioConsumer(in_num_input_channels, in_input_channels) {}
-AudioFilter::~AudioFilter() {}
+      AudioConsumer(in_num_input_channels)
+{}
 
 
-void AudioFilter::generate_outputs(SAMPLE** outputs)
+void AudioFilter::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
     consume_inputs();
 }
 
 
-void AudioFilter::process_inputs(SAMPLE** inputs)
+void AudioFilter::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
 {
     filter(inputs, output_buffer);
-}
-
-
-
-
-FilterBank::FilterBank(unsigned in_num_output_channels,
-                       unsigned in_num_input_channels)
-    : num_input_channels(in_num_input_channels),
-      num_output_channels(in_num_output_channels),
-      output_channels() {}
-
-
-OutputChannel* FilterBank::get_output_channel(int i)
-{
-    return output_channels[i];
-}
-
-
-const unsigned FilterBank::get_num_output_channels()
-{
-    return num_output_channels;
-}
-
-
-const unsigned FilterBank::get_num_input_channels()
-{
-    return num_input_channels;
 }

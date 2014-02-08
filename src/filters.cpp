@@ -7,10 +7,9 @@ using namespace Filters;
 
 
 PassFilter::PassFilter(PassFilterMode in_mode, float in_cutoff,
-    OutputChannel** in_input_channels, unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
-      mode(in_mode), cutoff(in_cutoff),
-      x_last(in_num_channels, 0.0), y1_last(in_num_channels, 0.0)
+        unsigned num_channels)
+    : AudioFilter(num_channels, num_channels), mode(in_mode),
+      cutoff(in_cutoff), x_last(num_channels), y1_last(num_channels)
 {
     calculate_coefficients();
 }
@@ -31,7 +30,8 @@ void PassFilter::calculate_coefficients()
 }
 
 
-void PassFilter::filter(SAMPLE** input, SAMPLE** output)
+void PassFilter::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
     {
@@ -61,11 +61,12 @@ void PassFilter::filter(SAMPLE** input, SAMPLE** output)
 }
 
 
+
+
 ShelfFilter::ShelfFilter(ShelfFilterMode in_mode, float in_cutoff, float in_gain,
-    OutputChannel** in_input_channels, unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
-      mode(in_mode), cutoff(in_cutoff), gain(in_gain),
-      x_last(in_num_channels, 0.0), y1_last(in_num_channels, 0.0)
+        unsigned num_channels)
+    : AudioFilter(num_channels, num_channels), mode(in_mode),
+      cutoff(in_cutoff), gain(in_gain), x_last(num_channels), y1_last(num_channels)
 {
     calculate_coefficients();
 }
@@ -119,7 +120,8 @@ void ShelfFilter::calculate_coefficients()
 }
 
 
-void ShelfFilter::filter(SAMPLE** input, SAMPLE** output)
+void ShelfFilter::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
     {
@@ -149,12 +151,14 @@ void ShelfFilter::filter(SAMPLE** input, SAMPLE** output)
 }
 
 
+
+
 PeakFilter::PeakFilter(float in_cutoff, float in_Q, float in_gain,
-    OutputChannel** in_input_channels, unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
-      cutoff(in_cutoff), Q(in_Q), gain(in_gain),
-      x_last1(in_num_channels, 0.0), x_last2(in_num_channels, 0.0),
-      y1_last1(in_num_channels, 0.0), y1_last2(in_num_channels, 0.0)
+        unsigned num_channels)
+    : AudioFilter(num_channels, num_channels), cutoff(in_cutoff),
+      Q(in_Q), gain(in_gain),
+      x_last1(num_channels), x_last2(num_channels),
+      y1_last1(num_channels), y1_last2(num_channels)
 {
     calculate_coefficients();
 }
@@ -198,7 +202,8 @@ void PeakFilter::calculate_coefficients()
 }
 
 
-void PeakFilter::filter(SAMPLE** input, SAMPLE** output)
+void PeakFilter::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
     {

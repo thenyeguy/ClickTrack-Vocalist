@@ -6,10 +6,9 @@ using namespace FilterGenerics;
 using namespace Filters;
 
 
-ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,
-                                     unsigned impulse_length,
+ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
                                      SAMPLE* in_impulse_response)
-    : AudioFilter(1, 1, &in_input_channel),
+    : AudioFilter(1),
 
       transform_size(fft_multiplier*DEFAULT_BLOCK_SIZE),
       transformer(transform_size),
@@ -23,7 +22,7 @@ ConvolutionFilter::ConvolutionFilter(OutputChannel* in_input_channel,
       reverb_buffer(transform_size)
 {
     // PROVIDE WARNING
-    cout << endl <<
+    cerr << endl <<
         "WARNING: Convolution reverb is still too slow to run in realtime." <<
         endl << endl;
 
@@ -87,7 +86,8 @@ ConvolutionFilter::~ConvolutionFilter()
 }
 
 
-void ConvolutionFilter::filter(SAMPLE** input, SAMPLE** output)
+void ConvolutionFilter::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     // First take the FFT of the input signal
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)

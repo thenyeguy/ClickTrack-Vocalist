@@ -15,11 +15,12 @@ namespace Filters
     {
         public:
             SimpleReverb(float decay_time, float gain, float wetness,
-                         unsigned num_channels, OutputChannel** input_channels);
+                         unsigned num_channels);
             ~SimpleReverb();
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             std::vector<SAMPLE> sample_rollover;
 
@@ -31,22 +32,23 @@ namespace Filters
 
     /* A simple one channel convolution reverb filter.
      */
-    class ConvolutionReverb : public FilterBank
+    class ConvolutionReverb
     {
         public:
             ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,
-                   float gain, float wetness,
-                   OutputChannel* in_input_channel);
-            ~ConvolutionReverb();
+                   float gain, float wetness);
+
+            void set_input_channel(Channel* input_channel);
+            Channel* get_output_channel();
 
         private:
             float gain;
             float wetness;
             
-            ConvolutionFilter* conv; 
-            GainFilter* wet;
-            GainFilter* dry;
-            Adder* out;
+            ConvolutionFilter conv; 
+            GainFilter wet;
+            GainFilter dry;
+            Adder out;
     };
 
 

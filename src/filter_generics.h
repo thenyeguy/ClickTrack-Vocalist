@@ -2,6 +2,7 @@
 #define FILTERGENERICS_H
 
 #include <vector>
+#include <mutex>
 #include "portaudio_wrapper.h"
 #include "ringbuffer.h"
 
@@ -17,6 +18,29 @@ namespace FilterGenerics
     const unsigned DEFAULT_RINGBUFFER_SIZE = 4*DEFAULT_BLOCK_SIZE;
 
 
+    class ChannelOutOfRange: public std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "The requested filter does not have this many output channels.";
+        }
+    };
+    class NoEmptyInputChannel: public std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "This filter cannot accept further input channels.";
+        }
+    };
+    class ChannelNotFound: public std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "This filter does not contained the specified input channel.";
+        }
+    };
+
+
     /* An output channel is the basic unit with which an object receives audio.
      * It is contained within an AudioGenerator object, and serves to pipe audio
      * from its parent generator into a buffer that a later element can access.
@@ -25,26 +49,32 @@ namespace FilterGenerics
      * requested.
      */
     class AudioGenerator;
-    class OutputChannel
+    class AudioConsumer;
+    class Channel
     {
         friend class AudioGenerator;
+        friend class AudioConsumer;
 
         public:
             /* Fills an incoming buffer with one block worth of audio data
              * beginning at the requested time.
              */
-            void get_block(SAMPLE* buffer, unsigned t);
+            void get_block(std::vector<SAMPLE>& buffer, unsigned t);
 
-        private:
-            // Called only by parent AudioGenerator
-            OutputChannel(AudioGenerator* in_parent);
+        protected:
+            /* A channel can only exist within an audio generator, so protect
+             * the constructor
+             */
+            Channel(AudioGenerator* in_parent, unsigned start_t=0);
 
-            /* Fills the OutputChannel's internal buffer with a new block of
+            /* Fills the Channel's internal buffer with a new block of
              * audio data.
              */
-            void push_block(const SAMPLE* buffer);
+            void push_block(const std::vector<SAMPLE>& buffer);
 
 
+            /* Internal state
+             */
             AudioGenerator* parent;
 
             unsigned start_t;
@@ -60,16 +90,16 @@ namespace FilterGenerics
      */
     class AudioGenerator
     {
-        friend class OutputChannel;
+        friend class Channel;
 
         public:
-            AudioGenerator(unsigned in_num_output_channels);
-            ~AudioGenerator();
+            AudioGenerator(unsigned num_output_channels = 1);
+            virtual ~AudioGenerator() {}
 
             /* Returns the requested output channel by number
              */
-            OutputChannel* get_output_channel(int i = 0);
-            const unsigned get_num_output_channels();
+            Channel* get_output_channel(unsigned i = 0);
+            unsigned get_num_output_channels();
 
         protected:
             /* Writes outputs into the buffer. Calls generate_outputs to
@@ -82,14 +112,17 @@ namespace FilterGenerics
              *
              * Must be overwritten in subclasses.
              */
-            virtual void generate_outputs(SAMPLE** outputs) = 0;
+            virtual void generate_outputs(
+                    std::vector< std::vector<SAMPLE> >& outputs) = 0;
 
+
+            unsigned next_out_t; // Starting time unit of next block
 
             const unsigned num_output_channels;
-            std::vector<OutputChannel> output_channels;
+            std::vector<Channel> output_channels;
 
             // statically allocated output buffer for speed
-            SAMPLE** output_buffer;
+            std::vector< std::vector<SAMPLE> > output_buffer;
     };
 
 
@@ -102,31 +135,47 @@ namespace FilterGenerics
     class AudioConsumer
     {
         public:
-            AudioConsumer(unsigned in_num_input_channels,
-                          OutputChannel** in_input_channels);
-            ~AudioConsumer();
+            AudioConsumer(unsigned num_input_channels = 1);
+            virtual ~AudioConsumer() {}
+
+            /* Funtions to connect and disconnect channels. You can also look up
+             * a channel's index by value, so that it can be removed and
+             * restored when switching components
+             */
+            void set_input_channel(Channel* channel, unsigned channel_i = 0);
+            void remove_channel(unsigned channel_i);
+
+            unsigned get_channel_index(Channel* channel);
+
 
             /* When called, reads in the next block from the input channels
              * and calls the process_inputs function.
              */
             void consume_inputs();
 
-            const unsigned get_num_input_channels();
+            unsigned get_num_input_channels();
 
         protected:
+            /* The lock is used to prevent computing outputs and modifying the
+             * number of channels at the same time
+             */
+            std::mutex lock;
+
             /* When called on input data, processes it. Must be overwritten in
+             *
              * subclass.
              */
-            virtual void process_inputs(SAMPLE** inputs) = 0;
+            virtual void process_inputs(
+                    std::vector< std::vector<SAMPLE> >& inputs) = 0;
 
 
             unsigned next_t; // Starting time unit of next block
 
             const unsigned num_input_channels;
-            std::vector<OutputChannel*> input_channels;
+            std::vector<Channel*> input_channels;
 
             // statically allocated input buffer for speed
-            SAMPLE** input_buffer;
+            std::vector< std::vector<SAMPLE> > input_buffer;
     };
 
 
@@ -139,53 +188,26 @@ namespace FilterGenerics
     class AudioFilter : public AudioGenerator, public AudioConsumer
     {
         public:
-            AudioFilter(unsigned in_num_output_channels,
-                        unsigned in_num_input_channels,
-                        OutputChannel** in_input_channels);
-            virtual ~AudioFilter();
+            AudioFilter(unsigned num_input_channels = 1,
+                    unsigned num_output_channels = 1);
+            virtual ~AudioFilter() {}
 
         protected:
             /* Override the generator. When requested, use the consumer to
              * generate the next block of data.
              */
-            void generate_outputs(SAMPLE** outputs);
+            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
 
             /* Override the consumer. Consumes the input and calls the filter
              * operation, then writes this to the outputs.
              */
-            void process_inputs(SAMPLE** inputs);
+            void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);
 
             /* Given a list of input channel data, generate the list of output
              * channel data. Must be overwritten in subclass.
              */
-            virtual void filter(SAMPLE** input, SAMPLE** output) = 0;
-    };
-
-
-    /* The FilterBank is a hybrid signal chain element. It both consumes and
-     * generates audio, but does so by internally connecting many filters
-     * together.
-     *
-     * To implement a FilterBank, one must initialize their elements in the
-     * constructor, as well as insert their output channels into the vector.
-     */
-    class FilterBank
-    {
-        public:
-            FilterBank(unsigned in_num_output_channels,
-                       unsigned in_num_input_channels);
-        
-            /* Returns the requested output channel by number
-             */
-            OutputChannel* get_output_channel(int i = 0);
-
-            const unsigned get_num_output_channels();
-            const unsigned get_num_input_channels();
-
-        protected:
-            const unsigned num_input_channels;
-            const unsigned num_output_channels;
-            std::vector<OutputChannel*> output_channels;
+            virtual void filter(std::vector< std::vector<SAMPLE> >& input, 
+                    std::vector< std::vector<SAMPLE> >& output) = 0;
     };
 }
 

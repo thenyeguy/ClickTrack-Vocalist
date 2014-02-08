@@ -16,14 +16,13 @@ namespace Filters
     class GainFilter : public AudioFilter
     {
         public:
-            GainFilter(float in_gain,
-                       OutputChannel** in_input_channels,
-                       unsigned in_num_channels = 1);
+            GainFilter(float in_gain, unsigned num_channels = 1);
 
             void set_gain(float gain);
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             float gain;
     };
@@ -35,12 +34,11 @@ namespace Filters
     class Adder : public AudioFilter
     {
         public:
-            Adder();
-            Adder(OutputChannel** in_input_channels,
-                  unsigned in_num_channels);
+            Adder(unsigned num_input_channels);
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input, 
+                    std::vector< std::vector<SAMPLE> >& output);
     };
 
 
@@ -50,26 +48,25 @@ namespace Filters
     class Multiplier : public AudioFilter
     {
         public:
-            Multiplier();
-            Multiplier(OutputChannel** in_input_channels,
-                  unsigned in_num_channels);
+            Multiplier(unsigned num_input_channels);
 
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input, 
+                    std::vector< std::vector<SAMPLE> >& output);
     };
 
 
     /* The clip detector monitors a channel for clipping, and will print to the
-     * console if it occurs. Rate limited
+     * console if it occurs. Rate limited, and acts as a pass through.
      */
     class ClipDetector : public AudioFilter
     {
         public:
-            ClipDetector(float rate, OutputChannel** in_input_channels,
-                         unsigned in_num_channels = 1);
-
+            ClipDetector(float rate, unsigned num_channels=1);
+            
         private:
-            void filter(SAMPLE** input, SAMPLE** output);
+            void filter(std::vector< std::vector<SAMPLE> >& input,
+                    std::vector< std::vector<SAMPLE> >& output);
 
             /* Measures "time" in samples
              */

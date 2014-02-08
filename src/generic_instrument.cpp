@@ -9,24 +9,17 @@ GenericInstrument::GenericInstrument(int midi_channel)
 {}
 
 
-GenericInstrument::~GenericInstrument()
-{}
-
-
-void GenericInstrument::add_output_channel(OutputChannel* channel)
+void GenericInstrument::add_output_channel(Channel* channel)
 {
     output_channels.push_back(channel);
 }
 
 
-FilterGenerics::OutputChannel*
+FilterGenerics::Channel*
 GenericInstrument::get_output_channel(int channel)
 {
     if(channel > output_channels.size())
-    {
-        std::cerr << "The instrument does not have a channel " << channel <<
-                     "." << std::endl;
-    }
+        throw ChannelOutOfRange();
     return output_channels[channel];
 }
 

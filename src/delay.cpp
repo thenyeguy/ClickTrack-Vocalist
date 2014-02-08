@@ -6,15 +6,13 @@ using namespace Filters;
 
 
 Delay::Delay(float in_delay_time, float in_feedback, float in_wetness,
-             OutputChannel** in_input_channels, unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels, in_input_channels),
+        unsigned num_channels)
+    : AudioFilter(num_channels, num_channels),
       delay(Portaudio::DEFAULT_SAMPLE_RATE * in_delay_time),
-      feedback(in_feedback), wetness(in_wetness),
-      delay_buffers()
+      feedback(in_feedback), wetness(in_wetness), delay_buffers()
 {
-    for(unsigned i = 0; i < in_num_channels; i++)
+    for(unsigned i = 0; i < num_channels; i++)
     {
-        // Create new buffer and fill it with zeros for the previous time
         auto rb = new ClickTrackUtils::RingBuffer<SAMPLE>(delay);
         for(unsigned t = 0; t < delay; t++)
             rb->add(0.0);
@@ -61,7 +59,8 @@ void Delay::set_wetness(float in_wetness)
 }
 
 
-void Delay::filter(SAMPLE** input, SAMPLE** output)
+void Delay::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     for(int i = 0; i < num_input_channels; i++)
     {

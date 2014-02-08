@@ -5,21 +5,17 @@ using namespace FilterGenerics;
 using namespace Filters;
 
 
-GainFilter::GainFilter(float in_gain,
-                       OutputChannel** in_input_channels, 
-                       unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels,
-                  in_input_channels)
-{
-    gain = in_gain;    
-}
+GainFilter::GainFilter(float in_gain, unsigned num_channels)
+    : AudioFilter(num_channels, num_channels), gain(in_gain)
+{}
 
 void GainFilter::set_gain(float in_gain)
 {
     gain = in_gain;
 }
 
-void GainFilter::filter(SAMPLE** input, SAMPLE** output)
+void GainFilter::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     // Sum in the output
     for(int i = 0; i < num_input_channels; i++)
@@ -34,11 +30,12 @@ void GainFilter::filter(SAMPLE** input, SAMPLE** output)
 
 
 
-Adder::Adder(OutputChannel** in_input_channels, unsigned in_num_channels)
-    : AudioFilter(1, in_num_channels, in_input_channels)
+Adder::Adder(unsigned in_num_input_channels)
+    : AudioFilter(in_num_input_channels, 1)
 {}
 
-void Adder::filter(SAMPLE** input, SAMPLE** output)
+void Adder::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     // Sum in the output
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
@@ -54,11 +51,12 @@ void Adder::filter(SAMPLE** input, SAMPLE** output)
 
 
 
-Multiplier::Multiplier(OutputChannel** in_input_channels, unsigned in_num_channels)
-    : AudioFilter(1, in_num_channels, in_input_channels)
+Multiplier::Multiplier(unsigned in_num_input_channels)
+    : AudioFilter(in_num_input_channels, 1)
 {}
 
-void Multiplier::filter(SAMPLE** input, SAMPLE** output)
+void Multiplier::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     // Sum in the output
     for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
@@ -75,13 +73,12 @@ void Multiplier::filter(SAMPLE** input, SAMPLE** output)
 
 
 
-ClipDetector::ClipDetector(float in_rate, OutputChannel** in_input_channels, 
-                           unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels,
-                  in_input_channels), rate(in_rate*44100), next_time(0)
+ClipDetector::ClipDetector(float in_rate, unsigned num_channels)
+    : AudioFilter(num_channels), rate(in_rate*44100), next_time(0)
 {}
 
-void ClipDetector::filter(SAMPLE** input, SAMPLE** output)
+void ClipDetector::filter(std::vector< std::vector<SAMPLE> >& input,
+        std::vector< std::vector<SAMPLE> >& output)
 {
     // Sum in the output
     for(int i = 0; i < num_input_channels; i++)

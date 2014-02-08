@@ -11,10 +11,10 @@ using namespace Instruments;
 
 SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
     : GenericInstrument(channel), num_oscs(oscillators),
-      all_oscs(), free_oscs(), note_to_osc()
+      all_oscs(), free_oscs(), note_to_osc(),
+      sum(num_oscs), gain(0.3)
 {
     // Add all our oscillators to the free queue to start
-    OutputChannel** outputs = new OutputChannel*[num_oscs];
     for(int i=0; i < num_oscs; i++)
     {
         SubtractiveSynthOsc* osc = new SubtractiveSynthOsc(this);
@@ -22,17 +22,12 @@ SubtractiveSynth::SubtractiveSynth(int oscillators, int channel)
         all_oscs.push_back(osc);
         free_oscs.push_back(osc);
 
-        outputs[i] = osc->get_output_channel();
+        sum.set_input_channel(osc->get_output_channel(), i);
     }
 
     // Configure filter chain
-    // Create adder and gain, and use its output
-    sum = new Filters::Adder(outputs, num_oscs);
-
-    OutputChannel* sumCh = sum->get_output_channel();
-    gain = new Filters::GainFilter(0.3, & sumCh);
-
-    add_output_channel(gain->get_output_channel()); 
+    gain.set_input_channel(sum.get_output_channel());
+    add_output_channel(gain.get_output_channel()); 
 }
 
 
@@ -42,8 +37,6 @@ SubtractiveSynth::~SubtractiveSynth()
     {
         delete osc;
     }
-    delete sum;
-    delete gain;
 }
 
 
@@ -134,24 +127,18 @@ void SubtractiveSynth::on_midi_message(std::vector<unsigned char>* message)
 
 SubtractiveSynthOsc::SubtractiveSynthOsc(SubtractiveSynth* in_parent_synth)
     :  parent_synth(in_parent_synth), note(0), freq(0.0), pitch_multiplier(1.0),
-       playing(false), sustained(false), held(false), osc(440)
+       playing(false), sustained(false), held(false),
+       osc(440), adsr(.005, .3, .5, .3), gain(1.0)
 {
-    OutputChannel* ch = osc.get_output_channel();
-    adsr = new ADSRFilter(.005, .3, .5, .3, &ch);
-    ch = adsr->get_output_channel();
-    gain = new GainFilter(1.0, &ch);
+    // Configure signal chain
+    adsr.set_input_channel(osc.get_output_channel());
+    gain.set_input_channel(adsr.get_output_channel());
 }
 
 
-SubtractiveSynthOsc::~SubtractiveSynthOsc()
+Channel* SubtractiveSynthOsc::get_output_channel()
 {
-    delete adsr;
-}
-
-
-OutputChannel* SubtractiveSynthOsc::get_output_channel()
-{
-    return gain->get_output_channel();
+    return gain.get_output_channel();
 }
 
 
@@ -179,10 +166,10 @@ void SubtractiveSynthOsc::on_note_down(unsigned in_note, float velocity)
 
     // Set velocity gain
     // TODO: change this curve
-    gain->set_gain(pow(velocity,0.5));
+    gain.set_gain(pow(velocity,0.5));
 
     // Trigger ADSR
-    adsr->on_note_down();
+    adsr.on_note_down();
 }
 
 
@@ -194,7 +181,7 @@ void SubtractiveSynthOsc::on_note_up()
         if(playing && !sustained)
         {
             playing = false;
-            adsr->on_note_up();
+            adsr.on_note_up();
 
             parent_synth->osc_done(this);
             note = 0;
@@ -217,7 +204,7 @@ void SubtractiveSynthOsc::on_sustain_up()
         if(playing && !held) 
         {
             playing = false;
-            adsr->on_note_up();
+            adsr.on_note_up();
 
             parent_synth->osc_done(this);
             note = 0;

@@ -16,14 +16,14 @@ int main()
     try
     {
         std::cout << "Establishing signal chain" << std::endl;
-
         Microphone mic;
 
-        OutputChannel* revch[1] = {mic.get_output_channel()};
-        SimpleReverb rev(1.0, 0.2, 0.5, 1, revch);
+        SimpleReverb rev(1.0, 0.2, 0.5, 1);
+        rev.set_input_channel(mic.get_output_channel());
 
-        OutputChannel* outch[1] = {rev.get_output_channel()};
-        Speaker out(outch,1);
+        Speaker out;
+        out.set_input_channel(rev.get_output_channel());
+
 
         std::cout << "Playing" << std::endl;
         while(true)

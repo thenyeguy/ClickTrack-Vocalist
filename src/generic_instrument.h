@@ -20,12 +20,11 @@ namespace Instruments
              * asked what channel to use
              */
             GenericInstrument(int midi_channel=-1);
-            ~GenericInstrument();
 
-            /* Exposes the final OutputChannels of the instrument, so that it
+            /* Exposes the final output channel of the instrument, so that it
              * may be plugged later into the signal chain.
              */
-            FilterGenerics::OutputChannel* get_output_channel(int channel=0);
+            FilterGenerics::Channel* get_output_channel(int channel=0);
             const unsigned get_num_output_channels();
 
         protected:
@@ -50,13 +49,13 @@ namespace Instruments
 
             /* Used by subclasses to add their own output channels
              */
-            void add_output_channel(FilterGenerics::OutputChannel* channel);
+            void add_output_channel(FilterGenerics::Channel* channel);
 
         private:
-            /* A vector of all our output channels. The subclass msut push their
+            /* A vector of all our output channels. The subclass must push their
              * output channels into this vector.
              */
-            std::vector<FilterGenerics::OutputChannel*> output_channels;
+            std::vector<FilterGenerics::Channel*> output_channels;
 
             /* This is our MIDI listener. The MIDI callback will call our
              * instrument functions.

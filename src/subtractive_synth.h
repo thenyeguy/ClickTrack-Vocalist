@@ -55,8 +55,8 @@ namespace Instruments
 
             /* The rest of the signal chain follows...
              */
-            Filters::Adder* sum;
-            Filters::GainFilter* gain;
+            Filters::Adder sum;
+            Filters::GainFilter gain;
     };
 
 
@@ -68,9 +68,8 @@ namespace Instruments
             /* Constructor/destructor
              */
             SubtractiveSynthOsc(SubtractiveSynth* parent_synth);
-            ~SubtractiveSynthOsc();
 
-            OutputChannel* get_output_channel();
+            Channel* get_output_channel();
 
             /* Returns if this oscillator is playing now
              */
@@ -104,8 +103,8 @@ namespace Instruments
             bool held;
 
             Oscillators::SawWave osc;
-            Filters::ADSRFilter* adsr;
-            Filters::GainFilter* gain;
+            Filters::ADSRFilter adsr;
+            Filters::GainFilter gain;
     };
 }
 

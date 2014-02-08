@@ -26,7 +26,7 @@ namespace Oscillators
         protected:
             // Overridden method for AudioGenerator to provide basic time
             // tracking and output for oscillators
-            void generate_outputs(SAMPLE** outputs);
+            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
 
             /* The workhorse of an oscillator. It uses the current phase of the
              * wave in radians to compute the value of the waveform.
