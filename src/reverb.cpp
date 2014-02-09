@@ -55,6 +55,7 @@ ConvolutionReverb::ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,
 void ConvolutionReverb::set_input_channel(Channel* in_input_channel,
         unsigned channel_i)
 {
+    conv.set_input_channel(in_input_channel);
     dry.set_input_channel(in_input_channel);
 }
 

@@ -223,7 +223,7 @@ namespace FilterGenerics
         public:
             FilterBank(unsigned in_num_output_channels,
                        unsigned in_num_input_channels);
-            virtual ~FilterBank(); 
+            virtual ~FilterBank() {} 
 
             /* Returns the requested output channel by number
              */

@@ -32,7 +32,7 @@ namespace Filters
 
     /* A simple one channel convolution reverb filter.
      */
-    class ConvolutionReverb : FilterBank
+    class ConvolutionReverb : public FilterBank
     {
         public:
             ConvolutionReverb(unsigned impulse_length, SAMPLE* impulse,

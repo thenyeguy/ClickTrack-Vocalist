@@ -21,13 +21,19 @@ int main()
         std::cout << "Establishing signal chain" << std::endl;
         WavReader in("wav/test.wav");
 
-        ConvolutionReverb revl(imp->num_samples, imp->left,
-                               0.25, 0.5);
-        revl.set_input_channel(in.get_output_channel());
-        //Reverb revr(imp->num_samples, imp->right, 0.2, 0.5, in.get_output_channel(1));
+        ConvolutionReverb revl(imp->num_samples, imp->left, 0.25, 0.5);
+        revl.set_input_channel(in.get_output_channel(0));
+        ConvolutionReverb revr(imp->num_samples, imp->right, 0.25, 0.5);
+        revr.set_input_channel(in.get_output_channel(1));
+
 
         WavWriter out("wav/conv_out.wav");
-        out.set_input_channel(revl.get_output_channel());
+        out.set_input_channel(revl.get_output_channel(),0);
+        out.set_input_channel(revr.get_output_channel(),1);
+
+        Speaker speaker(2);
+        speaker.set_input_channel(revl.get_output_channel(),0);
+        speaker.set_input_channel(revr.get_output_channel(),1);
 
         std::cout << "Playing" << std::endl;
         while(!in.is_done())

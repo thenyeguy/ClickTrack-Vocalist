@@ -2,7 +2,7 @@
 CC      = clang++
 CFLAGS  = -std=c++11 -Wall -Wno-delete-non-virtual-dtor -Werror -g \
           -I/usr/local/include
-LIBS    = -L/usr/local/lib -lportaudio -lrtmidi
+LIBS    = -L/usr/local/lib -lportaudio -lrtmidi -lfftw3 -lm
 
 # Define compile paths
 SRCDIR = src
