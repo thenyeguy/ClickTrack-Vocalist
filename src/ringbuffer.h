@@ -45,7 +45,7 @@ namespace ClickTrackUtils {
              * exception.
              */
             void get_range(std::vector<SampleT>& buffer, const unsigned start,
-                                            const unsigned end);
+                    const unsigned end);
 
             /* Adds a sample as the next time step in the buffer. May overwrite
              * the oldest time step. Returns the timestamp of the added value.
