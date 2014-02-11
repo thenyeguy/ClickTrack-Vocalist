@@ -34,7 +34,7 @@ InputStream::InputStream(unsigned in_channels)
     //Open the stream!
     pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, &inputParams, NULL,
-            DEFAULT_SAMPLE_RATE, DEFAULT_BUFFER_SIZE, paNoFlag,
+            SAMPLE_RATE, BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 }
@@ -67,7 +67,7 @@ OutputStream::OutputStream(unsigned in_channels)
     //Open the stream!
     pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, NULL, &outputParams,
-            DEFAULT_SAMPLE_RATE, DEFAULT_BUFFER_SIZE, paNoFlag,
+            SAMPLE_RATE, BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 }

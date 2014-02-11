@@ -8,7 +8,7 @@ using namespace Oscillators;
 
 Oscillator::Oscillator(float in_freq)
     : FilterGenerics::AudioGenerator(1), phase(0.0), paused(false),
-      freq(in_freq), phase_inc(freq * 2*M_PI/Portaudio::DEFAULT_SAMPLE_RATE)
+      freq(in_freq), phase_inc(freq * 2*M_PI/Portaudio::SAMPLE_RATE)
 {}
 
 
@@ -34,13 +34,13 @@ void Oscillator::set_freq(float in_freq)
 {
     // Tracks the current phase to maintain phase during 
     freq = in_freq;
-    phase_inc = freq * 2*M_PI/Portaudio::DEFAULT_SAMPLE_RATE;
+    phase_inc = freq * 2*M_PI/Portaudio::SAMPLE_RATE;
 }
 
 
 void Oscillator::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
-    for(int i = 0; i < FilterGenerics::DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < FilterGenerics::BLOCK_SIZE; i++)
     {
         // Generate this output
         outputs[0][i] = paused ? 0.0 : f();

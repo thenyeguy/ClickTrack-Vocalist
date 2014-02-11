@@ -8,7 +8,7 @@ using namespace Filters;
 Delay::Delay(float in_delay_time, float in_feedback, float in_wetness,
         unsigned num_channels)
     : AudioFilter(num_channels, num_channels),
-      delay(Portaudio::DEFAULT_SAMPLE_RATE * in_delay_time),
+      delay(Portaudio::SAMPLE_RATE * in_delay_time),
       feedback(in_feedback), wetness(in_wetness), delay_buffers()
 {
     for(unsigned i = 0; i < num_channels; i++)
@@ -64,7 +64,7 @@ void Delay::filter(std::vector< std::vector<SAMPLE> >& input,
 {
     for(int i = 0; i < num_input_channels; i++)
     {
-        for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+        for(int j = 0; j < BLOCK_SIZE; j++)
         {
             // Add the delayed version of the signal in, respecting wetness
             SAMPLE delayed_value = delay_buffers[i]->get(next_t + j);

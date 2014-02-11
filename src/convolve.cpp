@@ -10,11 +10,11 @@ ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
                                      SAMPLE* in_impulse_response)
     : AudioFilter(1),
 
-      transform_size(fft_multiplier*DEFAULT_BLOCK_SIZE),
+      transform_size(fft_multiplier*BLOCK_SIZE),
       transformer(transform_size),
 
       num_impulse_blocks((impulse_length - 1) / 
-                         (transform_size-DEFAULT_BLOCK_SIZE) + 1),
+                         (transform_size-BLOCK_SIZE) + 1),
         // shift by one so perfect powers of two don't get overallocated
       impulse_response(num_impulse_blocks, NULL),
 
@@ -46,9 +46,9 @@ ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
     for(int i=0; i < num_impulse_blocks; i++)
     {
         // For each segment, take its FFT
-        for(int j=0; j < transform_size-DEFAULT_BLOCK_SIZE; j++)
+        for(int j=0; j < transform_size-BLOCK_SIZE; j++)
         {
-            int t = (transform_size-DEFAULT_BLOCK_SIZE)*i + j;
+            int t = (transform_size-BLOCK_SIZE)*i + j;
             if(t < impulse_length)
                 input_buffer[j] = in_impulse_response[t] / energy;
             else
@@ -90,7 +90,7 @@ void ConvolutionFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
     // First take the FFT of the input signal
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
         input_buffer[i] = input[0][i];
     transformer.fft(input_buffer, output_buffer);
 
@@ -101,32 +101,30 @@ void ConvolutionFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         // Frequency multiply
         for(int j=0; j < transform_size; j++)
         {
-            frequency_buffer[next_t/DEFAULT_BLOCK_SIZE + i][j] +=
+            frequency_buffer[next_t/BLOCK_SIZE + i][j] +=
                 output_buffer[j] * impulse_response[i][j];
         }
     }
 
 
     // Perform an inverse transform out of the frequency domain
-    transformer.ifft(frequency_buffer[next_t/DEFAULT_BLOCK_SIZE],
+    transformer.ifft(frequency_buffer[next_t/BLOCK_SIZE],
                      output_buffer);
     for(int i=0; i < transform_size; i++)
         reverb_buffer[next_t + i] += output_buffer[i].real();
 
 
     // Extract the new output set
-    for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i=0; i < BLOCK_SIZE; i++)
         output[0][i] = reverb_buffer[next_t + i];
 
     
     // Update the frequency buffer
     // Zero and move the array to avoid allocating extra memory
-    complex<SAMPLE>* temp = frequency_buffer[next_t/DEFAULT_BLOCK_SIZE];
+    complex<SAMPLE>* temp = frequency_buffer[next_t/BLOCK_SIZE];
     for(int i=0; i < transform_size; i++)
         temp[i] = 0.0;
-    frequency_buffer.add(temp);
-
     // Update the time buffer
-    for(int i=0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i=0; i < BLOCK_SIZE; i++)
         reverb_buffer.add(0.0);
 }

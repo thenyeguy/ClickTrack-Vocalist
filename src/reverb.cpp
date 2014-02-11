@@ -10,7 +10,7 @@ SimpleReverb::SimpleReverb(float in_decay_time, float in_gain, float in_wetness,
                            unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels),
       sample_rollover(in_num_channels, 0.0), gain(in_gain), wetness(in_wetness),
-      decay_ratio(pow(.01, 1/(DEFAULT_SAMPLE_RATE*in_decay_time)))
+      decay_ratio(pow(.01, 1/(SAMPLE_RATE*in_decay_time)))
 {}
 
 
@@ -23,7 +23,7 @@ void SimpleReverb::filter(std::vector< std::vector<SAMPLE> >& input,
 {
     for(int i = 0; i < num_input_channels; i++)
     {
-        for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+        for(int j = 0; j < BLOCK_SIZE; j++)
         {
             SAMPLE last;
             if(j == 0) last = sample_rollover[i];
@@ -83,17 +83,17 @@ impulse_pair* Filters::impulse_from_wav(const char* filename)
     out->left = new SAMPLE[out->num_samples];
     out->right = new SAMPLE[out->num_samples];
 
-    std::vector<SAMPLE> buffer(DEFAULT_BLOCK_SIZE);
-    for(unsigned t = 0; t < out->num_samples; t += FilterGenerics::DEFAULT_BLOCK_SIZE)
+    std::vector<SAMPLE> buffer(BLOCK_SIZE);
+    for(unsigned t = 0; t < out->num_samples; t += FilterGenerics::BLOCK_SIZE)
     {
         // Read left and copy in
         wav.get_output_channel(0)->get_block(buffer, t);
-        for(unsigned i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+        for(unsigned i = 0; i < BLOCK_SIZE; i++)
             out->left[t+i] = buffer[i];
 
         // Read right and copy in
         wav.get_output_channel(1)->get_block(buffer, t);
-        for(unsigned i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+        for(unsigned i = 0; i < BLOCK_SIZE; i++)
             out->right[t+i] = buffer[i];
     }
 

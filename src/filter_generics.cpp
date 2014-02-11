@@ -20,26 +20,26 @@ Channel::Channel(AudioGenerator* in_parent, unsigned in_start_t)
 void Channel::get_block(std::vector<SAMPLE>& buffer, const unsigned t)
 {
     // If this block already fell out of the buffer, just return silence
-    if(start_t >= t+DEFAULT_BLOCK_SIZE)
+    if(start_t >= t+BLOCK_SIZE)
     {
         std::cerr << "Channel has requested a time older than is in "
             << "its buffer." << std::endl;
-        for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+        for(int i = 0; i < BLOCK_SIZE; i++)
             buffer[i] = 0.0;
         return;
     }
 
     // Otherwise generate enough audio
-    while(end_t < t+DEFAULT_BLOCK_SIZE)
+    while(end_t < t+BLOCK_SIZE)
         parent->write_outputs();
 
-    out.get_range(buffer, start_t, start_t+DEFAULT_BLOCK_SIZE);
+    out.get_range(buffer, start_t, start_t+BLOCK_SIZE);
 }
 
 
 void Channel::push_block(const std::vector<SAMPLE>& buffer)
 {
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
         out.add(buffer[i]);
 
     start_t = out.get_lowest_timestamp();
@@ -56,7 +56,7 @@ AudioGenerator::AudioGenerator(unsigned in_num_output_channels)
     for(unsigned i = 0; i < in_num_output_channels; i++)
     {
         output_channels.push_back(Channel(this));
-        output_buffer.push_back(std::vector<SAMPLE>(DEFAULT_BLOCK_SIZE));
+        output_buffer.push_back(std::vector<SAMPLE>(BLOCK_SIZE));
     }
 }
 
@@ -78,7 +78,7 @@ unsigned AudioGenerator::get_num_output_channels()
 void AudioGenerator::write_outputs()
 {
     generate_outputs(output_buffer);
-    next_out_t += DEFAULT_BLOCK_SIZE;
+    next_out_t += BLOCK_SIZE;
 
     //Write the outputs into the channel
     for(int i = 0; i < num_output_channels; i++)
@@ -93,7 +93,7 @@ AudioConsumer::AudioConsumer(unsigned in_num_input_channels)
       input_channels(num_input_channels, NULL), input_buffer()
 {
     for(unsigned i = 0; i < num_input_channels; i++)
-        input_buffer.push_back(std::vector<SAMPLE>(DEFAULT_BLOCK_SIZE));
+        input_buffer.push_back(std::vector<SAMPLE>(BLOCK_SIZE));
 }
 
 
@@ -135,7 +135,7 @@ void AudioConsumer::consume_inputs()
         if(input_channels[i] == NULL)
         {
             std::cerr << "The requested channel is not connected" << std::endl;
-            for(unsigned j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+            for(unsigned j = 0; j < BLOCK_SIZE; j++)
                 input_buffer[i][j] = 0.0;
         }
         else
@@ -147,7 +147,7 @@ void AudioConsumer::consume_inputs()
 
     // Process
     process_inputs(input_buffer);
-    next_t += DEFAULT_BLOCK_SIZE;
+    next_t += BLOCK_SIZE;
 }
 
 

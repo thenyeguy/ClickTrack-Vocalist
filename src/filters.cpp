@@ -25,15 +25,15 @@ void PassFilter::set_cutoff(PassFilterMode in_mode, float in_cutoff)
 
 void PassFilter::calculate_coefficients()
 {
-    a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-        (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+    a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
+        (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
 }
 
 
 void PassFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
     {
         for(int j = 0; j < num_input_channels; j++)
         {
@@ -98,22 +98,22 @@ void ShelfFilter::calculate_coefficients()
         case low:
         {
             if(gain < 0) //cut
-                a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - V0) /
-                    (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + V0);
+                a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - V0) /
+                    (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + V0);
             else            // boost
-                a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-                    (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+                a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
+                    (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
             break;
         }
 
         case high:
         {
             if(gain < 0) //cut
-                a = (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-                    (tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+                a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
+                    (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
             else            // boost
-                a = (V0*tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-                    (V0*tan(M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+                a = (V0*tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
+                    (V0*tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
             break;
         }
     }
@@ -123,7 +123,7 @@ void ShelfFilter::calculate_coefficients()
 void ShelfFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
     {
         for(int j = 0; j < num_input_channels; j++)
         {
@@ -190,22 +190,22 @@ void PeakFilter::calculate_coefficients()
     V0 = pow(10,gain/20);
     H0 = V0-1;
 
-    d = -cos(2*M_PI*cutoff/Portaudio::DEFAULT_SAMPLE_RATE);
+    d = -cos(2*M_PI*cutoff/Portaudio::SAMPLE_RATE);
 
     float fs = cutoff / Q;
     if(gain < 0) //cut
-        a = (tan(M_PI*fs/Portaudio::DEFAULT_SAMPLE_RATE) - V0) /
-            (tan(M_PI*fs/Portaudio::DEFAULT_SAMPLE_RATE) + V0);
+        a = (tan(M_PI*fs/Portaudio::SAMPLE_RATE) - V0) /
+            (tan(M_PI*fs/Portaudio::SAMPLE_RATE) + V0);
     else            // boost
-        a = (tan(M_PI*fs/Portaudio::DEFAULT_SAMPLE_RATE) - 1) /
-            (tan(M_PI*fs/Portaudio::DEFAULT_SAMPLE_RATE) + 1);
+        a = (tan(M_PI*fs/Portaudio::SAMPLE_RATE) - 1) /
+            (tan(M_PI*fs/Portaudio::SAMPLE_RATE) + 1);
 }
 
 
 void PeakFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
     {
         for(int j = 0; j < num_input_channels; j++)
         {

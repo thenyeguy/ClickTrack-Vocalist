@@ -14,14 +14,14 @@ Microphone::Microphone(unsigned num_channels)
 void Microphone::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
     // Read from the sream
-    unsigned num_samples = num_output_channels * DEFAULT_BLOCK_SIZE;
+    unsigned num_samples = num_output_channels * BLOCK_SIZE;
     SAMPLE buffer[num_samples];
     stream.readFromStream(buffer, num_samples);
 
     // Deinterleave our results
     for(int i = 0; i < num_output_channels; i++)
     {
-        for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+        for(int j = 0; j < BLOCK_SIZE; j++)
             outputs[i][j] = buffer[num_output_channels*j + i];
     }
 }
@@ -37,12 +37,12 @@ Speaker::Speaker(unsigned num_inputs)
 void Speaker::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
 {
     // Interleave channels
-    unsigned num_samples = num_input_channels * DEFAULT_BLOCK_SIZE;
+    unsigned num_samples = num_input_channels * BLOCK_SIZE;
     SAMPLE buffer[num_samples];
 
     for(int i = 0; i < num_input_channels; i++)
     {
-        for(int j = 0; j < DEFAULT_BLOCK_SIZE; j++)
+        for(int j = 0; j < BLOCK_SIZE; j++)
         {
             SAMPLE sample = inputs[i][j];
             if(sample > 1.0) sample = 1.0;
@@ -52,7 +52,7 @@ void Speaker::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
     }
 
     // Write out
-    stream.writeToStream(buffer, DEFAULT_BLOCK_SIZE);
+    stream.writeToStream(buffer, BLOCK_SIZE);
 }
 
 
@@ -154,7 +154,7 @@ void WavReader::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
     } left, right;
     left.val = 0; right.val = 0;
 
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
     {
         // Silence at end
         if(samples_read >= samples_total)
@@ -200,7 +200,7 @@ WavWriter::WavWriter(const char* in_filename, unsigned num_inputs)
     short format = 1;
     file.write((char*) &format, 2);
     file.write((char*) &num_input_channels, 2);
-    unsigned sample_rate = Portaudio::DEFAULT_SAMPLE_RATE;
+    unsigned sample_rate = Portaudio::SAMPLE_RATE;
     file.write((char*) &sample_rate, 4);
     unsigned byte_rate = sample_rate*num_input_channels*16/8;
     file.write((char*) &byte_rate, 4);
@@ -228,7 +228,7 @@ WavWriter::~WavWriter()
 
 void WavWriter::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
 {
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
     {
         for(int j = 0; j < num_input_channels; j++)
         {

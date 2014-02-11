@@ -12,9 +12,9 @@ ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
     : AudioFilter(in_num_channels, in_num_channels), state(silent),
     t(0), trigger_time(0), end_time(0), multiplier(0), delta_mult(0)
 {
-    attack_time  = in_attack_time  * Portaudio::DEFAULT_SAMPLE_RATE;
-    decay_time   = in_decay_time   * Portaudio::DEFAULT_SAMPLE_RATE;
-    release_time = in_release_time * Portaudio::DEFAULT_SAMPLE_RATE;
+    attack_time  = in_attack_time  * Portaudio::SAMPLE_RATE;
+    decay_time   = in_decay_time   * Portaudio::SAMPLE_RATE;
+    release_time = in_release_time * Portaudio::SAMPLE_RATE;
 
     sustain_level = in_sustain_level;
 }
@@ -43,7 +43,7 @@ void ADSRFilter::on_note_up()
 void ADSRFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < DEFAULT_BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
     {
         // Update the time and multiplier
         t = next_t+i;
