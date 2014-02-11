@@ -124,6 +124,8 @@ void ConvolutionFilter::filter(std::vector< std::vector<SAMPLE> >& input,
     complex<SAMPLE>* temp = frequency_buffer[next_t/BLOCK_SIZE];
     for(int i=0; i < transform_size; i++)
         temp[i] = 0.0;
+    frequency_buffer.add(temp);
+
     // Update the time buffer
     for(int i=0; i < BLOCK_SIZE; i++)
         reverb_buffer.add(0.0);

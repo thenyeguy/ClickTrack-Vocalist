@@ -37,7 +37,10 @@ int main()
 
         std::cout << "Playing" << std::endl;
         while(!in.is_done())
+        {
             out.consume_inputs();
+            speaker.consume_inputs();
+        }
         std::cout << "Done" << std::endl;
     }
     catch(exception& e)
