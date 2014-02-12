@@ -4,17 +4,16 @@
 #include "midi_wrapper.h"
 #include "generic_instrument.h"
 
-using namespace std;
-using namespace Midi;
+using namespace ClickTrack;
 
 
-float Midi::noteToFreq(unsigned note)
+float ClickTrack::noteToFreq(unsigned note)
 {
     return 440*pow(2, ((float)note-69)/12);
 }
 
 
-MidiIn::MidiIn(Instruments::GenericInstrument* in_inst, int channel)
+MidiIn::MidiIn(GenericInstrument* in_inst, int channel)
     : stream(), inst(in_inst)
 {
     // If no channel specified, ask the user for a channel
@@ -22,22 +21,22 @@ MidiIn::MidiIn(Instruments::GenericInstrument* in_inst, int channel)
     {
         // First list all the channels
         unsigned nPorts = stream.getPortCount();
-        cout << endl << "There are " << nPorts <<
-                " MIDI input sources available." << endl;
-        string portName;
+        std::cout << std::endl << "There are " << nPorts <<
+                " MIDI input sources available." << std::endl;
+        std::string portName;
         for(int i=0; i<nPorts; i++)
-            cout << "  Input Port #" << i << ": " <<
-                    stream.getPortName(i) << endl;
+            std::cout << "  Input Port #" << i << ": " <<
+                    stream.getPortName(i) << std::endl;
 
         // Ask for a channel
         while(true)
         {
-            cout << "Choose a MIDI channel: ";
-            cin >> channel;
+            std::cout << "Choose a MIDI channel: ";
+            std::cin >> channel;
             if(0 <= channel && channel < nPorts)
                 break;
 
-            cout << "    Not a valid channel number." << endl;
+            std::cout << "    Not a valid channel number." << std::endl;
         }
     }
 
@@ -56,7 +55,7 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
 {
     if(message->size() == 0)
     {
-        cerr << "Ignoring empty MIDI message." << endl;
+        std::cerr << "Ignoring empty MIDI message." << std::endl;
         return;
     }
 
@@ -90,7 +89,8 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
                 case 0x01: // modulation wheel
                 {
                     unsigned char value = message->at(2);
-                    cout << "Ignoring modulation message: " << ((unsigned)value) << endl;
+                    std::cout << "Ignoring modulation message: " << 
+                        ((unsigned)value) << std::endl;
                     break;
                 }
 
@@ -122,10 +122,11 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
         UNHANDLED:
         default:
         {
-            cout << "Unknown messsage: 0x";
+            std::cout << "Unknown messsage: 0x";
             for(int i=0; i < message->size(); i++)
-                cout << hex << setfill('0') << setw(2) << (unsigned) message->at(i);
-            cout << endl;
+                std::cout << std::hex << std::setfill('0') << std::setw(2) << 
+                    (unsigned) message->at(i);
+            std::cout << std::endl;
 
             midi->inst->on_midi_message(message);
         }

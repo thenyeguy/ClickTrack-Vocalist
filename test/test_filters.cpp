@@ -4,16 +4,12 @@
 #include "../src/elementary_filters.h"
 #include "../src/filters.h"
 
-using namespace std;
-using namespace Portaudio;
-using namespace IOElements;
-using namespace Oscillators;
-using namespace Filters;
+using namespace ClickTrack;
 
 
 int main()
 {
-    cout << "Initializing signal chain" << endl;
+    std::cout << "Initializing signal chain" << std::endl;
     SawWave saw(440.f);
     GainFilter saw_gain(0.7);
     saw_gain.set_input_channel(saw.get_output_channel());
@@ -25,16 +21,16 @@ int main()
     speaker.set_input_channel(pass.get_output_channel());
 
 
-    cout << "Entering process loop" << endl;
+    std::cout << "Entering process loop" << std::endl;
     while(true)
     {
         try
         {
             speaker.consume_inputs();
         }
-        catch(exception& e)
+        catch(std::exception& e)
         {
-            cerr << "\n\n" << "EXCEPTION: " << e.what() << endl;
+            std::cerr << "\n\n" << "EXCEPTION: " << e.what() << std::endl;
             exit(1);
         }
     }

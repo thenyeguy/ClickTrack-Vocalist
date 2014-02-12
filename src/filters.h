@@ -2,10 +2,7 @@
 #define FILTERS_H
 
 #include <vector>
-#include "filter_generics.h"
-
-using namespace std;
-using namespace FilterGenerics;
+#include "audio_generics.h"
 
 
 /* Implements a set of rudimentary filters for frequency rejection and
@@ -13,7 +10,7 @@ using namespace FilterGenerics;
  *
  *      http://www.music.mcgill.ca/~ich/classes/FiltersChap2.pdf 
  */
-namespace Filters
+namespace ClickTrack
 {
     /* A pass filter is a filter that attenuates all frequencies above or below
      * a cutoff frequency.
@@ -45,7 +42,7 @@ namespace Filters
             /* Previous computation results. Used to implement a single pole in
              * the filters
              */
-            vector<float> x_last, y1_last;
+            std::vector<float> x_last, y1_last;
     };
 
 
@@ -82,7 +79,7 @@ namespace Filters
             /* Previous computation results. Used to implement a single pole in
              * the filters
              */
-            vector<float> x_last, y1_last;
+            std::vector<float> x_last, y1_last;
     };
 
 
@@ -116,7 +113,7 @@ namespace Filters
             /* Previous computation results. Used to implement a single pole in
              * the filters
              */
-            vector<float> x_last1, x_last2, y1_last1, y1_last2;
+            std::vector<float> x_last1, x_last2, y1_last1, y1_last2;
     };
 }
 

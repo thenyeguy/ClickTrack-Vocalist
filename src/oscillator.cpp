@@ -4,11 +4,11 @@
 #include "portaudio_wrapper.h"
 #include "oscillator.h"
 
-using namespace Oscillators;
+using namespace ClickTrack;
 
 Oscillator::Oscillator(float in_freq)
-    : FilterGenerics::AudioGenerator(1), phase(0.0), paused(false),
-      freq(in_freq), phase_inc(freq * 2*M_PI/Portaudio::SAMPLE_RATE)
+    : AudioGenerator(1), phase(0.0), paused(false),
+      freq(in_freq), phase_inc(freq * 2*M_PI/SAMPLE_RATE)
 {}
 
 
@@ -34,13 +34,13 @@ void Oscillator::set_freq(float in_freq)
 {
     // Tracks the current phase to maintain phase during 
     freq = in_freq;
-    phase_inc = freq * 2*M_PI/Portaudio::SAMPLE_RATE;
+    phase_inc = freq * 2*M_PI/SAMPLE_RATE;
 }
 
 
 void Oscillator::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
-    for(int i = 0; i < FilterGenerics::BLOCK_SIZE; i++)
+    for(int i = 0; i < BLOCK_SIZE; i++)
     {
         // Generate this output
         outputs[0][i] = paused ? 0.0 : f();

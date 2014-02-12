@@ -1,12 +1,10 @@
 #ifndef ADSR_H
 #define ADSR_H
 
-#include "filter_generics.h"
-
-using namespace FilterGenerics;
+#include "audio_generics.h"
 
 
-namespace Filters
+namespace ClickTrack
 {
     /* This applies an ADSR envelope to its input channels. This filter cannot
      * operate without a controller attached to it, as without being triggered

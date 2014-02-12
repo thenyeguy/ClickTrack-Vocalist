@@ -1,15 +1,14 @@
 #include <iostream>
 #include "portaudio_wrapper.h"
 
-using namespace std;
-using namespace Portaudio;
+using namespace ClickTrack;
 
 
-int pa_error_check(string location, int err)
+int pa_error_check(std::string location, int err)
 {
     if(err == paNoError) return err;
 
-    cout << "An error occured during " << location << ": " << 
+    std::cout << "An error occured during " << location << ": " << 
         Pa_GetErrorText(err) << "\n";
     exit(err);
 }

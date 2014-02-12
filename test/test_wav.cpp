@@ -1,20 +1,14 @@
 #include <iostream>
-#include "../src/filter_generics.h"
 #include "../src/io_elements.h"
-#include "../src/oscillator.h"
 
-using namespace std;
-using namespace Portaudio;
-using namespace IOElements;
-using namespace Oscillators;
-
+using namespace ClickTrack;
 
 
 int main()
 {
     try
     {
-        cout << "Initializing signal chain" << endl;
+        std::cout << "Initializing signal chain" << std::endl;
         WavReader wav("wav/test.wav");
 
         Speaker speaker;
@@ -26,17 +20,17 @@ int main()
         write.set_input_channel(wav.get_output_channel(1),1);
 
 
-        cout << "Entering process loop" << endl;
+        std::cout << "Entering process loop" << std::endl;
         while(!wav.is_done())
         {
             speaker.consume_inputs();
             write.consume_inputs();
         }
-        cout << "Exiting" << "\n" << endl;
+        std::cout << "Exiting" << "\n" << std::endl;
     }
-    catch(exception& e)
+    catch(std::exception& e)
     {
-        cerr << "\n\n" << "EXCEPTION: " << e.what() << endl;
+        std::cerr << "\n\n" << "EXCEPTION: " << e.what() << std::endl;
         exit(1);
     }
 }

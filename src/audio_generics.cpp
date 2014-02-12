@@ -1,8 +1,8 @@
 #include <iostream>
-#include "filter_generics.h"
+#include "audio_generics.h"
 
 
-using namespace FilterGenerics;
+using namespace ClickTrack;
 
 
 Channel::Channel(AudioGenerator* in_parent, unsigned in_start_t)

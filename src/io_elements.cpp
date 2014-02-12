@@ -1,8 +1,7 @@
 #include <iostream>
 #include "io_elements.h"
 
-using namespace FilterGenerics;
-using namespace IOElements;
+using namespace ClickTrack;
 
 
 Microphone::Microphone(unsigned num_channels)
@@ -200,7 +199,7 @@ WavWriter::WavWriter(const char* in_filename, unsigned num_inputs)
     short format = 1;
     file.write((char*) &format, 2);
     file.write((char*) &num_input_channels, 2);
-    unsigned sample_rate = Portaudio::SAMPLE_RATE;
+    unsigned sample_rate = SAMPLE_RATE;
     file.write((char*) &sample_rate, 4);
     unsigned byte_rate = sample_rate*num_input_channels*16/8;
     file.write((char*) &byte_rate, 4);

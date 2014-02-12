@@ -1,25 +1,24 @@
 #include <iostream>
 #include "../src/ringbuffer.h"
 
-using namespace std;
-using namespace ClickTrackUtils;
+using namespace ClickTrack;
 
 
 int main()
 {
     RingBuffer<short> ring(4);
-    cout << "Starting test..." << "\n\n" << endl;
+    std::cout << "Starting test..." << "\n\n" << std::endl;
 
 
     // Test get first element
     try
     {
         ring.get(0);
-        cerr << "Failed to throw exception on empty buffer" << endl;
+        std::cerr << "Failed to throw exception on empty buffer" << std::endl;
     }
     catch(RingBufferOutOfRange&)
     {
-        cout << "Caught empty buffer." << endl;
+        std::cout << "Caught empty buffer." << std::endl;
     }
 
 
@@ -33,7 +32,7 @@ int main()
     // Try to view elements
     for(unsigned t = 0; t < 4; t++)
     {
-        cout << "Time t=" << t << ": " << ring.get(t) << endl;
+        std::cout << "Time t=" << t << ": " << ring.get(t) << std::endl;
         if(ring.get(t) != t)
             throw "Failed test on proper lookup";
     }
@@ -41,7 +40,7 @@ int main()
 
     // Try to add first overlap element
     ring.add(4);
-    cout << "Time t=" << 4 << ": " << ring.get(4) << endl;
+    std::cout << "Time t=" << 4 << ": " << ring.get(4) << std::endl;
     if(ring.get(4) != 4)
         throw "Failed test on proper lookup";
 
@@ -54,7 +53,7 @@ int main()
     }
     catch(RingBufferOutOfRange&)
     {
-        cout << "Caught underflow of buffer." << endl;
+        std::cout << "Caught underflow of buffer." << std::endl;
     }
 
     try
@@ -64,7 +63,7 @@ int main()
     }
     catch(RingBufferOutOfRange&)
     {
-        cout << "Caught overflow of buffer." << endl;
+        std::cout << "Caught overflow of buffer." << std::endl;
     }
 
 
@@ -72,10 +71,10 @@ int main()
     std::vector<short> buffer(3);
     ring.get_range(buffer, 1, 4);
 
-    cout << "\n" << "Getting range:" << endl;
+    std::cout << "\n" << "Getting range:" << std::endl;
     for(unsigned i = 0; i < 3; i++)
     {
-        cout << "Time t=" << i+1 << ": " << buffer[i] << endl;
+        std::cout << "Time t=" << i+1 << ": " << buffer[i] << std::endl;
         if(buffer[i] != i+1)
             throw "Failed test on proper lookup";
     }
@@ -84,14 +83,14 @@ int main()
     // Test overwrite
     ring[2] = 10;
     ring.get_range(buffer, 1, 4);
-    cout << "\n" << "Getting range:" << endl;
+    std::cout << "\n" << "Getting range:" << std::endl;
     for(unsigned i = 0; i < 3; i++)
     {
-        cout << "Time t=" << i+1 << ": " << buffer[i] << endl;
+        std::cout << "Time t=" << i+1 << ": " << buffer[i] << std::endl;
     }
 
 
-    cout << "\n\n" << "All tests passed!" << endl;
+    std::cout << "\n\n" << "All tests passed!" << std::endl;
 
     return 0;
 }

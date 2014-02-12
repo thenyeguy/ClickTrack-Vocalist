@@ -1,19 +1,18 @@
 #include <iostream>
 #include "delay.h"
 
-using namespace FilterGenerics;
-using namespace Filters;
+using namespace ClickTrack;
 
 
 Delay::Delay(float in_delay_time, float in_feedback, float in_wetness,
         unsigned num_channels)
     : AudioFilter(num_channels, num_channels),
-      delay(Portaudio::SAMPLE_RATE * in_delay_time),
+      delay(SAMPLE_RATE * in_delay_time),
       feedback(in_feedback), wetness(in_wetness), delay_buffers()
 {
     for(unsigned i = 0; i < num_channels; i++)
     {
-        auto rb = new ClickTrackUtils::RingBuffer<SAMPLE>(delay);
+        auto rb = new RingBuffer<SAMPLE>(delay);
         for(unsigned t = 0; t < delay; t++)
             rb->add(0.0);
 
@@ -37,7 +36,7 @@ void Delay::set_delay(float in_delay)
     // Reset buffers to empty
     for(unsigned i = 0; i < num_input_channels; i++)
     {
-        auto rb = new ClickTrackUtils::RingBuffer<SAMPLE>(delay);
+        auto rb = new RingBuffer<SAMPLE>(delay);
         for(unsigned t = 0; t < delay; t++)
             rb->add(0.0);
 

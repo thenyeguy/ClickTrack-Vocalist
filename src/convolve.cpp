@@ -2,8 +2,7 @@
 #include <complex>
 #include "convolve.h"
 
-using namespace FilterGenerics;
-using namespace Filters;
+using namespace ClickTrack;
 
 
 ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
@@ -22,13 +21,13 @@ ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
       reverb_buffer(transform_size)
 {
     // PROVIDE WARNING
-    cerr << endl <<
+    std::cerr << std::endl <<
         "WARNING: Convolution reverb is still too slow to run in realtime." <<
-        endl << endl;
+        std::endl << std::endl;
 
     // Preallocate the buffers
-    input_buffer = new complex<SAMPLE>[transform_size];
-    output_buffer = new complex<SAMPLE>[transform_size];
+    input_buffer = new std::complex<SAMPLE>[transform_size];
+    output_buffer = new std::complex<SAMPLE>[transform_size];
 
     // Zero the input buffer
     for(int i=0; i < transform_size; i++)
@@ -55,7 +54,7 @@ ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
                 input_buffer[j] = 0.0;
         }
 
-        impulse_response[i] = new complex<SAMPLE>[transform_size];
+        impulse_response[i] = new std::complex<SAMPLE>[transform_size];
         transformer.fft(input_buffer, impulse_response[i]);
     }
 
@@ -68,7 +67,7 @@ ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
     // Initialize the output buffers
     for(int i=0; i < num_impulse_blocks; i++)
     {
-        complex<SAMPLE>* temp = new complex<SAMPLE>[transform_size];
+        std::complex<SAMPLE>* temp = new std::complex<SAMPLE>[transform_size];
         frequency_buffer.add(temp);
     }
 
@@ -121,7 +120,7 @@ void ConvolutionFilter::filter(std::vector< std::vector<SAMPLE> >& input,
     
     // Update the frequency buffer
     // Zero and move the array to avoid allocating extra memory
-    complex<SAMPLE>* temp = frequency_buffer[next_t/BLOCK_SIZE];
+    std::complex<SAMPLE>* temp = frequency_buffer[next_t/BLOCK_SIZE];
     for(int i=0; i < transform_size; i++)
         temp[i] = 0.0;
     frequency_buffer.add(temp);

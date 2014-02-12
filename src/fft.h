@@ -5,10 +5,9 @@
 #include <vector>
 #include <fftw3.h>
 #include "portaudio_wrapper.h"
-using namespace std;
 
 
-namespace FFT
+namespace ClickTrack
 {
     /* The FFTW object wraps the FFTW3 library to provide a fast FFT for use in
      * processing.
@@ -24,8 +23,8 @@ namespace FFT
             /* Given the input complex numbers, computes the fft and places the
              * result in the output buffer. May destructively modify the input
              * buffer. */
-            void fft(SAMPLE* in, complex<SAMPLE>* out);
-            void ifft(complex<SAMPLE>* in, SAMPLE* out);
+            void fft(SAMPLE* in, std::complex<SAMPLE>* out);
+            void ifft(std::complex<SAMPLE>* in, SAMPLE* out);
 
         private:
             /* These "plans" represent the state used by the FFTW library to
@@ -57,15 +56,15 @@ namespace FFT
             /* Given the input complex numbers, computes the fft and places the
              * result in the output buffer. May destructively modify the input
              * buffer. */
-            void fft(complex<SAMPLE>* in, complex<SAMPLE>* out);
-            void ifft(complex<SAMPLE>* in, complex<SAMPLE>* out);
+            void fft(std::complex<SAMPLE>* in, std::complex<SAMPLE>* out);
+            void ifft(std::complex<SAMPLE>* in, std::complex<SAMPLE>* out);
 
         private:
             const unsigned size;
             const unsigned buffer_size;
 
-            vector<unsigned> bit_reverses;
-            vector<complex<SAMPLE> > twiddles;
+            std::vector<unsigned> bit_reverses;
+            std::vector< std::complex<SAMPLE> > twiddles;
     };
 
 

@@ -7,7 +7,7 @@
 #include "adsr.h"
 
 
-namespace Instruments
+namespace ClickTrack
 {
     /* This is a subtractive synthesizer controlled over MIDI. It is polyphonic
      */
@@ -27,7 +27,7 @@ namespace Instruments
         private:
             /* Add a gain to prevent clipping
              */
-            Filters::GainFilter gain;
+            GainFilter gain;
     };
 
 
@@ -49,9 +49,9 @@ namespace Instruments
         private:
             /* Define our signal chain
              */
-            Oscillators::SawWave osc;
-            Filters::ADSRFilter adsr;
-            Filters::GainFilter gain;
+            SawWave osc;
+            ADSRFilter adsr;
+            GainFilter gain;
     };
 }
 

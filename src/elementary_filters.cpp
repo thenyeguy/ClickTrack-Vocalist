@@ -1,8 +1,7 @@
 #include <iostream>
 #include "elementary_filters.h"
 
-using namespace FilterGenerics;
-using namespace Filters;
+using namespace ClickTrack;
 
 
 GainFilter::GainFilter(float in_gain, unsigned num_channels)

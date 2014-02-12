@@ -2,8 +2,7 @@
 #include <ctime>
 #include "fft.h"
 
-using namespace std;
-using namespace FFT;
+using namespace ClickTrack;
 const float PI = 3.14159265358979f;
 
 
@@ -32,7 +31,7 @@ FFTW::~FFTW()
 }
 
 
-void FFTW::fft(SAMPLE* in, complex<SAMPLE>* out)
+void FFTW::fft(SAMPLE* in, std::complex<SAMPLE>* out)
 {
     // Copy in from the input buffer
     for(unsigned i = 0; i < buffer_size; i++)
@@ -44,18 +43,18 @@ void FFTW::fft(SAMPLE* in, complex<SAMPLE>* out)
     // Copy into the output buffer
     for(unsigned i = 0; i < buffer_size; i++)
     {
-        complex<double>* c =
-            reinterpret_cast<complex<double>*>(&complex_buffer[i]);
+        std::complex<double>* c =
+            reinterpret_cast<std::complex<double>*>(&complex_buffer[i]);
         out[i] = *c;
     }
 }
 
 
-void FFTW::ifft(complex<SAMPLE>* in, SAMPLE* out)
+void FFTW::ifft(std::complex<SAMPLE>* in, SAMPLE* out)
 {
     // Copy in from the input buffer
-    complex<double>* shadow = 
-        reinterpret_cast<complex<double>*>(in);
+    std::complex<double>* shadow = 
+        reinterpret_cast<std::complex<double>*>(in);
     for(unsigned i = 0; i < buffer_size; i++)
     {
         shadow[i] = in[i];
@@ -84,20 +83,20 @@ Transformer::Transformer(unsigned in_size)
 
     // Populate the twiddles factors w_n^i
     // w_n = exp(j*2*pi*n/N)
-    complex<SAMPLE> exponent(0,-2*PI/buffer_size);
+    std::complex<SAMPLE> exponent(0,-2*PI/buffer_size);
     for(int i = 0; i < buffer_size; i++)
-        twiddles.push_back(exp(exponent * complex<SAMPLE>(i,0)));
+        twiddles.push_back(exp(exponent * std::complex<SAMPLE>(i,0)));
 }
 
 
-void Transformer::fft(complex<SAMPLE>* in, complex<SAMPLE>* out)
+void Transformer::fft(std::complex<SAMPLE>* in, std::complex<SAMPLE>* out)
 {
     // Copy the output into bit reverse order
     for(unsigned i = 0; i < buffer_size; i++)
     {
         unsigned reverse_i = bit_reverses[i];
         if(i > size)
-            out[reverse_i] = complex<SAMPLE>(0,0);
+            out[reverse_i] = std::complex<SAMPLE>(0,0);
         else
             out[reverse_i] = in[i];
     }
@@ -115,8 +114,8 @@ void Transformer::fft(complex<SAMPLE>* in, complex<SAMPLE>* out)
                 unsigned upper_i = lower_i + N/2;
 
                 // Grab out the lower and upper N
-                complex<SAMPLE> lower = out[lower_i];
-                complex<SAMPLE> upper =
+                std::complex<SAMPLE> lower = out[lower_i];
+                std::complex<SAMPLE> upper =
                     out[upper_i] * twiddles[buffer_size/N * i];
 
                 // Assign them back using a butterfly
@@ -128,7 +127,7 @@ void Transformer::fft(complex<SAMPLE>* in, complex<SAMPLE>* out)
 }
 
 
-void Transformer::ifft(complex<SAMPLE>* in, complex<SAMPLE>* out)
+void Transformer::ifft(std::complex<SAMPLE>* in, std::complex<SAMPLE>* out)
 {
     // conjugate the input
     for(int i = 0; i < size; i++)
@@ -147,7 +146,7 @@ void Transformer::ifft(complex<SAMPLE>* in, complex<SAMPLE>* out)
 }
 
 
-unsigned FFT::next_power_of_two(unsigned in)
+unsigned ClickTrack::next_power_of_two(unsigned in)
 {
     in--;
     in |= in >> 1;
@@ -161,7 +160,7 @@ unsigned FFT::next_power_of_two(unsigned in)
 }
 
 
-unsigned FFT::bit_reverse(unsigned in)
+unsigned ClickTrack::bit_reverse(unsigned in)
 {
     in = (in >> 16) | (in << 16);
     in = ((in & 0xFF00FF00) >> 8) | ((in & 0x00FF00FF) << 8);
@@ -172,7 +171,7 @@ unsigned FFT::bit_reverse(unsigned in)
 }
 
 
-unsigned FFT::int_log(unsigned in)
+unsigned ClickTrack::int_log(unsigned in)
 {
     in--;
     unsigned result = 0;

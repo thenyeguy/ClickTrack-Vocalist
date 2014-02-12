@@ -6,7 +6,7 @@
 #include <vector>
 
 
-namespace ClickTrackUtils {
+namespace ClickTrack{
     /* Define an exceptions for use in RingBuffer. Thrown when requesting a time
      * value that is not in the ring buffer.
      */

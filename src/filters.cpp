@@ -1,9 +1,7 @@
 #include <cmath>
 #include "filters.h"
 
-using namespace FilterGenerics;
-using namespace Filters;
-
+using namespace ClickTrack;
 
 
 PassFilter::PassFilter(PassFilterMode in_mode, float in_cutoff,
@@ -25,8 +23,8 @@ void PassFilter::set_cutoff(PassFilterMode in_mode, float in_cutoff)
 
 void PassFilter::calculate_coefficients()
 {
-    a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
-        (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
+    a = (tan(M_PI*cutoff/SAMPLE_RATE) - 1) /
+        (tan(M_PI*cutoff/SAMPLE_RATE) + 1);
 }
 
 
@@ -98,22 +96,22 @@ void ShelfFilter::calculate_coefficients()
         case low:
         {
             if(gain < 0) //cut
-                a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - V0) /
-                    (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + V0);
+                a = (tan(M_PI*cutoff/SAMPLE_RATE) - V0) /
+                    (tan(M_PI*cutoff/SAMPLE_RATE) + V0);
             else            // boost
-                a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
-                    (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
+                a = (tan(M_PI*cutoff/SAMPLE_RATE) - 1) /
+                    (tan(M_PI*cutoff/SAMPLE_RATE) + 1);
             break;
         }
 
         case high:
         {
             if(gain < 0) //cut
-                a = (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
-                    (tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
+                a = (tan(M_PI*cutoff/SAMPLE_RATE) - 1) /
+                    (tan(M_PI*cutoff/SAMPLE_RATE) + 1);
             else            // boost
-                a = (V0*tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) - 1) /
-                    (V0*tan(M_PI*cutoff/Portaudio::SAMPLE_RATE) + 1);
+                a = (V0*tan(M_PI*cutoff/SAMPLE_RATE) - 1) /
+                    (V0*tan(M_PI*cutoff/SAMPLE_RATE) + 1);
             break;
         }
     }
@@ -190,15 +188,15 @@ void PeakFilter::calculate_coefficients()
     V0 = pow(10,gain/20);
     H0 = V0-1;
 
-    d = -cos(2*M_PI*cutoff/Portaudio::SAMPLE_RATE);
+    d = -cos(2*M_PI*cutoff/SAMPLE_RATE);
 
     float fs = cutoff / Q;
     if(gain < 0) //cut
-        a = (tan(M_PI*fs/Portaudio::SAMPLE_RATE) - V0) /
-            (tan(M_PI*fs/Portaudio::SAMPLE_RATE) + V0);
+        a = (tan(M_PI*fs/SAMPLE_RATE) - V0) /
+            (tan(M_PI*fs/SAMPLE_RATE) + V0);
     else            // boost
-        a = (tan(M_PI*fs/Portaudio::SAMPLE_RATE) - 1) /
-            (tan(M_PI*fs/Portaudio::SAMPLE_RATE) + 1);
+        a = (tan(M_PI*fs/SAMPLE_RATE) - 1) /
+            (tan(M_PI*fs/SAMPLE_RATE) + 1);
 }
 
 

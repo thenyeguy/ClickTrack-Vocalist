@@ -1,5 +1,5 @@
-#ifndef FILTERGENERICS_H
-#define FILTERGENERICS_H
+#ifndef AUDIOGENERICS_H
+#define AUDIOGENERICS_H
 
 #include <vector>
 #include <mutex>
@@ -7,14 +7,14 @@
 #include "ringbuffer.h"
 
 
-namespace FilterGenerics
+namespace ClickTrack
 {
     /* This determines the size of our ring buffers and processing blocks.
      * For best performance, block size should be an integer multiple of the
      * portaudio buffer size. For processing safety the buffer size should be
      * an integer multiple of  block size, greater than 1.
      */
-    const unsigned BLOCK_SIZE = Portaudio::BUFFER_SIZE;
+    const unsigned BLOCK_SIZE = BUFFER_SIZE;
     const unsigned DEFAULT_RINGBUFFER_SIZE = 4*BLOCK_SIZE;
 
 
@@ -79,7 +79,7 @@ namespace FilterGenerics
 
             unsigned start_t;
             unsigned end_t;
-            ClickTrackUtils::RingBuffer<SAMPLE> out;
+            RingBuffer<SAMPLE> out;
     };
 
 

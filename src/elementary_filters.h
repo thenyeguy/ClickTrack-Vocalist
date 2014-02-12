@@ -2,13 +2,10 @@
 #define ELEMENTARYFILTERS_H
 
 #include <vector>
-#include "filter_generics.h"
-#include "ringbuffer.h"
-
-using namespace FilterGenerics;
+#include "audio_generics.h"
 
 
-namespace Filters
+namespace ClickTrack
 {
     /* The gain filter takes a multiplier coefficient, and multiplies all its
      * inputs by the gain factor.

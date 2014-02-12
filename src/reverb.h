@@ -1,13 +1,12 @@
 #ifndef REVERB_H
 #define REVERB_H
 
-#include "filter_generics.h"
+#include "audio_generics.h"
 #include "elementary_filters.h"
 #include "convolve.h"
 
-using namespace FilterGenerics;
 
-namespace Filters
+namespace ClickTrack
 {
     /* A simple IIR reverb filter.
      */

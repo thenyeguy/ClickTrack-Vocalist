@@ -2,8 +2,7 @@
 #include "reverb.h"
 #include "io_elements.h"
 
-using namespace Filters;
-using namespace Portaudio;
+using namespace ClickTrack;
 
 
 SimpleReverb::SimpleReverb(float in_decay_time, float in_gain, float in_wetness,
@@ -74,9 +73,9 @@ unsigned ConvolutionReverb::get_channel_index(Channel* channel)
 
 
 
-impulse_pair* Filters::impulse_from_wav(const char* filename)
+impulse_pair* ClickTrack::impulse_from_wav(const char* filename)
 {
-    IOElements::WavReader wav(filename);
+    WavReader wav(filename);
 
     impulse_pair* out = new impulse_pair;
     out->num_samples = wav.get_total_samples();
@@ -84,7 +83,7 @@ impulse_pair* Filters::impulse_from_wav(const char* filename)
     out->right = new SAMPLE[out->num_samples];
 
     std::vector<SAMPLE> buffer(BLOCK_SIZE);
-    for(unsigned t = 0; t < out->num_samples; t += FilterGenerics::BLOCK_SIZE)
+    for(unsigned t = 0; t < out->num_samples; t += BLOCK_SIZE)
     {
         // Read left and copy in
         wav.get_output_channel(0)->get_block(buffer, t);

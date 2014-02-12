@@ -4,14 +4,11 @@
 #include <rtmidi.h>
 
 
-// Forward declare
-namespace Instruments
+namespace ClickTrack
 {
+    // Forward declare
     class GenericInstrument;
-}
 
-namespace Midi
-{
     /* Converts a MIDI note number to a frequency
      */
     float noteToFreq(unsigned note);
@@ -32,13 +29,13 @@ namespace Midi
              * If no channel is provided, the constructor asks which channel
              * to use.
              */
-            MidiIn(Instruments::GenericInstrument* inst, int channel=-1);
+            MidiIn(GenericInstrument* inst, int channel=-1);
 
             ~MidiIn();
 
         private:
             RtMidiIn stream;
-            Instruments::GenericInstrument* inst;
+            GenericInstrument* inst;
 
             /* Callback for registering with the input stream
              * Parses the MIDI message and passes on its message to the

@@ -1,10 +1,10 @@
 #ifndef OSCILLATOR_H
 #define OSCILLATOR_H
 
-#include "filter_generics.h"
+#include "audio_generics.h"
 
 
-namespace Oscillators
+namespace ClickTrack
 {
     /* An oscillator is a basic generator unit. It internally keeps track of
      * time, and generates a periodic function "f". To implement your own
@@ -12,7 +12,7 @@ namespace Oscillators
      *
      * EG a sine wave oscillator
      */
-    class Oscillator : public FilterGenerics::AudioGenerator
+    class Oscillator : public AudioGenerator
     {
         public:
             Oscillator(float in_freq);

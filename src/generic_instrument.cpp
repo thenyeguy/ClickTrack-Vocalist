@@ -1,7 +1,6 @@
 #include "generic_instrument.h"
 
-using namespace FilterGenerics;
-using namespace Instruments;
+using namespace ClickTrack;
 
 
 GenericInstrument::GenericInstrument(int midi_channel)
@@ -15,8 +14,7 @@ void GenericInstrument::add_output_channel(Channel* channel)
 }
 
 
-FilterGenerics::Channel*
-GenericInstrument::get_output_channel(int channel)
+Channel* GenericInstrument::get_output_channel(int channel)
 {
     if(channel > output_channels.size())
         throw ChannelOutOfRange();

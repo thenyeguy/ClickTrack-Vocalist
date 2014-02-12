@@ -2,14 +2,11 @@
 #define CONVOLVE_H
 
 #include <vector>
-#include "ringbuffer.h"
-#include "filter_generics.h"
+#include "audio_generics.h"
 #include "fft.h"
 
-using namespace FilterGenerics;
 
-
-namespace Filters
+namespace ClickTrack
 {
     /* The ConvolutionFilter implements a real time convolution of the input
      * signal with a precomputed impulse response.
@@ -35,18 +32,18 @@ namespace Filters
                     std::vector< std::vector<SAMPLE> >& output);
 
             const unsigned transform_size;
-            FFT::Transformer transformer;
+            Transformer transformer;
 
             const unsigned num_impulse_blocks;
-            std::vector<complex<SAMPLE>*> impulse_response;
+            std::vector<std::complex<SAMPLE>*> impulse_response;
 
-            ClickTrackUtils::RingBuffer<complex<SAMPLE>*> frequency_buffer;
-            ClickTrackUtils::RingBuffer<SAMPLE> reverb_buffer;
+            RingBuffer<std::complex<SAMPLE>*> frequency_buffer;
+            RingBuffer<SAMPLE> reverb_buffer;
 
 
             // Preallocate buffers for speed
-            complex<SAMPLE>* input_buffer;
-            complex<SAMPLE>* output_buffer;
+            std::complex<SAMPLE>* input_buffer;
+            std::complex<SAMPLE>* output_buffer;
     };
 }
 

@@ -3,11 +3,11 @@
 
 #include <list>
 #include <map>
+#include "audio_generics.h"
 #include "generic_instrument.h"
-#include "filter_generics.h"
 #include "elementary_filters.h"
 
-namespace Instruments
+namespace ClickTrack
 {
     class PolyphonicVoice;
     class PolyphonicInstrument : public GenericInstrument
@@ -51,7 +51,7 @@ namespace Instruments
 
             /* Sums the output of our voices
              */
-            Filters::Adder adder;
+            Adder adder;
 
         private:
             /* Voices are tracked in two lists. First, all voices are kept in

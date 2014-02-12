@@ -13,7 +13,8 @@ typedef float SAMPLE;
 
 
 
-namespace Portaudio {
+namespace ClickTrack
+{
     /* Define some key constants that can be used throughout the program.
      *
      * Currently, a buffer size of 128 is the lowest power of two that will

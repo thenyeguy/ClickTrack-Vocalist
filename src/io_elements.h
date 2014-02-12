@@ -5,15 +5,15 @@
 #include <fstream>
 #include <string>
 #include "portaudio_wrapper.h"
-#include "filter_generics.h"
+#include "audio_generics.h"
 
 
-namespace IOElements
+namespace ClickTrack
 {
     /* The microphone is an input device. It uses the default input device on
      * your computer, and pulls its data from portaudio.
      */
-    class Microphone : public FilterGenerics::AudioGenerator
+    class Microphone : public AudioGenerator
     {
         public:
             Microphone(unsigned num_channels = 1);
@@ -22,14 +22,14 @@ namespace IOElements
             void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
 
 
-            Portaudio::InputStream stream;
+            InputStream stream;
     };
 
 
     /* The speaker is an output device. It uses the default output device on
      * your computer, and pushes its data out to portaudio.
      */
-    class Speaker : public FilterGenerics::AudioConsumer
+    class Speaker : public AudioConsumer
     {
         public:
             Speaker(unsigned num_inputs = 1);
@@ -38,7 +38,7 @@ namespace IOElements
             void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);
 
 
-            Portaudio::OutputStream stream;
+            OutputStream stream;
     };
 
 
@@ -63,7 +63,7 @@ namespace IOElements
     /* The WavReader is an input device. It reads a wav file and plays it back
      * in stereo until the file runs out. Then it stops forever.
      */
-    class WavReader : public FilterGenerics::AudioGenerator
+    class WavReader : public AudioGenerator
     {
         public:
             WavReader(const char* in_filename);
@@ -101,7 +101,7 @@ namespace IOElements
      * Must be terminated gracefully to update the length params in the header
      * Uses 16-bit integer PCM
      */
-    class WavWriter : public FilterGenerics::AudioConsumer
+    class WavWriter : public AudioConsumer
     {
         public:
             WavWriter(const char* in_filename, unsigned num_inputs = 1);

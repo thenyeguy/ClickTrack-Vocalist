@@ -2,7 +2,7 @@
 #include "../src/fft.h"
 
 using namespace std;
-using namespace FFT;
+using namespace ClickTrack;
 
 
 int main()

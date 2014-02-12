@@ -1,11 +1,11 @@
 #ifndef GENERIC_INSTRUMENT_H
 #define GENERIC_INSTRUMENT_H
 
-#include "filter_generics.h"
+#include "audio_generics.h"
 #include "midi_wrapper.h"
 
 
-namespace Instruments
+namespace ClickTrack
 {
     /* The Generic Instrument is an abstract class that defines the interface
      * for a MIDI instrument. It is attached to the MidiIn class and receives
@@ -13,7 +13,7 @@ namespace Instruments
      */
     class GenericInstrument
     {
-        friend class Midi::MidiIn;
+        friend class MidiIn;
 
         public:
             /* Constructor. If no channel is specified, the user is asked what
@@ -24,7 +24,7 @@ namespace Instruments
             /* Exposes the final output channel of the instrument, so that it
              * may be plugged later into the signal chain.
              */
-            FilterGenerics::Channel* get_output_channel(int channel=0);
+            Channel* get_output_channel(int channel=0);
             const unsigned get_num_output_channels();
 
         protected:
@@ -49,18 +49,18 @@ namespace Instruments
 
             /* Used by subclasses to add their own output channels
              */
-            void add_output_channel(FilterGenerics::Channel* channel);
+            void add_output_channel(Channel* channel);
 
         private:
             /* A vector of all our output channels. The subclass must push their
              * output channels into this vector.
              */
-            std::vector<FilterGenerics::Channel*> output_channels;
+            std::vector<Channel*> output_channels;
 
             /* This is our MIDI listener. The MIDI callback will call our
              * instrument functions.
              */ 
-            Midi::MidiIn midi;
+            MidiIn midi;
     };
 }
 

@@ -3,10 +3,7 @@
 #include <cmath>
 
 
-using namespace std;
-using namespace Filters;
-using namespace Oscillators;
-using namespace Instruments;
+using namespace ClickTrack;
 
 
 SubtractiveSynth::SubtractiveSynth(int num_voices, int midi_channel)

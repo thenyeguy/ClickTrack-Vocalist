@@ -2,7 +2,7 @@
 #define RINGBUFFER_CPP
 #include "ringbuffer.h"
 
-using namespace ClickTrackUtils;
+using namespace ClickTrack;
 
 
 template <class SampleT>

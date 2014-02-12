@@ -5,10 +5,7 @@
 #include "../src/convolve.h"
 #include "../src/reverb.h"
 
-using namespace FilterGenerics;
-using namespace IOElements;
-using namespace Oscillators;
-using namespace Filters;
+using namespace ClickTrack;
 
 
 int main()
@@ -43,10 +40,10 @@ int main()
         }
         std::cout << "Done" << std::endl;
     }
-    catch(exception& e)
+    catch(std::exception& e)
     {
-        cerr << "\n\n" << "EXCEPTION: " << typeid(e).name() << endl;
-        cerr << "           " << e.what() << endl;
+        std::cerr << "\n\n" << "EXCEPTION: " << typeid(e).name() << std::endl;
+        std::cerr << "           " << e.what() << std::endl;
 
         exit(1);
     }

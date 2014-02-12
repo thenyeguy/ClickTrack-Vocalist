@@ -2,13 +2,10 @@
 #define DELAY_H
 
 #include <vector>
-#include "filter_generics.h"
-#include "ringbuffer.h"
-
-using namespace FilterGenerics;
+#include "audio_generics.h"
 
 
-namespace Filters
+namespace ClickTrack
 {
     /* The delay filter plays back delayed copies of its input. The first delay
      * is played at full amplitude, and is then decayed linearly by the feedback
@@ -39,7 +36,7 @@ namespace Filters
             float wetness;
 
 
-            std::vector<ClickTrackUtils::RingBuffer<SAMPLE>*> delay_buffers;
+            std::vector<RingBuffer<SAMPLE>*> delay_buffers;
     };
 }
 

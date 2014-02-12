@@ -4,7 +4,7 @@
 #include <math.h>
 #include "polyphonic_instrument.h"
 
-using namespace Instruments;
+using namespace ClickTrack;
 
 
 PolyphonicInstrument::PolyphonicInstrument(int in_num_voices, int midi_channel)
@@ -138,7 +138,7 @@ void PolyphonicVoice::on_note_down(unsigned in_note, float velocity)
     playing = true;
     note = in_note;
     
-    freq = Midi::noteToFreq(note);
+    freq = noteToFreq(note);
     handle_note_down(velocity);
 }
 
