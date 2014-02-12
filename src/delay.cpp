@@ -63,7 +63,7 @@ void Delay::filter(std::vector< std::vector<SAMPLE> >& input,
 {
     for(int i = 0; i < num_input_channels; i++)
     {
-        for(int j = 0; j < BLOCK_SIZE; j++)
+        for(int j = 0; j < FRAME_SIZE; j++)
         {
             // Add the delayed version of the signal in, respecting wetness
             SAMPLE delayed_value = delay_buffers[i]->get(next_t + j);

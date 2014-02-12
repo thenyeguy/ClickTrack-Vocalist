@@ -14,8 +14,8 @@ namespace ClickTrack
      * portaudio buffer size. For processing safety the buffer size should be
      * an integer multiple of  block size, greater than 1.
      */
-    const unsigned BLOCK_SIZE = BUFFER_SIZE;
-    const unsigned DEFAULT_RINGBUFFER_SIZE = 4*BLOCK_SIZE;
+    const unsigned FRAME_SIZE = PORTAUDIO_BUFFER_SIZE;
+    const unsigned DEFAULT_RINGBUFFER_SIZE = 4*FRAME_SIZE;
 
 
     class ChannelOutOfRange: public std::exception
@@ -59,23 +59,22 @@ namespace ClickTrack
             /* Fills an incoming buffer with one block worth of audio data
              * beginning at the requested time.
              */
-            void get_block(std::vector<SAMPLE>& buffer, unsigned t);
+            void get_frame(std::vector<SAMPLE>& buffer, unsigned t);
 
         protected:
             /* A channel can only exist within an audio generator, so protect
              * the constructor
              */
-            Channel(AudioGenerator* in_parent, unsigned start_t=0);
+            Channel(AudioGenerator& in_parent, unsigned start_t=0);
 
-            /* Fills the Channel's internal buffer with a new block of
+            /* Fills this Channel's internal buffer with a new block of
              * audio data.
              */
-            void push_block(const std::vector<SAMPLE>& buffer);
-
+            void push_frame(const std::vector<SAMPLE>& buffer);
 
             /* Internal state
              */
-            AudioGenerator* parent;
+            AudioGenerator& parent;
 
             unsigned start_t;
             unsigned end_t;
@@ -98,30 +97,32 @@ namespace ClickTrack
 
             /* Returns the requested output channel by number
              */
-            Channel* get_output_channel(unsigned i = 0);
             unsigned get_num_output_channels();
+            Channel* get_output_channel(unsigned i = 0);
 
         protected:
             /* Writes outputs into the buffer. Calls generate_outputs to
              * determine what to write out. Used by the output channel
              */
-            void write_outputs();
+            void fill_output_buffers();
 
             /* When called, updates the output channels with one more block of
-             * audio data.
-             *
-             * Must be overwritten in subclasses.
+             * audio data. Must be overwritten in subclasses.
              */
             virtual void generate_outputs(
                     std::vector< std::vector<SAMPLE> >& outputs) = 0;
 
+            /* Starting time of next block
+             */
+            unsigned next_out_t;
 
-            unsigned next_out_t; // Starting time unit of next block
-
+            /* Information about our internal output channels
+             */
             const unsigned num_output_channels;
             std::vector<Channel> output_channels;
 
-            // statically allocated output buffer for speed
+            /* statically allocated output buffer for speed
+             */
             std::vector< std::vector<SAMPLE> > output_buffer;
     };
 
@@ -142,18 +143,16 @@ namespace ClickTrack
              * a channel's index by value, so that it can be removed and
              * restored when switching components
              */
+            unsigned get_num_input_channels();
             void set_input_channel(Channel* channel, unsigned channel_i = 0);
             void remove_channel(unsigned channel_i);
 
             unsigned get_channel_index(Channel* channel);
 
-
             /* When called, reads in the next block from the input channels
              * and calls the process_inputs function.
              */
             void consume_inputs();
-
-            unsigned get_num_input_channels();
 
         protected:
             /* The lock is used to prevent computing outputs and modifying the
@@ -162,19 +161,22 @@ namespace ClickTrack
             std::mutex lock;
 
             /* When called on input data, processes it. Must be overwritten in
-             *
              * subclass.
              */
             virtual void process_inputs(
                     std::vector< std::vector<SAMPLE> >& inputs) = 0;
 
+            /* Starting time of next block
+             */
+            unsigned next_t;
 
-            unsigned next_t; // Starting time unit of next block
-
+            /* Information about our internal input channels
+             */
             const unsigned num_input_channels;
             std::vector<Channel*> input_channels;
 
-            // statically allocated input buffer for speed
+            /* statically allocated output buffer for speed
+             */
             std::vector< std::vector<SAMPLE> > input_buffer;
     };
 

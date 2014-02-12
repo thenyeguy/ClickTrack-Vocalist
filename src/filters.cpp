@@ -31,7 +31,7 @@ void PassFilter::calculate_coefficients()
 void PassFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < BLOCK_SIZE; i++)
+    for(int i = 0; i < FRAME_SIZE; i++)
     {
         for(int j = 0; j < num_input_channels; j++)
         {
@@ -121,7 +121,7 @@ void ShelfFilter::calculate_coefficients()
 void ShelfFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < BLOCK_SIZE; i++)
+    for(int i = 0; i < FRAME_SIZE; i++)
     {
         for(int j = 0; j < num_input_channels; j++)
         {
@@ -203,7 +203,7 @@ void PeakFilter::calculate_coefficients()
 void PeakFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < BLOCK_SIZE; i++)
+    for(int i = 0; i < FRAME_SIZE; i++)
     {
         for(int j = 0; j < num_input_channels; j++)
         {

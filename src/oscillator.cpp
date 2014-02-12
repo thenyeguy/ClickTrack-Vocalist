@@ -40,7 +40,7 @@ void Oscillator::set_freq(float in_freq)
 
 void Oscillator::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
-    for(int i = 0; i < BLOCK_SIZE; i++)
+    for(int i = 0; i < FRAME_SIZE; i++)
     {
         // Generate this output
         outputs[0][i] = paused ? 0.0 : f();

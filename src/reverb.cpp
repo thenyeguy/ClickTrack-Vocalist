@@ -22,7 +22,7 @@ void SimpleReverb::filter(std::vector< std::vector<SAMPLE> >& input,
 {
     for(int i = 0; i < num_input_channels; i++)
     {
-        for(int j = 0; j < BLOCK_SIZE; j++)
+        for(int j = 0; j < FRAME_SIZE; j++)
         {
             SAMPLE last;
             if(j == 0) last = sample_rollover[i];
@@ -82,17 +82,17 @@ impulse_pair* ClickTrack::impulse_from_wav(const char* filename)
     out->left = new SAMPLE[out->num_samples];
     out->right = new SAMPLE[out->num_samples];
 
-    std::vector<SAMPLE> buffer(BLOCK_SIZE);
-    for(unsigned t = 0; t < out->num_samples; t += BLOCK_SIZE)
+    std::vector<SAMPLE> buffer(FRAME_SIZE);
+    for(unsigned t = 0; t < out->num_samples; t += FRAME_SIZE)
     {
         // Read left and copy in
-        wav.get_output_channel(0)->get_block(buffer, t);
-        for(unsigned i = 0; i < BLOCK_SIZE; i++)
+        wav.get_output_channel(0)->get_frame(buffer, t);
+        for(unsigned i = 0; i < FRAME_SIZE; i++)
             out->left[t+i] = buffer[i];
 
         // Read right and copy in
-        wav.get_output_channel(1)->get_block(buffer, t);
-        for(unsigned i = 0; i < BLOCK_SIZE; i++)
+        wav.get_output_channel(1)->get_frame(buffer, t);
+        for(unsigned i = 0; i < FRAME_SIZE; i++)
             out->right[t+i] = buffer[i];
     }
 

@@ -33,7 +33,7 @@ InputStream::InputStream(unsigned in_channels)
     //Open the stream!
     pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, &inputParams, NULL,
-            SAMPLE_RATE, BUFFER_SIZE, paNoFlag,
+            SAMPLE_RATE, PORTAUDIO_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 }
@@ -66,7 +66,7 @@ OutputStream::OutputStream(unsigned in_channels)
     //Open the stream!
     pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, NULL, &outputParams,
-            SAMPLE_RATE, BUFFER_SIZE, paNoFlag,
+            SAMPLE_RATE, PORTAUDIO_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 }

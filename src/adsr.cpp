@@ -41,7 +41,7 @@ void ADSRFilter::on_note_up()
 void ADSRFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
-    for(int i = 0; i < BLOCK_SIZE; i++)
+    for(int i = 0; i < FRAME_SIZE; i++)
     {
         // Update the time and multiplier
         t = next_t+i;

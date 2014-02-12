@@ -19,7 +19,7 @@ void GainFilter::filter(std::vector< std::vector<SAMPLE> >& input,
     // Sum in the output
     for(int i = 0; i < num_input_channels; i++)
     {
-        for(int j = 0; j < BLOCK_SIZE; j++)
+        for(int j = 0; j < FRAME_SIZE; j++)
         {
             output[i][j] = gain*input[i][j];
         }
@@ -37,7 +37,7 @@ void Adder::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
     // Sum in the output
-    for(int i = 0; i < BLOCK_SIZE; i++)
+    for(int i = 0; i < FRAME_SIZE; i++)
     {
         output[0][i] = 0;
         for(int j = 0; j < num_input_channels; j++)
@@ -58,7 +58,7 @@ void Multiplier::filter(std::vector< std::vector<SAMPLE> >& input,
         std::vector< std::vector<SAMPLE> >& output)
 {
     // Sum in the output
-    for(int i = 0; i < BLOCK_SIZE; i++)
+    for(int i = 0; i < FRAME_SIZE; i++)
     {
         output[0][i] = 0;
         for(int j = 0; j < num_input_channels; j++)
@@ -82,7 +82,7 @@ void ClipDetector::filter(std::vector< std::vector<SAMPLE> >& input,
     // Sum in the output
     for(int i = 0; i < num_input_channels; i++)
     {
-        for(int j = 0; j < BLOCK_SIZE; j++)
+        for(int j = 0; j < FRAME_SIZE; j++)
         {
             if(abs(input[i][j]) > 1.0 && next_t+j > next_time)
             {
