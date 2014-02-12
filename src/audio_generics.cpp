@@ -31,7 +31,7 @@ void Channel::get_frame(std::vector<SAMPLE>& buffer, const unsigned t)
     while(end_t < t+FRAME_SIZE)
         parent.fill_output_buffers();
 
-    out.get_range(buffer, start_t, start_t+FRAME_SIZE);
+    out.get_range(buffer, t, t+FRAME_SIZE);
 }
 
 
