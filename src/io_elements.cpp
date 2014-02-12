@@ -12,17 +12,7 @@ Microphone::Microphone(unsigned num_channels)
 
 void Microphone::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
-    // Read from the sream
-    unsigned num_samples = num_output_channels * FRAME_SIZE;
-    SAMPLE buffer[num_samples];
-    stream.readFromStream(buffer, num_samples);
-
-    // Deinterleave our results
-    for(int i = 0; i < num_output_channels; i++)
-    {
-        for(int j = 0; j < FRAME_SIZE; j++)
-            outputs[i][j] = buffer[num_output_channels*j + i];
-    }
+    stream.readFromStream(outputs);
 }
 
 
@@ -35,23 +25,7 @@ Speaker::Speaker(unsigned num_inputs)
 
 void Speaker::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
 {
-    // Interleave channels
-    unsigned num_samples = num_input_channels * FRAME_SIZE;
-    SAMPLE buffer[num_samples];
-
-    for(int i = 0; i < num_input_channels; i++)
-    {
-        for(int j = 0; j < FRAME_SIZE; j++)
-        {
-            SAMPLE sample = inputs[i][j];
-            if(sample > 1.0) sample = 1.0;
-            if(sample < -1.0) sample = -1.0;
-            buffer[num_input_channels*j + i] = sample;
-        }
-    }
-
-    // Write out
-    stream.writeToStream(buffer, FRAME_SIZE);
+    stream.writeToStream(inputs);
 }
 
 

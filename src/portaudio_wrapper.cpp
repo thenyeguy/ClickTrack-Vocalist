@@ -17,6 +17,9 @@ int pa_error_check(std::string location, int err)
 InputStream::InputStream(unsigned in_channels)
     : channels(in_channels)
 {
+    // Initialize buffer for writing
+    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
+    
     // Initialize portaudio
     pa_error_check("PaInitialize", Pa_Initialize());
 
@@ -41,15 +44,38 @@ InputStream::InputStream(unsigned in_channels)
 
 InputStream::~InputStream()
 {
+    // Free the buffer
+    delete buffer;
+
+    // Close portaudio
     pa_error_check("Pa_StopStream", Pa_StopStream(stream));
     pa_error_check("Pa_CloseStream", Pa_CloseStream(stream));
     pa_error_check("Pa_Terminate", Pa_Terminate());
 }
 
 
+void InputStream::readFromStream(std::vector< std::vector<SAMPLE> >& out)
+{
+    // Read in from the sream
+    Pa_ReadStream(stream, buffer, PORTAUDIO_BUFFER_SIZE);    
+
+    // Deinterleave our results
+    for(int i = 0; i < channels; i++)
+    {
+        for(int j = 0; j < PORTAUDIO_BUFFER_SIZE; j++)
+            out[i][j] = buffer[channels*j + i];
+    }
+}
+
+
+
+
 OutputStream::OutputStream(unsigned in_channels)
     : channels(in_channels)
 {
+    // Initialize buffer for writing
+    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
+    
     // Initialize portaudio
     pa_error_check("PaInitialize", Pa_Initialize());
 
@@ -74,19 +100,30 @@ OutputStream::OutputStream(unsigned in_channels)
 
 OutputStream::~OutputStream()
 {
+    // Free the buffer
+    delete buffer;
+
+    // Close portaudio
     pa_error_check("Pa_StopStream", Pa_StopStream(stream));
     pa_error_check("Pa_CloseStream", Pa_CloseStream(stream));
     pa_error_check("Pa_Terminate", Pa_Terminate());
 }
 
 
-void InputStream::readFromStream(SAMPLE* buffer, int num_samples)
+void OutputStream::writeToStream(std::vector< std::vector<SAMPLE> >& in)
 {
-    Pa_ReadStream(stream, buffer, num_samples);    
-}
+    // Interleave channels
+    for(int i = 0; i < channels; i++)
+    {
+        for(int j = 0; j < PORTAUDIO_BUFFER_SIZE; j++)
+        {
+            SAMPLE sample = in[i][j];
+            if(sample > 1.0) sample = 1.0;
+            if(sample < -1.0) sample = -1.0;
+            buffer[channels*j + i] = sample;
+        }
+    }
 
-
-void OutputStream::writeToStream(SAMPLE* buffer, int num_samples)
-{
-    Pa_WriteStream(stream, buffer, num_samples);
+    // Write out to the stream
+    Pa_WriteStream(stream, buffer, PORTAUDIO_BUFFER_SIZE);
 }

@@ -1,5 +1,6 @@
 #ifndef PORTAUDIO_WRAPPER_H
 #define PORTAUDIO_WRAPPER_H
+#include <vector>
 #include <portaudio.h>
 
 
@@ -35,14 +36,15 @@ namespace ClickTrack
             InputStream(unsigned in_channels = 1);
             ~InputStream();
 
-            /* Given the location to store our data and the number of samples, reads
-             * samples into a buffer.
+            /* Given a reference to a vector of channel data, reads the data
+             * from a stream.
              */
-            void readFromStream(SAMPLE*, int);
+            void readFromStream(std::vector< std::vector<SAMPLE> >& out);
 
         private:
             PaStream* stream;
             const unsigned channels;
+            SAMPLE* buffer;
     };
 
 
@@ -57,14 +59,15 @@ namespace ClickTrack
             OutputStream(unsigned in_channels = 1);
             ~OutputStream();
 
-            /* Given a list of buffers and number of samples, writes those samples to our
-             * output buffer.
+            /* Given a reference to a vector of channel data, writes the data to
+             * a stream.
              */
-            void writeToStream(SAMPLE*, int);
+            void writeToStream(std::vector< std::vector<SAMPLE> >& in);
 
         private:
             PaStream* stream;
             const unsigned channels;
+            SAMPLE* buffer;
     };
 }
 
