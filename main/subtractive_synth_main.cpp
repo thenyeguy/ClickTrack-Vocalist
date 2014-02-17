@@ -8,7 +8,8 @@ int main()
     using namespace std;
 
     cout << "Initializing MIDI instrument" << endl;
-    SubtractiveSynth inst(10,1);
+    SubtractiveSynth inst(10);
+    MidiListener midi(&inst, 1);
 
     cout << "Initializing signal chain" << endl;
     ClipDetector clip(1.0);

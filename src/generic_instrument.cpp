@@ -1,10 +1,17 @@
+#include <cmath>
 #include "generic_instrument.h"
 
 using namespace ClickTrack;
 
 
-GenericInstrument::GenericInstrument(int midi_channel)
-    : output_channels(), midi(this, midi_channel)
+float ClickTrack::midiNoteToFreq(unsigned note)
+{
+    return 440*pow(2, ((float)note-69)/12);
+}
+
+
+GenericInstrument::GenericInstrument()
+    : output_channels()
 {}
 
 

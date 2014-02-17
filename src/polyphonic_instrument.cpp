@@ -7,8 +7,8 @@
 using namespace ClickTrack;
 
 
-PolyphonicInstrument::PolyphonicInstrument(int in_num_voices, int midi_channel)
-    : GenericInstrument(midi_channel), adder(in_num_voices),
+PolyphonicInstrument::PolyphonicInstrument(int in_num_voices)
+    : GenericInstrument(), adder(in_num_voices),
       num_voices(in_num_voices), all_voices(), free_voices(), note_to_voice()
 {}
 
@@ -138,7 +138,7 @@ void PolyphonicVoice::on_note_down(unsigned in_note, float velocity)
     playing = true;
     note = in_note;
     
-    freq = noteToFreq(note);
+    freq = midiNoteToFreq(note);
     handle_note_down(velocity);
 }
 

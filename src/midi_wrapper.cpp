@@ -7,13 +7,7 @@
 using namespace ClickTrack;
 
 
-float ClickTrack::noteToFreq(unsigned note)
-{
-    return 440*pow(2, ((float)note-69)/12);
-}
-
-
-MidiIn::MidiIn(GenericInstrument* in_inst, int channel)
+MidiListener::MidiListener(GenericInstrument* in_inst, int channel)
     : stream(), inst(in_inst)
 {
     // If no channel specified, ask the user for a channel
@@ -41,17 +35,13 @@ MidiIn::MidiIn(GenericInstrument* in_inst, int channel)
     }
 
     // Once we have a channel, initialize it
-    stream.setCallback(&MidiIn::callback, this);
+    stream.setCallback(&MidiListener::callback, inst);
     stream.openPort(channel);
 }
 
 
-MidiIn::~MidiIn()
-{}
-
-
-void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
-                      void* in_midi)
+void MidiListener::callback(double deltaTime, std::vector<unsigned char>* message,
+                      void* in_inst)
 {
     if(message->size() == 0)
     {
@@ -60,7 +50,7 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
     }
 
     // Cast listener to correct type, then case on message type
-    MidiIn* midi = (MidiIn*) in_midi;
+    GenericInstrument* inst = (GenericInstrument*) in_inst;
     unsigned char first = message->at(0);
     unsigned char type = first >> 4;
     //unsigned char channel = first & 0x0F;
@@ -70,7 +60,7 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
         {
             unsigned char note = message->at(1);
             float veloc = double(message->at(2))/100;
-            midi->inst->on_note_down(note, veloc);
+            inst->on_note_down(note, veloc);
             break;
         }
 
@@ -78,7 +68,7 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
         {
             unsigned char note = message->at(1);
             float veloc = double(message->at(2))/100;
-            midi->inst->on_note_up(note, veloc);
+            inst->on_note_up(note, veloc);
             break;
         }
 
@@ -97,9 +87,9 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
                 case 0x40: // sustain pedal
                 {
                     if(message->at(2) < 63)
-                        midi->inst->on_sustain_up();
+                        inst->on_sustain_up();
                     else
-                        midi->inst->on_sustain_down();
+                        inst->on_sustain_down();
 
                     break;
                 }
@@ -115,7 +105,7 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
         case 0xE: // Pitch wheel
         {
             unsigned value = (message->at(2) << 7) | message->at(1);
-            midi->inst->on_pitch_wheel(value);
+            inst->on_pitch_wheel(value);
             break;
         }
         
@@ -128,7 +118,7 @@ void MidiIn::callback(double deltaTime, std::vector<unsigned char>* message,
                     (unsigned) message->at(i);
             std::cout << std::endl;
 
-            midi->inst->on_midi_message(message);
+            inst->on_midi_message(message);
         }
     }
 }

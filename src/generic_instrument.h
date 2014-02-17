@@ -2,24 +2,28 @@
 #define GENERIC_INSTRUMENT_H
 
 #include "audio_generics.h"
-#include "midi_wrapper.h"
 
 
 namespace ClickTrack
 {
+    /* Converts a MIDI note number to a frequency
+     */
+    float midiNoteToFreq(unsigned note);
+
+
     /* The Generic Instrument is an abstract class that defines the interface
-     * for a MIDI instrument. It is attached to the MidiIn class and receives
-     * callbacks on receival of MIDI messages.
+     * for a MIDI instrument class.
+     *
+     * The instrument has no means to trigger its own notes. Instead, it must be
+     * attached to some listener (eg a MidiListener), that will then call the
+     * event handlers.
+     *
+     * This attachment must be done at initialization time by the user.
      */
     class GenericInstrument
     {
-        friend class MidiIn;
-
         public:
-            /* Constructor. If no channel is specified, the user is asked what
-             * channel to use
-             */
-            GenericInstrument(int midi_channel=-1);
+            GenericInstrument();
 
             /* Exposes the final output channel of the instrument, so that it
              * may be plugged later into the signal chain.
@@ -27,10 +31,9 @@ namespace ClickTrack
             Channel* get_output_channel(int channel=0);
             const unsigned get_num_output_channels();
 
-        protected:
-            /* The following functions are called by our MIDI callback. They
-             * are responsible for handling the messages sent to our MIDI
-             * instrument. Must be overrideen.
+            /* The following functions are called by the listener. They are
+             * responsible for handling the messages sent to our instrument.
+             * Must be overrideen.
              *
              * Some messages are parsed and identified by the MidiIn class. If
              * so, they use the named message types below. If a message is not
@@ -47,6 +50,7 @@ namespace ClickTrack
 
             virtual void on_midi_message(std::vector<unsigned char>* message) = 0;
 
+        protected:
             /* Used by subclasses to add their own output channels
              */
             void add_output_channel(Channel* channel);
@@ -56,11 +60,6 @@ namespace ClickTrack
              * output channels into this vector.
              */
             std::vector<Channel*> output_channels;
-
-            /* This is our MIDI listener. The MIDI callback will call our
-             * instrument functions.
-             */ 
-            MidiIn midi;
     };
 }
 

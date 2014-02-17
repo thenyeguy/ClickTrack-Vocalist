@@ -11,14 +11,13 @@ namespace ClickTrack
 {
     /* This is a subtractive synthesizer controlled over MIDI. It is polyphonic
      */
-    class SubtractiveSynthVoice;
     class SubtractiveSynth : public PolyphonicInstrument
     {
         public:
-            /* Constructor/destructor. Takes in how many oscillators to use, as
+            /* Constructor/destructor. Takes in how many voices to use, as
              * well as the MIDI channel
              */
-            SubtractiveSynth(int oscillators=1, int midi_channel=-1);
+            SubtractiveSynth(int voices=1);
 
             /* Override because we have added more signal chain
              */

@@ -2,22 +2,16 @@
 #define MIDI_WRAPPER_H
 
 #include <rtmidi.h>
+#include "generic_instrument.h"
 
 
 namespace ClickTrack
 {
-    // Forward declare
-    class GenericInstrument;
-
-    /* Converts a MIDI note number to a frequency
-     */
-    float noteToFreq(unsigned note);
-
     /* A wrapper for RtMIDI. It is registered directly to an instrument class
      * and handles all its playing through callbacks to the MIDI process. It
      * internally talks to its instrument to convey state.
      */
-    class MidiIn
+    class MidiListener
     {
         public:
             /* Constructor and destructor automatically open and close the
@@ -29,9 +23,7 @@ namespace ClickTrack
              * If no channel is provided, the constructor asks which channel
              * to use.
              */
-            MidiIn(GenericInstrument* inst, int channel=-1);
-
-            ~MidiIn();
+            MidiListener(GenericInstrument* inst, int channel=-1);
 
         private:
             RtMidiIn stream;
@@ -43,7 +35,7 @@ namespace ClickTrack
              */
             static void callback(double deltaTime,
                                  std::vector<unsigned char>* message,
-                                 void* midi);
+                                 void* instPointer);
     };
 }
 

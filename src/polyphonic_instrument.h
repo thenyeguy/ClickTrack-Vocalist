@@ -15,7 +15,7 @@ namespace ClickTrack
         friend class PolyphonicVoice;
 
         public:
-            PolyphonicInstrument(int voices, int midi_channel=-1);
+            PolyphonicInstrument(int voices);
             ~PolyphonicInstrument();
 
             /* By default, the instrument feeds all its voices into an adder and

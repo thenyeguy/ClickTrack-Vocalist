@@ -6,8 +6,8 @@
 using namespace ClickTrack;
 
 
-SubtractiveSynth::SubtractiveSynth(int num_voices, int midi_channel)
-    : PolyphonicInstrument(num_voices, midi_channel), gain(0.3)
+SubtractiveSynth::SubtractiveSynth(int num_voices)
+    : PolyphonicInstrument(num_voices), gain(0.3)
 {
     // Initialize our voices
     std::vector<PolyphonicVoice*> voices;
