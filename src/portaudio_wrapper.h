@@ -18,22 +18,25 @@ namespace ClickTrack
 {
     /* Define some key constants that can be used throughout the program.
      *
-     * Currently, a buffer size of 128 is the lowest power of two that will
-     * run skipfree on my laptop.
+     * Currently, a buffer size of 128 is the lowest power of two that will run
+     * skipfree on my laptop.
      */
     const unsigned SAMPLE_RATE = 44100; //hz
     const unsigned PORTAUDIO_BUFFER_SIZE = 128;
 
 
-    /* A wrapper for the portaudio boilerplate code. Should initialize and close the
-     * streams for us, and provide the ability to read from an audio stream.
+    /* A wrapper for the portaudio boilerplate code. Should initialize and close
+     * the streams for us, and provide the ability to read from an audio stream.
      */
     class InputStream {
         public:
-            /* Constructor and destructor automatically open and close the portaudio
-             * streams for us. Uses default sample rate and buffer size
+            /* Constructor and destructor automatically open and close the
+             * portaudio streams for us. Uses default sample rate and buffer
+             * size.
+             *
+             * If useDefault is false, then a chooser is presented to the user
              */
-            InputStream(unsigned in_channels = 1);
+            InputStream(unsigned in_channels = 1, bool useDefault=true);
             ~InputStream();
 
             /* Given a reference to a vector of channel data, reads the data
@@ -48,15 +51,18 @@ namespace ClickTrack
     };
 
 
-    /* A wrapper for the portaudio boilerplate code. Should initialize and close the
-     * streams for us, and provide the ability to write to the audio stream.
+    /* A wrapper for the portaudio boilerplate code. Should initialize and close
+     * the streams for us, and provide the ability to write to the audio stream.
      */
     class OutputStream {
         public:
-            /* Constructor and destructor automatically open and close the portaudio
-             * streams for us. Uses default sample rate and buffer size
+            /* Constructor and destructor automatically open and close the
+             * portaudio streams for us. Uses default sample rate and buffer
+             * size.
+             *
+             * If useDefault is false, then a chooser is presented to the user
              */
-            OutputStream(unsigned in_channels = 1);
+            OutputStream(unsigned in_channels = 1, bool useDefault=true);
             ~OutputStream();
 
             /* Given a reference to a vector of channel data, writes the data to

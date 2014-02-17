@@ -16,7 +16,7 @@ namespace ClickTrack
     class Microphone : public AudioGenerator
     {
         public:
-            Microphone(unsigned num_channels = 1);
+            Microphone(unsigned num_channels = 1, bool defaultDevice=true);
 
         private:
             void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
@@ -32,7 +32,7 @@ namespace ClickTrack
     class Speaker : public AudioConsumer
     {
         public:
-            Speaker(unsigned num_inputs = 1);
+            Speaker(unsigned num_inputs = 1, bool defaultDevice=true);
 
         private:
             void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);

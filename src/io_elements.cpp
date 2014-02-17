@@ -4,9 +4,9 @@
 using namespace ClickTrack;
 
 
-Microphone::Microphone(unsigned num_channels)
+Microphone::Microphone(unsigned num_channels, bool defaultDevice)
     : AudioGenerator(num_channels),
-      stream(num_channels)
+      stream(num_channels,defaultDevice)
 {}
 
 
@@ -17,9 +17,9 @@ void Microphone::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 
 
 
-Speaker::Speaker(unsigned num_inputs)
+Speaker::Speaker(unsigned num_inputs, bool defaultDevice)
     : AudioConsumer(num_inputs),
-      stream(num_inputs)
+      stream(num_inputs,defaultDevice)
 {}
 
 

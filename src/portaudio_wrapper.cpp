@@ -14,19 +14,53 @@ int pa_error_check(std::string location, int err)
 }
 
 
-InputStream::InputStream(unsigned in_channels)
+InputStream::InputStream(unsigned in_channels, bool useDefault)
     : channels(in_channels)
 {
-    // Initialize buffer for writing
-    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
-    
     // Initialize portaudio
     pa_error_check("PaInitialize", Pa_Initialize());
 
-    //Use default input and output devices on the computer
-    PaStreamParameters inputParams;
+    // If no device specified, ask the user for one
+    PaDeviceIndex device = Pa_GetDefaultInputDevice();
+    if(!useDefault)
+    {
+        // First list all the channels
+        int nChannels = Pa_GetDeviceCount();
+        if(nChannels < 0)
+        {
+            printf( "ERROR: Pa_CountDevices returned 0x%x\n", nChannels );
+            PaError err = nChannels;
+            std::cout << Pa_GetErrorText(err) << std::endl;
+            exit(1);
+        }
+        std::cout << std::endl << "There are " << nChannels <<
+            " audio devices available." << std::endl;
+        for(int i=0; i < nChannels; i++)
+        {
+            const PaDeviceInfo* deviceInfo = Pa_GetDeviceInfo(i);
+            std::cout << "  Device #" << i << ": " <<
+                deviceInfo->name << " (" << deviceInfo->maxInputChannels <<
+                " in, " << deviceInfo->maxOutputChannels << " out)" << std::endl;
+        }
+                
+        // Ask for a device
+        while(true)
+        {
+            std::cout << "Choose an input device: ";
+            std::cin >> device;
 
-    inputParams.device = Pa_GetDefaultInputDevice();
+            if(!(0 <= device && device < nChannels))
+                std::cerr << "    Not a valid channel number." << std::endl;
+            else if(Pa_GetDeviceInfo(device)->maxInputChannels < channels)
+                std::cerr << "    Not enough input channels." << std::endl;
+            else
+                break;
+        }
+    }
+
+    // Set up the stream
+    PaStreamParameters inputParams;
+    inputParams.device = device;
     inputParams.channelCount = channels;
     inputParams.sampleFormat = PA_SAMPLE_TYPE;
     inputParams.suggestedLatency =
@@ -39,6 +73,9 @@ InputStream::InputStream(unsigned in_channels)
             SAMPLE_RATE, PORTAUDIO_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
+
+    // Initialize buffer for writing
+    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
 }
 
 
@@ -70,19 +107,53 @@ void InputStream::readFromStream(std::vector< std::vector<SAMPLE> >& out)
 
 
 
-OutputStream::OutputStream(unsigned in_channels)
+OutputStream::OutputStream(unsigned in_channels, bool useDefault)
     : channels(in_channels)
 {
-    // Initialize buffer for writing
-    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
-    
     // Initialize portaudio
     pa_error_check("PaInitialize", Pa_Initialize());
 
-    //Use default input and output devices on the computer
-    PaStreamParameters outputParams;
+    // If no device specified, ask the user for one
+    PaDeviceIndex device = Pa_GetDefaultOutputDevice();
+    if(!useDefault)
+    {
+        // First list all the channels
+        int nChannels = Pa_GetDeviceCount();
+        if(nChannels < 0)
+        {
+            printf( "ERROR: Pa_CountDevices returned 0x%x\n", nChannels );
+            PaError err = nChannels;
+            std::cout << Pa_GetErrorText(err) << std::endl;
+            exit(1);
+        }
+        std::cout << std::endl << "There are " << nChannels <<
+            " audio devices available." << std::endl;
+        for(int i=0; i < nChannels; i++)
+        {
+            const PaDeviceInfo* deviceInfo = Pa_GetDeviceInfo(i);
+            std::cout << "  Device #" << i << ": " <<
+                deviceInfo->name << " (" << deviceInfo->maxInputChannels <<
+                " in, " << deviceInfo->maxOutputChannels << " out)" << std::endl;
+        }
+                
+        // Ask for a device
+        while(true)
+        {
+            std::cout << "Choose an output device: ";
+            std::cin >> device;
 
-    outputParams.device = Pa_GetDefaultOutputDevice();
+            if(!(0 <= device && device < nChannels))
+                std::cerr << "    Not a valid channel number." << std::endl;
+            else if(Pa_GetDeviceInfo(device)->maxOutputChannels < channels)
+                std::cerr << "    Not enough input channels." << std::endl;
+            else
+                break;
+        }
+    }
+
+    // Set up the stream
+    PaStreamParameters outputParams;
+    outputParams.device = device;
     outputParams.channelCount = channels;
     outputParams.sampleFormat = PA_SAMPLE_TYPE;
     outputParams.suggestedLatency =
@@ -95,6 +166,9 @@ OutputStream::OutputStream(unsigned in_channels)
             SAMPLE_RATE, PORTAUDIO_BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
+
+    // Initialize buffer for writing
+    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
 }
 
 

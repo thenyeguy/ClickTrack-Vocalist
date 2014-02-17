@@ -17,7 +17,6 @@ MidiListener::MidiListener(GenericInstrument* in_inst, int channel)
         unsigned nPorts = stream.getPortCount();
         std::cout << std::endl << "There are " << nPorts <<
                 " MIDI input sources available." << std::endl;
-        std::string portName;
         for(int i=0; i<nPorts; i++)
             std::cout << "  Input Port #" << i << ": " <<
                     stream.getPortName(i) << std::endl;
@@ -30,7 +29,7 @@ MidiListener::MidiListener(GenericInstrument* in_inst, int channel)
             if(0 <= channel && channel < nPorts)
                 break;
 
-            std::cout << "    Not a valid channel number." << std::endl;
+            std::cerr << "    Not a valid channel number." << std::endl;
         }
     }
 
