@@ -33,64 +33,27 @@ namespace ClickTrack
              */
             virtual float f() = 0;
             float phase;     // rads
+            float phase_inc; // rads
 
         private: 
             bool paused;
             float freq;      // hz
-            float phase_inc; // rads
 
     };
 
 
-    /* A simple sine wave oscillator
+    /* A sine wave oscillator
      */
     class SinWave : public Oscillator
     {
         public:
             SinWave(float in_freq);
-
         protected:
             float f();
     };
 
 
-    /* A simple saw wave oscillator
-     */
-    class SawWave : public Oscillator
-    {
-        public:
-            SawWave(float in_freq);
-
-        protected:
-            float f();
-    };
-
-
-    /* A simple square wave oscillator
-     */
-    class SquareWave : public Oscillator
-    {
-        public:
-            SquareWave(float in_freq);
-
-        protected:
-            float f();
-    };
-
-
-    /* A simple triangle wave oscillator
-     */
-    class TriangleWave : public Oscillator
-    {
-        public:
-            TriangleWave(float in_freq);
-
-        protected:
-            float f();
-    };
-
-
-    /* A simple white noise "oscillator"
+    /* A white noise "oscillator"
      * Has frequency for compatibility with other oscillators, but it is ignored
      * internally
      */
@@ -98,9 +61,73 @@ namespace ClickTrack
     {
         public:
             WhiteNoise(float in_freq);
-
         protected:
             float f();
+    };
+
+
+    /* These simple Oscillators are calculated in a naive fashion.
+     *
+     * This causes them to alias in the frequency domain
+     */
+    class SimpleSawWave : public Oscillator
+    {
+        public:
+            SimpleSawWave(float in_freq);
+        protected:
+            float f();
+    };
+    class SimpleSquareWave : public Oscillator
+    {
+        public:
+            SimpleSquareWave(float in_freq);
+        protected:
+            float f();
+    };
+    class SimpleTriangleWave : public Oscillator
+    {
+        public:
+            SimpleTriangleWave(float in_freq);
+        protected:
+            float f();
+    };
+
+
+    /* These sets of Oscillators are designed to not alias in the frequency
+     * domain, and thus sound cleaner as pure tones.
+     *
+     * Implemented using a PolyBlep algorithm. This introduces a slight rolloff
+     * at the sharp, discontinuous boundries of the waveform.
+     */
+    class PolyBlepOscillator : public Oscillator
+    {
+        public:
+            PolyBlepOscillator(float in_freq);
+        protected:
+            float polyBlepOffset(float t);
+    };
+    class SawWave : public PolyBlepOscillator
+    {
+        public:
+            SawWave(float in_freq);
+        protected:
+            float f();
+    };
+    class SquareWave : public PolyBlepOscillator
+    {
+        public:
+            SquareWave(float in_freq);
+        protected:
+            float f();
+    };
+    class TriangleWave : public PolyBlepOscillator
+    {
+        public:
+            TriangleWave(float in_freq);
+        protected:
+            float f();
+        private:
+            float last_output;
     };
 }
 

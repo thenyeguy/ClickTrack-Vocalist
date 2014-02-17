@@ -207,10 +207,10 @@ void WavWriter::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
         {
             // Clip instead of overflowing
             SAMPLE sample = inputs[j][i];
-            if(sample > 1.0)  sample = 1.0;
-            if(sample < -1.0) sample = -1.0;
+            if(sample > 0.999f)  sample = 0.999f;
+            if(sample <= -0.999f) sample = -0.999f;
 
-            signed short quantized = inputs[j][i] * 32768;
+            signed short quantized = sample * 32768;
             file.write((char*) &quantized, 2);
         }
         samples_written++;

@@ -22,7 +22,7 @@ full: clean all
 # List of output targets
 targets: subtractive_synth
 tests: test_ringbuffer test_fft test_filterchain test_wav test_convolve \
-       test_reverb test_filters
+       test_reverb test_filters test_oscillators
 
 # Collect all the src and object files
 ALL_SRC = $(wildcard $(SRCDIR)/*.cpp)
@@ -62,6 +62,10 @@ test_reverb: $(ALL_OBJ) $(OBJDIR)/test_reverb.o | $(BINDIR)
 	@$(CC) $(CFLAGS) $(LIBS) $^ -o $(BINDIR)/$@
 
 test_filters: $(ALL_OBJ) $(OBJDIR)/test_filters.o | $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $^ -o $(BINDIR)/$@
+
+test_oscillators: $(ALL_OBJ) $(OBJDIR)/test_oscillators.o | $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $^ -o $(BINDIR)/$@
 
