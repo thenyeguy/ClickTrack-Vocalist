@@ -10,12 +10,11 @@ interfaces are very unstable.
 Installing
 ----------
 
-Currently, ClickTrack has three prerequisates: PortAudio, RtMidi, and FFTW. On
+Currently, ClickTrack has the following prerequisates: PortAudio, RtMidi. On
 Mac, all are available on Homebrew. To install, run:
 
     brew install portaudio
     brew install rtmidi
-    brew install fftw
 
 If you are not on on Mac using homebrew, you may have to modify the library path
 in the Makefile.
