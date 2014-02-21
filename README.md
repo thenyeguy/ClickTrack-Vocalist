@@ -25,4 +25,5 @@ executables and tests.
 Android Port
 ------------
 A native Android port of ClickTrack can be found in
-[this repository](http://github.com/thenyeguy/ClickTrackForAndroid).
+[the `android-master`branch](https://github.com/thenyeguy/ClickTrack/tree/android-master)
+of this repository.
