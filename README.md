@@ -21,3 +21,8 @@ in the Makefile.
 
 Once these libraries are installed, simply typing `make` will build all
 executables and tests.
+
+Android Port
+------------
+A native Android port of ClickTrack can be found in
+[this repository](http://github.com/thenyeguy/ClickTrackForAndroid).
