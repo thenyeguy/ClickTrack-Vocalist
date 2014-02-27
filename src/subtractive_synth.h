@@ -50,7 +50,6 @@ namespace ClickTrack
              */
             SawWave osc;
             ADSRFilter adsr;
-            GainFilter gain;
     };
 }
 

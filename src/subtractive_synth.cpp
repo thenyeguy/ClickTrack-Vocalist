@@ -30,18 +30,16 @@ Channel* SubtractiveSynth::get_output_channel()
 
 
 SubtractiveSynthVoice::SubtractiveSynthVoice(SubtractiveSynth* in_parent_synth)
-    :  PolyphonicVoice(in_parent_synth), osc(440), adsr(.005, .3, .5, .3),
-       gain(1.0)
+    :  PolyphonicVoice(in_parent_synth), osc(440), adsr(.005, .3, .5, .3)
 {
     // Connect signal chain
     adsr.set_input_channel(osc.get_output_channel());
-    gain.set_input_channel(adsr.get_output_channel());
 }
 
 
 Channel* SubtractiveSynthVoice::get_output_channel()
 {
-    return gain.get_output_channel();
+    return adsr.get_output_channel();
 }
 
 
@@ -51,7 +49,7 @@ void SubtractiveSynthVoice::handle_note_down(float velocity)
 
     // Set velocity gain
     // TODO: change this curve
-    gain.set_gain(pow(velocity,0.5));
+    adsr.set_gain(pow(velocity,0.5));
 
     // Trigger ADSR
     adsr.on_note_down();

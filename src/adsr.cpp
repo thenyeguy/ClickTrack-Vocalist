@@ -6,13 +6,14 @@ using namespace ClickTrack;
 
 ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
                        float in_sustain_level, float in_release_time,
-                       unsigned in_num_channels)
+                       float in_gain, unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels), state(silent),
     t(0), trigger_time(0), end_time(0), multiplier(0), delta_mult(0)
 {
     attack_time  = in_attack_time  * SAMPLE_RATE;
     decay_time   = in_decay_time   * SAMPLE_RATE;
     release_time = in_release_time * SAMPLE_RATE;
+    gain = in_gain;
 
     sustain_level = in_sustain_level;
 }
@@ -35,6 +36,36 @@ void ADSRFilter::on_note_up()
     end_time = next_t + release_time;
 
     delta_mult = (0.0 - multiplier)/release_time;
+}
+
+
+void ADSRFilter::set_attack_time(float in)
+{
+    attack_time = in;
+}
+
+
+void ADSRFilter::set_decay_time(float in)
+{
+    decay_time = in;
+}
+
+
+void ADSRFilter::set_sustain_level(float in)
+{
+    sustain_level = in;
+}
+
+
+void ADSRFilter::set_release_time(float in)
+{
+    release_time = in;
+}
+
+
+void ADSRFilter::set_gain(float in)
+{
+    gain = in;
 }
 
 
@@ -89,7 +120,7 @@ void ADSRFilter::filter(std::vector< std::vector<SAMPLE> >& input,
         // Copy the new set of samples to our output
         for(int j = 0; j < num_input_channels; j++)
         {
-            output[j][i] = multiplier * input[j][i];
+            output[j][i] = gain * multiplier * input[j][i];
         }
     }
 }

@@ -16,12 +16,20 @@ namespace ClickTrack
             /* Constructor... times are expressed in seconds */
             ADSRFilter(float attack_time, float decay_time,
                        float sustain_level, float release_time,
-                       unsigned num_channels=1);
+                       float gain=1.0, unsigned num_channels=1);
 
             /* These functions are used to trigger the envelope to begin or end
              */
             void on_note_down();
             void on_note_up();
+
+            /* Setters for parameters
+             */
+            void set_attack_time(float attack_time);
+            void set_decay_time(float decay_time);
+            void set_sustain_level(float sustain_level);
+            void set_release_time(float release_time);
+            void set_gain(float gain);
 
         private:
             void filter(std::vector< std::vector<SAMPLE> >& input,
@@ -49,6 +57,7 @@ namespace ClickTrack
              */
             unsigned attack_time, decay_time, release_time;
             float sustain_level;
+            float gain;
     };
 }
 
