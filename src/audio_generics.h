@@ -76,8 +76,8 @@ namespace ClickTrack
              */
             AudioGenerator& parent;
 
-            unsigned start_t;
-            unsigned end_t;
+            unsigned long start_t;
+            unsigned long end_t;
             RingBuffer<SAMPLE> out;
     };
 
@@ -114,7 +114,7 @@ namespace ClickTrack
 
             /* Starting time of next block
              */
-            unsigned next_out_t;
+            unsigned long next_out_t;
 
             /* Information about our internal output channels
              */
@@ -168,7 +168,7 @@ namespace ClickTrack
 
             /* Starting time of next block
              */
-            unsigned next_t;
+            unsigned long next_t;
 
             /* Information about our internal input channels
              */

@@ -18,7 +18,7 @@ RingBuffer<SampleT>::RingBuffer(unsigned n_buffer_size)
 
 
 template <class SampleT>
-SampleT RingBuffer<SampleT>::get(const unsigned t)
+SampleT RingBuffer<SampleT>::get(const unsigned long t)
 {
     if(t < start_t || t >= end_t)
     {
@@ -33,7 +33,7 @@ SampleT RingBuffer<SampleT>::get(const unsigned t)
 
 template <class SampleT>
 void RingBuffer<SampleT>::get_range(std::vector<SampleT>& buffer,
-        const unsigned start, const unsigned end)
+        const unsigned long start, const unsigned long end)
 {
     for(int i = 0; i < end-start; i++)
         buffer[i] = get(i+start);
@@ -41,7 +41,7 @@ void RingBuffer<SampleT>::get_range(std::vector<SampleT>& buffer,
 
 
 template <class SampleT>
-unsigned RingBuffer<SampleT>::add(SampleT s)
+unsigned long RingBuffer<SampleT>::add(SampleT s)
 {
     // Drop the earliest time if nessecary
     if(size == buffer_size)
@@ -59,7 +59,7 @@ unsigned RingBuffer<SampleT>::add(SampleT s)
 
 
 template <class SampleT>
-SampleT& RingBuffer<SampleT>::operator[] (unsigned t)
+SampleT& RingBuffer<SampleT>::operator[] (unsigned long t)
 {
     if(t < start_t || t >= end_t)
     {
@@ -73,14 +73,14 @@ SampleT& RingBuffer<SampleT>::operator[] (unsigned t)
 
 
 template <class SampleT>
-unsigned RingBuffer<SampleT>::get_lowest_timestamp()
+unsigned long RingBuffer<SampleT>::get_lowest_timestamp()
 {
     return start_t;
 }
 
 
 template <class SampleT>
-unsigned RingBuffer<SampleT>::get_highest_timestamp()
+unsigned long RingBuffer<SampleT>::get_highest_timestamp()
 {
     return end_t;
 }
