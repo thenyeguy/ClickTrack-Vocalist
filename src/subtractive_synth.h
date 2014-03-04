@@ -1,10 +1,10 @@
 #ifndef SUBTRACTIVE_SYNTH_H
 #define SUBTRACTIVE_SYNTH_H
 
-#include "polyphonic_instrument.h"
-#include "elementary_filters.h"
-#include "oscillator.h"
 #include "adsr.h"
+#include "basic_elements.h"
+#include "oscillator.h"
+#include "polyphonic_instrument.h"
 
 
 namespace ClickTrack

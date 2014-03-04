@@ -1,8 +1,8 @@
 #include <iostream>
+#include "../src/basic_elements.h"
+#include "../src/convolve.h"
 #include "../src/io_elements.h"
 #include "../src/oscillator.h"
-#include "../src/elementary_filters.h"
-#include "../src/convolve.h"
 #include "../src/reverb.h"
 
 using namespace ClickTrack;

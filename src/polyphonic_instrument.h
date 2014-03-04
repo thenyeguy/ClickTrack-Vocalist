@@ -5,7 +5,7 @@
 #include <map>
 #include "audio_generics.h"
 #include "generic_instrument.h"
-#include "elementary_filters.h"
+#include "basic_elements.h"
 
 namespace ClickTrack
 {

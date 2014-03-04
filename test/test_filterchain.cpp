@@ -1,8 +1,8 @@
 #include <iostream>
+#include "../src/basic_elements.h"
+#include "../src/delay.h"
 #include "../src/io_elements.h"
 #include "../src/oscillator.h"
-#include "../src/elementary_filters.h"
-#include "../src/delay.h"
 
 using namespace ClickTrack;
 

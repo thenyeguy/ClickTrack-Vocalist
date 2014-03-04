@@ -13,7 +13,7 @@
 namespace ClickTrack
 {
     /* A pass filter is a filter that attenuates all frequencies above or below
-     * a cutoff frequency.
+     * a cutoff frequency at 12dB per octave, and -3dB at the cutoff.
      *
      * To initialize, one must simply specify whether the filter is highpass
      * or lowpass, the cutoff in Hz, and the gain in decibels.

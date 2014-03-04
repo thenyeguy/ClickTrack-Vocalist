@@ -1,5 +1,5 @@
-#ifndef ELEMENTARYFILTERS_H
-#define ELEMENTARYFILTERS_H
+#ifndef BASICELEMENTS_H
+#define BASICELEMENTS_H
 
 #include <vector>
 #include "audio_generics.h"
@@ -50,6 +50,28 @@ namespace ClickTrack
         private:
             void filter(std::vector< std::vector<SAMPLE> >& input, 
                     std::vector< std::vector<SAMPLE> >& output);
+    };
+
+
+    /* The multiplexer chooses one of its inputs as the output, and throws away
+     * all the others. It is nessecary to choose between multiple elements while
+     * still maintaining correct internal timing.
+     */
+    class Multiplexer : public AudioFilter
+    {
+        public:
+            Multiplexer(unsigned num_input_channels);
+
+            /* Select the channel the multiplexer is drawing from. Defaults to
+             * channel 0
+             */
+            void select_channel(unsigned channel);
+
+        private:
+            void filter(std::vector< std::vector<SAMPLE> >& input, 
+                    std::vector< std::vector<SAMPLE> >& output);
+            
+            unsigned channel;
     };
 
 
