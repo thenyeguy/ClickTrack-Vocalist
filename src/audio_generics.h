@@ -131,6 +131,9 @@ namespace ClickTrack
      * ability to read in audio data from an output channel, and perform an
      * operation on that input data.
      *
+     * A consumer can optionally trigger a callback function whenever it
+     * consumes its outputs.
+     *
      * EG a speaker is a consumer.
      */
     class AudioConsumer
@@ -154,17 +157,29 @@ namespace ClickTrack
              */
             void consume_inputs();
 
-        protected:
-            /* The lock is used to prevent computing outputs and modifying the
-             * channels at the same time
+            /* This callback is called whenever consume_inputs triggers. It
+             * passes the starting time of next the buffer to be filled, and the
+             * void* payload provided.
              */
-            std::mutex lock;
+            typedef void (*callback_t)(unsigned long time, void* payload);
+            void register_callback(callback_t callback, void* payload);
 
+        protected:
             /* When called on input data, processes it. Must be overwritten in
              * subclass.
              */
             virtual void process_inputs(
                     std::vector< std::vector<SAMPLE> >& inputs) = 0;
+
+            /* The lock is used to prevent computing outputs and modifying the
+             * channels at the same time
+             */
+            std::mutex lock;
+
+            /* The callback function
+             */
+            callback_t callback;
+            void* payload;
 
             /* Starting time of next block
              */

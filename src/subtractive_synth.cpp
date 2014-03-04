@@ -46,26 +46,26 @@ Channel* SubtractiveSynthVoice::get_output_channel()
 }
 
 
-void SubtractiveSynthVoice::handle_note_down(float velocity)
+void SubtractiveSynthVoice::handle_note_down(float velocity, unsigned long time)
 {
-    osc.set_freq(freq*pitch_multiplier);
 
     // Set velocity gain
     // TODO: change this curve
     adsr.set_gain(pow(velocity,0.5));
 
-    // Trigger ADSR
-    adsr.on_note_down();
+    // Trigger frequency and ADSR change
+    osc.set_freq(freq*pitch_multiplier, time);
+    adsr.on_note_down(time);
 }
 
 
-void SubtractiveSynthVoice::handle_note_up()
+void SubtractiveSynthVoice::handle_note_up(unsigned long time)
 {
-    adsr.on_note_up();
+    adsr.on_note_up(time);
 }
 
 
-void SubtractiveSynthVoice::handle_pitch_wheel(float value)
+void SubtractiveSynthVoice::handle_pitch_wheel(float value, unsigned long time)
 {
-    osc.set_freq(freq*pitch_multiplier);
+    osc.set_freq(freq*pitch_multiplier, time);
 }

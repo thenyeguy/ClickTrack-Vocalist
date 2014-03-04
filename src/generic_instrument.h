@@ -39,16 +39,22 @@ namespace ClickTrack
              * so, they use the named message types below. If a message is not
              * special handled, then the original message is passed directly to
              * the instrument using on_midi_message, for custom handling.
-             */
-            virtual void on_note_down(unsigned note, float velocity) = 0;
-            virtual void on_note_up(unsigned note, float velocity) = 0;
+             *
+             * All our handlers take a time to trigger, in sample time. A time
+             * of zero means to trigger at the moment the message is received.
+             */ 
+            virtual void on_note_down(unsigned note, float velocity,
+                    unsigned long time=0) = 0;
+            virtual void on_note_up(unsigned note, float velocity,
+                    unsigned long time=0) = 0;
 
-            virtual void on_sustain_down() = 0;
-            virtual void on_sustain_up() = 0;
+            virtual void on_sustain_down(unsigned long time=0) = 0;
+            virtual void on_sustain_up(unsigned long time=0) = 0;
 
-            virtual void on_pitch_wheel(unsigned value) = 0;
+            virtual void on_pitch_wheel(unsigned value, unsigned long time=0) = 0;
 
-            virtual void on_midi_message(std::vector<unsigned char>* message) = 0;
+            virtual void on_midi_message(std::vector<unsigned char>* message,
+                    unsigned long time=0) = 0;
 
         protected:
             /* Used by subclasses to add their own output channels

@@ -7,8 +7,9 @@
 using namespace ClickTrack;
 
 Oscillator::Oscillator(float in_freq)
-    : AudioGenerator(1), phase(0.0), phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), 
-      paused(false), freq(in_freq)
+    : AudioGenerator(1), scheduler(*this),
+      phase(0.0), phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), paused(false), 
+      freq(in_freq)
 {}
 
 
@@ -30,11 +31,28 @@ void Oscillator::unpause()
 }
 
 
-void Oscillator::set_freq(float in_freq)
+void Oscillator::set_freq(float in_freq, unsigned long time)
 {
+    if(time == 0)
+        time = next_out_t;
+
+    // Put the frequency in the payload and schedule the call
+    float* payload = new float;
+    *payload = in_freq;
+    scheduler.schedule(time, Oscillator::set_freq_callback, payload);
+}
+
+void Oscillator::set_freq_callback(Oscillator& caller, void* payload)
+{
+    // Get the payload
+    float* in_freq = (float*) payload;
+
     // Tracks the current phase to maintain phase during 
-    freq = in_freq;
-    phase_inc = freq * 2*M_PI/SAMPLE_RATE;
+    caller.freq = *in_freq;
+    caller.phase_inc = caller.freq * 2*M_PI/SAMPLE_RATE;
+
+    // Release it
+    delete in_freq;
 }
 
 
@@ -42,6 +60,9 @@ void Oscillator::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
     for(int i = 0; i < FRAME_SIZE; i++)
     {
+        // Run event changes
+        scheduler.run(next_out_t + i);
+
         // Generate this output
         outputs[0][i] = paused ? 0.0 : f();
 

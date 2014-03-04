@@ -7,8 +7,9 @@ using namespace ClickTrack;
 ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
                        float in_sustain_level, float in_release_time,
                        float in_gain, unsigned in_num_channels)
-    : AudioFilter(in_num_channels, in_num_channels), state(silent),
-    t(0), trigger_time(0), end_time(0), multiplier(0), delta_mult(0)
+    : AudioFilter(in_num_channels, in_num_channels), scheduler(*this),
+      state(silent), t(0), trigger_time(0), end_time(0), multiplier(0), 
+      delta_mult(0)
 {
     attack_time  = in_attack_time  * SAMPLE_RATE;
     decay_time   = in_decay_time   * SAMPLE_RATE;
@@ -19,23 +20,49 @@ ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
 }
 
 
-void ADSRFilter::on_note_down()
+void ADSRFilter::on_note_down(unsigned long time)
 {
-    state = attack;
-    trigger_time = next_t;
-    end_time = next_t + attack_time;
-    
-    delta_mult = (1.0 - multiplier)/attack_time;
+    if(time == 0)
+        time = next_t;
+
+    // Run the callback with no payload
+    scheduler.schedule(time, ADSRFilter::note_down_callback, NULL);
 }
 
 
-void ADSRFilter::on_note_up()
+void ADSRFilter::on_note_up(unsigned long time)
 {
-    state = release;
-    trigger_time = next_t;
-    end_time = next_t + release_time;
+    if(time == 0)
+        time = next_t;
 
-    delta_mult = (0.0 - multiplier)/release_time;
+    // Run the callback with no payload
+    scheduler.schedule(time, ADSRFilter::note_up_callback, NULL);
+}
+
+
+void ADSRFilter::note_down_callback(ADSRFilter& caller, void* payload)
+{
+    // Ignore payload
+    // Set the state
+    caller.state = attack;
+    caller.trigger_time = caller.t;
+    caller.end_time = caller.t + caller.attack_time;
+    
+    // Recalculate the multiplier delta
+    caller.delta_mult = (1.0 - caller.multiplier)/caller.attack_time;
+}
+
+
+void ADSRFilter::note_up_callback(ADSRFilter& caller, void* payload)
+{
+    // Ignore payload
+    // Set the state
+    caller.state = release;
+    caller.trigger_time = caller.t;
+    caller.end_time = caller.t + caller.release_time;
+
+    // Recalculate the multiplier delta
+    caller.delta_mult = (0.0 - caller.multiplier)/caller.release_time;
 }
 
 
@@ -74,8 +101,13 @@ void ADSRFilter::filter(std::vector< std::vector<SAMPLE> >& input,
 {
     for(int i = 0; i < FRAME_SIZE; i++)
     {
-        // Update the time and multiplier
+        // Update the time
         t = next_t+i;
+
+        // Run the scheduler
+        scheduler.run(t);
+
+        // Update the multiplier
         multiplier += delta_mult;
 
         // Update the state if nessecary

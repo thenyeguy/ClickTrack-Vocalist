@@ -1,6 +1,7 @@
 #ifndef MIDI_WRAPPER_H
 #define MIDI_WRAPPER_H
 
+#include <chrono>
 #include <rtmidi.h>
 #include "generic_instrument.h"
 
@@ -25,17 +26,30 @@ namespace ClickTrack
              */
             MidiListener(GenericInstrument* inst, int channel=-1);
 
-        private:
-            RtMidiIn stream;
-            GenericInstrument* inst;
+            /* Callback to pass to an audio consumer. The payload should be
+             * a pointer to the MidiListener object
+             */
+            static void consumer_callback(unsigned long time, void* payload);
 
+        private:
             /* Callback for registering with the input stream
              * Parses the MIDI message and passes on its message to the
              * specified destination.
              */
             static void callback(double deltaTime,
                                  std::vector<unsigned char>* message,
-                                 void* instPointer);
+                                 void* in_listener);
+
+            /* State for MIDI
+             */
+            RtMidiIn stream;
+            GenericInstrument* inst;
+
+            /* State for computing buffer offsets
+             */
+            std::chrono::time_point<std::chrono::high_resolution_clock,
+                std::chrono::duration<double> > buffer_timestamp;
+            unsigned long next_buffer_time;
     };
 }
 

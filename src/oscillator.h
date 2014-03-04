@@ -2,6 +2,7 @@
 #define OSCILLATOR_H
 
 #include "audio_generics.h"
+#include "scheduler.h"
 
 
 namespace ClickTrack
@@ -21,12 +22,21 @@ namespace ClickTrack
             void pause();
             void unpause();
 
-            void set_freq(float freq);
+            /* Sets the frequency; uses a function scheduler to trigger this
+             * event with the specified delay.
+             */
+            void set_freq(float freq, unsigned long time=0);
+            static void set_freq_callback(Oscillator& caller, void* payload);
 
         protected:
-            // Overridden method for AudioGenerator to provide basic time
-            // tracking and output for oscillators
+            /* Overridden method for AudioGenerator to provide basic time
+             * tracking and output for oscillators
+             */
             void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
+
+            /* Used to schedule frequency changes
+             */
+            FunctionScheduler<Oscillator> scheduler;
 
             /* The workhorse of an oscillator. It uses the current phase of the
              * wave in radians to compute the value of the waveform.

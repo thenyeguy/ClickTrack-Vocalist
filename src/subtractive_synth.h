@@ -9,7 +9,7 @@
 
 namespace ClickTrack
 {
-    /* This is a subtractive synthesizer controlled over MIDI. It is polyphonic
+    /* This is a subtractive synthesizer controlled over MIDI. It is polyphonic.
      */
     class SubtractiveSynth : public PolyphonicInstrument
     {
@@ -39,9 +39,9 @@ namespace ClickTrack
 
             /* Callbacks for starting and stopping notes
              */
-            void handle_note_down(float velocity);
-            void handle_note_up();
-            void handle_pitch_wheel(float value);
+            void handle_note_down(float velocity, unsigned long time);
+            void handle_note_up(unsigned long time);
+            void handle_pitch_wheel(float value, unsigned long time);
 
             Channel* get_output_channel();
 

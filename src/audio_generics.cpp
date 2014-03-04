@@ -87,7 +87,8 @@ void AudioGenerator::fill_output_buffers()
 
 
 AudioConsumer::AudioConsumer(unsigned in_num_input_channels)
-    : next_t(0), num_input_channels(in_num_input_channels),
+    : callback(NULL), payload(NULL), next_t(0),
+      num_input_channels(in_num_input_channels),
       input_channels(num_input_channels, NULL), input_buffer()
 {
     for(unsigned i = 0; i < num_input_channels; i++)
@@ -123,6 +124,12 @@ unsigned AudioConsumer::get_channel_index(Channel* channel)
 }
 
 
+unsigned AudioConsumer::get_num_input_channels()
+{
+    return num_input_channels;
+}
+
+
 void AudioConsumer::consume_inputs()
 {
     // Read in each channel
@@ -146,12 +153,17 @@ void AudioConsumer::consume_inputs()
     // Process
     process_inputs(input_buffer);
     next_t += FRAME_SIZE;
+
+    // Run the callback
+    if(callback != NULL)
+        callback(next_t, payload);
 }
 
 
-unsigned AudioConsumer::get_num_input_channels()
+void AudioConsumer::register_callback(callback_t in_callback, void* in_payload)
 {
-    return num_input_channels;
+    callback = in_callback;
+    payload = in_payload;
 }
 
 
