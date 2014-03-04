@@ -2,7 +2,7 @@
 #define SUBTRACTIVE_SYNTH_H
 
 #include "adsr.h"
-#include "basic_elements.h"
+#include "equalizer.h"
 #include "oscillator.h"
 #include "polyphonic_instrument.h"
 
@@ -23,10 +23,10 @@ namespace ClickTrack
              */
             Channel* get_output_channel();
 
-        private:
-            /* Add a gain to prevent clipping
+            /* The synth is fed through an EQ at the end of the signal chain.
+             * This EQ is public so as to expose its existing interface
              */
-            GainFilter gain;
+            FourPointEqualizer eq;
     };
 
 

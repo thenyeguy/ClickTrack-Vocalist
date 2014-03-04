@@ -7,7 +7,7 @@ using namespace ClickTrack;
 
 
 SubtractiveSynth::SubtractiveSynth(int num_voices)
-    : PolyphonicInstrument(num_voices), gain(0.3)
+    : PolyphonicInstrument(num_voices), eq()
 {
     // Initialize our voices
     std::vector<PolyphonicVoice*> voices;
@@ -18,12 +18,15 @@ SubtractiveSynth::SubtractiveSynth(int num_voices)
     add_voices(voices);
 
     // Configure our signal chain
-    gain.set_input_channel(PolyphonicInstrument::get_output_channel());
+    eq.set_input_channel(PolyphonicInstrument::get_output_channel());
+
+    // Default the eq to quiet so it doesn't clip
+    eq.set_gain(0.3);
 }
 
 Channel* SubtractiveSynth::get_output_channel()
 {
-    return gain.get_output_channel();
+    return eq.get_output_channel();
 }
 
 

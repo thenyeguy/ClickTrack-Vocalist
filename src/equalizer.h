@@ -24,6 +24,11 @@ namespace ClickTrack
 
             void set_input_channel(Channel* channel, unsigned channel_i = 0);
             void remove_channel(unsigned channel_i = 0);
+            unsigned get_channel_index(Channel* channel);
+
+            /* Sets the global gain of the EQ
+             */
+            void set_gain(float gain);
 
             /* Points 1 and 4 have the same format, as they are similar filters.
              * If a pass filter is selected, the gain is ignored
@@ -54,6 +59,12 @@ namespace ClickTrack
             PassFilter highpassStage2;
             ShelfFilter highshelf;
             Multiplexer point4;
+
+            GainFilter gainFilter;
+
+            /* The current input channel
+             */
+            Channel* input_channel;
     };
 }
 
