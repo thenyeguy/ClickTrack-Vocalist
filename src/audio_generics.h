@@ -223,8 +223,8 @@ namespace ClickTrack
     class FilterBank
     {
         public:
-            FilterBank(unsigned in_num_output_channels,
-                       unsigned in_num_input_channels);
+            FilterBank(unsigned num_output_channels,
+                       unsigned num_input_channels);
             virtual ~FilterBank() {} 
 
             /* Returns the requested output channel by number
