@@ -60,11 +60,6 @@ void MidiListener::callback(double deltaTime, std::vector<unsigned char>* messag
         unsigned long delay = nanos / 1e9 * SAMPLE_RATE;
         time = listener->next_buffer_time + FRAME_SIZE + delay;
     }
-    std::cout << listener->next_buffer_time << std::endl;
-    std::cout << listener->next_buffer_time + FRAME_SIZE << std::endl;
-    std::cout << time << std::endl;
-    std::cout << std::endl;
-
 
     // Cast listener to correct type, then case on message type
     GenericInstrument* inst = listener->inst;
