@@ -11,6 +11,7 @@ namespace ClickTrack
 {
     /* This is a subtractive synthesizer controlled over MIDI. It is polyphonic.
      */
+    class SubtractiveSynthVoice;
     class SubtractiveSynth : public PolyphonicInstrument
     {
         public:
@@ -27,15 +28,24 @@ namespace ClickTrack
              * This EQ is public so as to expose its existing interface
              */
             FourPointEqualizer eq;
+
+        private:
+            std::vector<SubtractiveSynthVoice*> voices;
     };
 
 
     class SubtractiveSynthVoice : public PolyphonicVoice
     {
+        friend class SubtractiveSynth;
+
         public:
             /* Constructor/destructor
              */
             SubtractiveSynthVoice(SubtractiveSynth* parent_synth);
+
+            /* Gets the output of this voice
+             */
+            Channel* get_output_channel();
 
             /* Callbacks for starting and stopping notes
              */
@@ -43,12 +53,16 @@ namespace ClickTrack
             void handle_note_up(unsigned long time);
             void handle_pitch_wheel(float value, unsigned long time);
 
-            Channel* get_output_channel();
+            /* Voice selection for each oscillator - each oscillator can be one
+             * of several modes
+             */
 
-        private:
+        protected:
             /* Define our signal chain
              */
-            SawWave osc;
+            Oscillator osc1, osc2;
+            
+            Adder adder;
             ADSRFilter adsr;
     };
 }

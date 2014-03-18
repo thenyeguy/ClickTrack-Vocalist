@@ -9,8 +9,8 @@ int main()
 {
     std::cout << "Initializing signal chain" << std::endl;
 
-    TriangleWave blep(8*440.f);
-    SimpleTriangleWave naive(8*440.f);
+    Oscillator blep(8*440.f, Oscillator::BlepTri);
+    Oscillator naive(8*440.f, Oscillator::Tri);
 
     Speaker speaker(2);
     speaker.set_input_channel(blep.get_output_channel(), 0);

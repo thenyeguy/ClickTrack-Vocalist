@@ -6,10 +6,10 @@
 
 using namespace ClickTrack;
 
-Oscillator::Oscillator(float in_freq)
-    : AudioGenerator(1), scheduler(*this),
-      phase(0.0), phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), paused(false), 
-      freq(in_freq)
+Oscillator::Oscillator(float in_freq, OscMode in_mode)
+    : AudioGenerator(1), scheduler(*this), last_output(0.0),
+      phase(0.0), phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), mode(in_mode),
+      paused(false), freq(in_freq)
 {}
 
 
@@ -31,6 +31,12 @@ void Oscillator::unpause()
 }
 
 
+void Oscillator::set_mode(OscMode in_mode)
+{
+    mode = in_mode;
+}
+
+
 void Oscillator::set_freq(float in_freq, unsigned long time)
 {
     if(time == 0)
@@ -41,6 +47,7 @@ void Oscillator::set_freq(float in_freq, unsigned long time)
     *payload = in_freq;
     scheduler.schedule(time, Oscillator::set_freq_callback, payload);
 }
+
 
 void Oscillator::set_freq_callback(Oscillator& caller, void* payload)
 {
@@ -73,48 +80,80 @@ void Oscillator::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 }
 
 
-SinWave::SinWave(float in_freq) : Oscillator(in_freq) {};
-float SinWave::f()
+SAMPLE Oscillator::f()
 {
-    return sin(phase);
+    switch(mode)
+    {
+        case Sine:
+        {
+            return sin(phase);
+        }
+
+        case Saw:
+        case BlepSaw:
+        {
+            float out = 2.0*phase/(2*M_PI) - 1.0;
+
+            // one discontinuity, at edge of saw
+            if(mode == BlepSaw)
+                out -= polyBlepOffset(phase/(2*M_PI));
+
+            return out;
+        }
+
+        case Square:
+        case BlepSquare:
+        {
+            float out;
+            if(phase < M_PI)
+                out = 1.0;
+            else
+                out = -1.0;
+
+            // two discontinuities, at rising and falling edge
+            if(mode == BlepSquare)
+            {
+                out += polyBlepOffset(phase/(2*M_PI));
+                out -= polyBlepOffset(fmod(phase/(2*M_PI) + 0.5, 1.0));
+            }
+
+            return out;
+        }
+
+        case Tri:
+        case BlepTri:
+        {
+            // Compute a square wave signal
+            float out;
+            if(phase < M_PI)
+                out = 1.0;
+            else
+                out = -1.0;
+
+            // two discontinuities, at rising and falling edge
+            if(mode == BlepTri)
+            {
+                out += polyBlepOffset(phase/(2*M_PI));
+                out -= polyBlepOffset(fmod(phase/(2*M_PI) + 0.5, 1.0));
+            }
+
+            // Perform leaky integration of a square wave
+            out = phase_inc*out + (1-phase_inc)*last_output;
+            last_output = out;
+            return out;
+        }
+
+        case WhiteNoise:
+        {
+            int si = rand();
+            float sf = ((float) si) / RAND_MAX;
+            return 2*sf - 1;
+        }
+    }
 }
 
 
-WhiteNoise::WhiteNoise(float in_freq) : Oscillator(in_freq) {};
-float WhiteNoise::f()
-{
-    int si = rand();
-    float sf = ((float) si) / RAND_MAX;
-    return 2*sf - 1;
-}
-
-
-SimpleSawWave::SimpleSawWave(float in_freq) : Oscillator(in_freq) {};
-float SimpleSawWave::f()
-{
-    return phase/M_PI - 1.0;
-}
-
-
-SimpleSquareWave::SimpleSquareWave(float in_freq) : Oscillator(in_freq) {};
-float SimpleSquareWave::f()
-{
-    if(phase < M_PI)
-        return 1.0;
-    else
-        return -1.0;
-}
-
-
-SimpleTriangleWave::SimpleTriangleWave(float in_freq) : Oscillator(in_freq) {};
-float SimpleTriangleWave::f()
-{
-    return 4*(fabs(phase/(2*M_PI) - 0.5)) - 1.0;
-}
-
-
-PolyBlepOscillator::PolyBlepOscillator(float in_freq) : Oscillator(in_freq) {};
-float PolyBlepOscillator::polyBlepOffset(float t)
+float Oscillator::polyBlepOffset(float t)
 {
     float dt = phase_inc / (2*M_PI);
     if (t < dt)
@@ -131,55 +170,4 @@ float PolyBlepOscillator::polyBlepOffset(float t)
     {
         return 0.0;
     }
-}
-
-
-SawWave::SawWave(float in_freq) : PolyBlepOscillator(in_freq) {};
-float SawWave::f()
-{
-    float out = 2.0*phase/(2*M_PI) - 1.0;
-
-    // one discontinuity, at edge of saw
-    out -= polyBlepOffset(phase/(2*M_PI));
-
-    return out;
-}
-
-
-SquareWave::SquareWave(float in_freq) : PolyBlepOscillator(in_freq) {};
-float SquareWave::f()
-{
-    float out;
-    if(phase < M_PI)
-        out = 1.0;
-    else
-        out = -1.0;
-
-    // two discontinuities, at rising and falling edge
-    out += polyBlepOffset(phase/(2*M_PI));
-    out -= polyBlepOffset(fmod(phase/(2*M_PI) + 0.5, 1.0));
-
-    return out;
-}
-
-
-TriangleWave::TriangleWave(float in_freq)
-    : PolyBlepOscillator(in_freq), last_output(0.0) {};
-float TriangleWave::f()
-{
-    // Compute a square wave signal
-    float out;
-    if(phase < M_PI)
-        out = 1.0;
-    else
-        out = -1.0;
-
-    // two discontinuities, at rising and falling edge
-    out += polyBlepOffset(phase/(2*M_PI));
-    out -= polyBlepOffset(fmod(phase/(2*M_PI) + 0.5, 1.0));
-
-    // Perform leaky integration of a square wave
-    out = phase_inc*out + (1-phase_inc)*last_output;
-    last_output = out;
-    return out;
 }
