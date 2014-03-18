@@ -7,7 +7,7 @@ using namespace ClickTrack;
 
 
 SubtractiveSynth::SubtractiveSynth(int num_voices)
-    : PolyphonicInstrument(num_voices), eq()
+    : PolyphonicInstrument(num_voices), eq(), volume(0.3)
 {
     // Initialize our voices
     std::vector<PolyphonicVoice*> temp;
@@ -21,14 +21,55 @@ SubtractiveSynth::SubtractiveSynth(int num_voices)
 
     // Configure our signal chain
     eq.set_input_channel(PolyphonicInstrument::get_output_channel());
-
-    // Default the eq to quiet so it doesn't clip
-    eq.set_gain(0.3);
+    volume.set_input_channel(eq.get_output_channel());
 }
+
 
 Channel* SubtractiveSynth::get_output_channel()
 {
-    return eq.get_output_channel();
+    return volume.get_output_channel();
+}
+
+
+void SubtractiveSynth::set_osc1_mode(Oscillator::OscMode mode)
+{
+    for(auto voice : voices)
+        voice->osc1.set_mode(mode);
+}
+
+
+void SubtractiveSynth::set_osc2_mode(Oscillator::OscMode mode)
+{
+    for(auto voice : voices)
+        voice->osc2.set_mode(mode);
+}
+
+
+void SubtractiveSynth::set_attack_time(float attack_time)
+{
+    for(auto voice : voices)
+        voice->adsr.set_attack_time(attack_time);
+}
+
+
+void SubtractiveSynth::set_decay_time(float decay_time)
+{
+    for(auto voice : voices)
+        voice->adsr.set_decay_time(decay_time);
+}
+
+
+void SubtractiveSynth::set_sustain_level(float sustain_level)
+{
+    for(auto voice : voices)
+        voice->adsr.set_sustain_level(sustain_level);
+}
+
+
+void SubtractiveSynth::set_release_time(float release_time)
+{
+    for(auto voice : voices)
+        voice->adsr.set_release_time(release_time);
 }
 
 
@@ -36,7 +77,7 @@ Channel* SubtractiveSynth::get_output_channel()
 
 SubtractiveSynthVoice::SubtractiveSynthVoice(SubtractiveSynth* in_parent_synth)
     : PolyphonicVoice(in_parent_synth), osc1(440, Oscillator::Saw), 
-      osc2(440, Oscillator::Saw), adder(2), adsr(.005, .3, .5, .3)
+      osc2(440, Oscillator::Saw), adder(2), adsr()
 {
     // Connect signal chain
     adder.set_input_channel(osc1.get_output_channel(), 0);

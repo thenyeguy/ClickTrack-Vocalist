@@ -24,10 +24,27 @@ namespace ClickTrack
              */
             Channel* get_output_channel();
 
+            /* Voice selection for each oscillator - each oscillator can be one
+             * of several modes as defined in oscillator.h
+             */
+            void set_osc1_mode(Oscillator::OscMode mode);
+            void set_osc2_mode(Oscillator::OscMode mode);
+
+            /* Setters for the ADSR state
+             */
+            void set_attack_time(float attack_time);
+            void set_decay_time(float decay_time);
+            void set_sustain_level(float sustain_level);
+            void set_release_time(float release_time);
+
             /* The synth is fed through an EQ at the end of the signal chain.
              * This EQ is public so as to expose its existing interface
              */
             FourPointEqualizer eq;
+
+            /* Output gain for the oscillator
+             */
+            GainFilter volume;
 
         private:
             std::vector<SubtractiveSynthVoice*> voices;
@@ -52,10 +69,6 @@ namespace ClickTrack
             void handle_note_down(float velocity, unsigned long time);
             void handle_note_up(unsigned long time);
             void handle_pitch_wheel(float value, unsigned long time);
-
-            /* Voice selection for each oscillator - each oscillator can be one
-             * of several modes
-             */
 
         protected:
             /* Define our signal chain

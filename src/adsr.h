@@ -15,8 +15,8 @@ namespace ClickTrack
     {
         public:
             /* Constructor... times are expressed in seconds */
-            ADSRFilter(float attack_time, float decay_time,
-                       float sustain_level, float release_time,
+            ADSRFilter(float attack_time=.005, float decay_time=.3,
+                       float sustain_level=.5, float release_time=.3,
                        float gain=1.0, unsigned num_channels=1);
 
             /* These functions are used to trigger the envelope to begin or end
