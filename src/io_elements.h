@@ -19,10 +19,13 @@ namespace ClickTrack
             Microphone(unsigned num_channels = 1, bool defaultDevice=true);
 
         private:
-            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
+            void generate_outputs(std::vector<SAMPLE>& output, unsigned long t);
 
-
+            /* Store our stream results
+             */
+            std::vector< std::vector<SAMPLE> > buffer;
             InputStream stream;
+
     };
 
 
@@ -35,9 +38,11 @@ namespace ClickTrack
             Speaker(unsigned num_inputs = 1, bool defaultDevice=true);
 
         private:
-            void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);
+            void process_inputs(std::vector<SAMPLE>& input, unsigned long t);
 
-
+            /* Store our stream results
+             */
+            std::vector< std::vector<SAMPLE> > buffer;
             OutputStream stream;
     };
 
@@ -81,7 +86,7 @@ namespace ClickTrack
             unsigned get_total_samples();
 
         private:
-            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
+            void generate_outputs(std::vector<SAMPLE>& output, unsigned long t);
 
 
             const char* filename;
@@ -108,7 +113,7 @@ namespace ClickTrack
             ~WavWriter();
 
         private:
-            void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);
+            void process_inputs(std::vector<SAMPLE>& input, unsigned long t);
 
 
             const char* filename;

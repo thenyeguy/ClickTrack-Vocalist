@@ -7,28 +7,9 @@
 using namespace ClickTrack;
 
 Oscillator::Oscillator(float in_freq, OscMode in_mode)
-    : AudioGenerator(1), scheduler(*this), last_output(0.0),
-      phase(0.0), phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), mode(in_mode),
-      paused(false), freq(in_freq)
+    : AudioGenerator(1), last_output(0.0), scheduler(*this), phase(0.0),
+      phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), mode(in_mode), freq(in_freq)
 {}
-
-
-bool Oscillator::is_paused()
-{
-    return paused;
-}
-
-
-void Oscillator::pause()
-{
-    paused = true;
-}
-
-
-void Oscillator::unpause()
-{
-    paused = false;
-}
 
 
 void Oscillator::set_mode(OscMode in_mode)
@@ -40,7 +21,7 @@ void Oscillator::set_mode(OscMode in_mode)
 void Oscillator::set_freq(float in_freq, unsigned long time)
 {
     if(time == 0)
-        time = next_out_t;
+        time = get_next_time();
 
     // Put the frequency in the payload and schedule the call
     float* payload = new float;
@@ -63,48 +44,40 @@ void Oscillator::set_freq_callback(Oscillator& caller, void* payload)
 }
 
 
-void Oscillator::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
+void Oscillator::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
 {
-    for(int i = 0; i < FRAME_SIZE; i++)
-    {
-        // Run event changes
-        scheduler.run(next_out_t + i);
+    // Run event changes
+    scheduler.run(t);
 
-        // Generate this output
-        outputs[0][i] = paused ? 0.0 : f();
+    // Update the phase
+    phase += phase_inc;
+    if(phase > 2*M_PI) phase -= 2*M_PI;
 
-        // Update the phase
-        phase += phase_inc;
-        if(phase > 2*M_PI) phase -= 2*M_PI;
-    }
-}
-
-
-SAMPLE Oscillator::f()
-{
+    // Generate this output
+    SAMPLE out;
     switch(mode)
     {
         case Sine:
         {
-            return sin(phase);
+            out = sin(phase);
+            break;
         }
 
         case Saw:
         case BlepSaw:
         {
-            float out = 2.0*phase/(2*M_PI) - 1.0;
+            out = 2.0*phase/(2*M_PI) - 1.0;
 
             // one discontinuity, at edge of saw
             if(mode == BlepSaw)
                 out -= polyBlepOffset(phase/(2*M_PI));
 
-            return out;
+            break;
         }
 
         case Square:
         case BlepSquare:
         {
-            float out;
             if(phase < M_PI)
                 out = 1.0;
             else
@@ -117,14 +90,13 @@ SAMPLE Oscillator::f()
                 out -= polyBlepOffset(fmod(phase/(2*M_PI) + 0.5, 1.0));
             }
 
-            return out;
+            break;
         }
 
         case Tri:
         case BlepTri:
         {
             // Compute a square wave signal
-            float out;
             if(phase < M_PI)
                 out = 1.0;
             else
@@ -140,16 +112,18 @@ SAMPLE Oscillator::f()
             // Perform leaky integration of a square wave
             out = phase_inc*out + (1-phase_inc)*last_output;
             last_output = out;
-            return out;
+            break;
         }
 
         case WhiteNoise:
         {
             int si = rand();
             float sf = ((float) si) / RAND_MAX;
-            return 2*sf - 1;
+            out = 2*sf - 1;
+            break;
         }
     }
+    outputs[0] = out;
 }
 
 

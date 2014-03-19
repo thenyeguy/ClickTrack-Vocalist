@@ -28,33 +28,30 @@ void PassFilter::calculate_coefficients()
 }
 
 
-void PassFilter::filter(std::vector< std::vector<SAMPLE> >& input,
-        std::vector< std::vector<SAMPLE> >& output)
+void PassFilter::filter(std::vector<SAMPLE>& input,
+        std::vector<SAMPLE>& output, unsigned long t)
 {
-    for(int i = 0; i < FRAME_SIZE; i++)
+    for(int i = 0; i < input.size(); i++)
     {
-        for(int j = 0; j < num_input_channels; j++)
+        // Calculate this time step
+        float x  = input[i];
+        float y1 = a*x + x_last[i] - a*y1_last[i];
+        float y;
+        switch(mode)
         {
-            // Calculate this time step
-            float x  = input[j][i];
-            float y1 = a*x + x_last[j] - a*y1_last[j];
-            float y;
-            switch(mode)
-            {
-                case low:
-                    y = (x+y1)/2;
-                    break;
-                case high:
-                    y = (x-y1)/2;
-                    break;
+            case low:
+                y = (x+y1)/2;
+                break;
+            case high:
+                y = (x-y1)/2;
+                break;
 
-            }
-
-            // Store the results to our buffers
-            x_last[j] = x;
-            y1_last[j] = y1;
-            output[j][i] = y;
         }
+
+        // Store the results to our buffers
+        x_last[i] = x;
+        y1_last[i] = y1;
+        output[i] = y;
     }
 }
 
@@ -118,33 +115,30 @@ void ShelfFilter::calculate_coefficients()
 }
 
 
-void ShelfFilter::filter(std::vector< std::vector<SAMPLE> >& input,
-        std::vector< std::vector<SAMPLE> >& output)
+void ShelfFilter::filter(std::vector<SAMPLE>& input,
+        std::vector<SAMPLE>& output, unsigned long t)
 {
-    for(int i = 0; i < FRAME_SIZE; i++)
+    for(int i = 0; i < input.size(); i++)
     {
-        for(int j = 0; j < num_input_channels; j++)
+        // Calculate this time step
+        float x  = input[i];
+        float y1 = a*x + x_last[i] - a*y1_last[i];
+        float y;
+        switch(mode)
         {
-            // Calculate this time step
-            float x  = input[j][i];
-            float y1 = a*x + x_last[j] - a*y1_last[j];
-            float y;
-            switch(mode)
-            {
-                case low:
-                    y = H0/2*(x+y1) + x;
-                    break;
-                case high:
-                    y = H0/2*(x-y1) + x;
-                    break;
+            case low:
+                y = H0/2*(x+y1) + x;
+                break;
+            case high:
+                y = H0/2*(x-y1) + x;
+                break;
 
-            }
-
-            // Store the results to our buffers
-            x_last[j] = x;
-            y1_last[j] = y1;
-            output[j][i] = y;
         }
+
+        // Store the results to our buffers
+        x_last[i] = x;
+        y1_last[i] = y1;
+        output[i] = y;
     }
 }
 
@@ -200,28 +194,25 @@ void PeakFilter::calculate_coefficients()
 }
 
 
-void PeakFilter::filter(std::vector< std::vector<SAMPLE> >& input,
-        std::vector< std::vector<SAMPLE> >& output)
+void PeakFilter::filter(std::vector<SAMPLE>& input,
+        std::vector<SAMPLE>& output, unsigned long t)
 {
-    for(int i = 0; i < FRAME_SIZE; i++)
+    for(int i = 0; i < input.size(); i++)
     {
-        for(int j = 0; j < num_input_channels; j++)
-        {
-            // Calculate this time step
-            float x  = input[j][i];
-            float y1 = -a*x + d*(1-a)*x_last1[j] + x_last2[j]
-                     - d*(1-a)*y1_last1[j] + a*y1_last2[j];
-            float y = H0/2*(x-y1) + x;
+        // Calculate this time step
+        float x  = input[i];
+        float y1 = -a*x + d*(1-a)*x_last1[i] + x_last2[i]
+            - d*(1-a)*y1_last1[i] + a*y1_last2[i];
+        float y = H0/2*(x-y1) + x;
 
 
-            // Store the results to our buffers
-            x_last2[j] = x_last1[j];
-            x_last1[j] = x;
+        // Store the results to our buffers
+        x_last2[i] = x_last1[i];
+        x_last1[i] = x;
 
-            y1_last2[j] = y1_last1[j];
-            y1_last1[j] = y1;
+        y1_last2[i] = y1_last1[i];
+        y1_last1[i] = y1;
 
-            output[j][i] = y;
-        }
+        output[i] = y;
     }
 }

@@ -22,7 +22,7 @@ int main()
     cout << "Entering playback loop..." << endl << endl;
     while(true)
     {
-        out.consume_inputs();
+        out.consume();
     }
 
     

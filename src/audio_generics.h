@@ -9,36 +9,9 @@
 
 namespace ClickTrack
 {
-    /* This determines the size of our ring buffers and processing blocks.
-     * For best performance, block size should be an integer multiple of the
-     * portaudio buffer size. For processing safety the buffer size should be
-     * an integer multiple of  block size, greater than 1.
+    /* This determines the size of our internal ring buffers.
      */
-    const unsigned FRAME_SIZE = PORTAUDIO_BUFFER_SIZE;
-    const unsigned DEFAULT_RINGBUFFER_SIZE = 4*FRAME_SIZE;
-
-
-    class ChannelOutOfRange: public std::exception
-    {
-        virtual const char* what() const throw()
-        {
-            return "The requested filter does not have this many output channels.";
-        }
-    };
-    class NoEmptyInputChannel: public std::exception
-    {
-        virtual const char* what() const throw()
-        {
-            return "This filter cannot accept further input channels.";
-        }
-    };
-    class ChannelNotFound: public std::exception
-    {
-        virtual const char* what() const throw()
-        {
-            return "This filter does not contained the specified input channel.";
-        }
-    };
+    const unsigned DEFAULT_RINGBUFFER_SIZE = PORTAUDIO_BUFFER_SIZE;
 
 
     /* An output channel is the basic unit with which an object receives audio.
@@ -54,30 +27,27 @@ namespace ClickTrack
     {
         friend class AudioGenerator;
         friend class AudioConsumer;
+        friend class AudioFilter;
 
         public:
             /* Fills an incoming buffer with one block worth of audio data
              * beginning at the requested time.
              */
-            void get_frame(std::vector<SAMPLE>& buffer, unsigned t);
+            SAMPLE get_sample(unsigned long t);
 
         protected:
             /* A channel can only exist within an audio generator, so protect
              * the constructor
              */
-            Channel(AudioGenerator& in_parent, unsigned start_t=0);
+            Channel(AudioGenerator& in_parent, unsigned long start_t=0);
 
-            /* Fills this Channel's internal buffer with a new block of
-             * audio data.
+            /* Adds a sample to this Channel's internal buffer 
              */
-            void push_frame(const std::vector<SAMPLE>& buffer);
+            void push_sample(SAMPLE s);
 
             /* Internal state
              */
             AudioGenerator& parent;
-
-            unsigned long start_t;
-            unsigned long end_t;
             RingBuffer<SAMPLE> out;
     };
 
@@ -95,22 +65,29 @@ namespace ClickTrack
             AudioGenerator(unsigned num_output_channels = 1);
             virtual ~AudioGenerator() {}
 
-            /* Returns the requested output channel by number
+            /* Getters for output channels
              */
             unsigned get_num_output_channels();
             Channel* get_output_channel(unsigned i = 0);
 
         protected:
-            /* Writes outputs into the buffer. Calls generate_outputs to
-             * determine what to write out. Used by the output channel
+            /* When called, updates the output channels with one more frame of
+             * audio at time t.
+             *
+             * Must be overwritten in subclasses.
              */
-            void fill_output_buffers();
+            virtual void generate_outputs(std::vector<SAMPLE>& outputs, 
+                    unsigned long t) = 0;
 
-            /* When called, updates the output channels with one more block of
-             * audio data. Must be overwritten in subclasses.
+            /* Returns the next sample time
              */
-            virtual void generate_outputs(
-                    std::vector< std::vector<SAMPLE> >& outputs) = 0;
+            unsigned long get_next_time();
+
+        private:
+            /* Writes outputs into the buffer. Calls tick to determine what to
+             * write out. Used by the output channel
+             */
+            void generate();
 
             /* Starting time of next block
              */
@@ -118,12 +95,11 @@ namespace ClickTrack
 
             /* Information about our internal output channels
              */
-            const unsigned num_output_channels;
             std::vector<Channel> output_channels;
 
-            /* statically allocated output buffer for speed
+            /* Statically allocated frame for speed
              */
-            std::vector< std::vector<SAMPLE> > output_buffer;
+            std::vector<SAMPLE> output_frame;
     };
 
 
@@ -152,10 +128,10 @@ namespace ClickTrack
 
             unsigned get_channel_index(Channel* channel);
 
-            /* When called, reads in the next block from the input channels
-             * and calls the process_inputs function.
+            /* When called, reads in the next frame from the input channels
+             * and calls the tick function.
              */
-            void consume_inputs();
+            void consume();
 
             /* This callback is called whenever consume_inputs triggers. It
              * passes the starting time of next the buffer to be filled, and the
@@ -168,9 +144,14 @@ namespace ClickTrack
             /* When called on input data, processes it. Must be overwritten in
              * subclass.
              */
-            virtual void process_inputs(
-                    std::vector< std::vector<SAMPLE> >& inputs) = 0;
+            virtual void process_inputs(std::vector<SAMPLE>& inputs, 
+                    unsigned long t) = 0;
 
+            /* Returns the next sample time
+             */
+            unsigned long get_next_time();
+
+        private:
             /* The lock is used to prevent computing outputs and modifying the
              * channels at the same time
              */
@@ -183,16 +164,15 @@ namespace ClickTrack
 
             /* Starting time of next block
              */
-            unsigned long next_t;
+            unsigned long next_in_t;
 
             /* Information about our internal input channels
              */
-            const unsigned num_input_channels;
             std::vector<Channel*> input_channels;
 
-            /* statically allocated output buffer for speed
+            /* statically allocated frame for speed
              */
-            std::vector< std::vector<SAMPLE> > input_buffer;
+            std::vector<SAMPLE> input_frame;
     };
 
 
@@ -210,21 +190,27 @@ namespace ClickTrack
             virtual ~AudioFilter() {}
 
         protected:
-            /* Override the generator. When requested, use the consumer to
-             * generate the next block of data.
+            /* Given an input frame, generate a frame of output data. Must be
+             * overwritten in subclass.
              */
-            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
+            virtual void filter(std::vector<SAMPLE>& input, 
+                    std::vector<SAMPLE>& output, unsigned long t) = 0;
 
-            /* Override the consumer. Consumes the input and calls the filter
-             * operation, then writes this to the outputs.
+            /* Gets the next sample time from the consumer
              */
-            void process_inputs(std::vector< std::vector<SAMPLE> >& inputs);
+            using AudioConsumer::get_next_time;
 
-            /* Given a list of input channel data, generate the list of output
-             * channel data. Must be overwritten in subclass.
+        private:
+            /* Override the tick functions. When requested, use our tick to
+             * generate the next frame of data.
              */
-            virtual void filter(std::vector< std::vector<SAMPLE> >& input, 
-                    std::vector< std::vector<SAMPLE> >& output) = 0;
+            void generate_outputs(std::vector<SAMPLE>& inputs, unsigned long t);
+            void process_inputs(std::vector<SAMPLE>& outputs, unsigned long t);
+
+            /* Statically allocated frame for speed. Seperate from the
+             * generator's output to maintain clean interface
+             */
+            std::vector<SAMPLE> output_frame;
     };
 
 
@@ -262,6 +248,31 @@ namespace ClickTrack
             const unsigned num_input_channels;
             const unsigned num_output_channels;
             std::vector<Channel*> output_channels;
+    };
+
+
+    /* Exceptions used by the audio generics
+     */
+    class ChannelOutOfRange: public std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "The requested filter does not have this many output channels.";
+        }
+    };
+    class NoEmptyInputChannel: public std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "This filter cannot accept further input channels.";
+        }
+    };
+    class ChannelNotFound: public std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "This filter does not contained the specified input channel.";
+        }
     };
 }
 

@@ -5,94 +5,89 @@
 using namespace ClickTrack;
 
 
-Channel::Channel(AudioGenerator& in_parent, unsigned in_start_t)
+Channel::Channel(AudioGenerator& in_parent, unsigned long in_start_t)
     : parent(in_parent), out(DEFAULT_RINGBUFFER_SIZE)
 {
-    start_t = in_start_t;
-    end_t = in_start_t;
-
-    out.set_new_startpoint(start_t);
+    out.set_new_startpoint(in_start_t);
 }
 
 
-void Channel::get_frame(std::vector<SAMPLE>& buffer, const unsigned t)
+SAMPLE Channel::get_sample(unsigned long t)
 {
     // If this block already fell out of the buffer, just return silence
-    if(start_t >= t+FRAME_SIZE)
+    if(out.get_lowest_timestamp() > t)
     {
         std::cerr << "Channel has requested a time older than is in "
             << "its buffer." << std::endl;
-        for(int i = 0; i < FRAME_SIZE; i++)
-            buffer[i] = 0.0;
-        return;
+        return 0.0;
     }
 
     // Otherwise generate enough audio
-    while(end_t < t+FRAME_SIZE)
-        parent.fill_output_buffers();
+    while(out.get_highest_timestamp() <= t)
+        parent.generate();
 
-    out.get_range(buffer, t, t+FRAME_SIZE);
+    return out[t];
 }
 
 
-void Channel::push_frame(const std::vector<SAMPLE>& buffer)
+void Channel::push_sample(SAMPLE s)
 {
-    for(int i = 0; i < FRAME_SIZE; i++)
-        out.add(buffer[i]);
-
-    start_t = out.get_lowest_timestamp();
-    end_t = out.get_highest_timestamp();
+    out.add(s);
 }
 
 
 
 
 AudioGenerator::AudioGenerator(unsigned in_num_output_channels)
-    : next_out_t(0), num_output_channels(in_num_output_channels),
-      output_channels(), output_buffer()
+    : next_out_t(0), output_channels(), output_frame()
 {
     for(unsigned i = 0; i < in_num_output_channels; i++)
     {
         output_channels.push_back(Channel(*this));
-        output_buffer.push_back(std::vector<SAMPLE>(FRAME_SIZE));
+        output_frame.push_back(0.0);
     }
 }
 
 
 unsigned AudioGenerator::get_num_output_channels()
 {
-    return num_output_channels;
+    return output_channels.size();
 }
 
 
 Channel* AudioGenerator::get_output_channel(unsigned i)
 {
-    if(i >= num_output_channels)
+    if(i >= output_channels.size())
         throw ChannelOutOfRange();
     return &output_channels[i];
 }
 
 
-void AudioGenerator::fill_output_buffers()
+void AudioGenerator::generate()
 {
-    generate_outputs(output_buffer);
-    next_out_t += FRAME_SIZE;
+    generate_outputs(output_frame, next_out_t);
+    next_out_t++;
 
     //Write the outputs into the channel
-    for(int i = 0; i < num_output_channels; i++)
-        output_channels[i].push_frame(output_buffer[i]);
+    for(int i = 0; i < output_channels.size(); i++)
+        output_channels[i].push_sample(output_frame[i]);
+}
+
+
+unsigned long AudioGenerator::get_next_time()
+{
+    return next_out_t;
 }
 
 
 
 
 AudioConsumer::AudioConsumer(unsigned in_num_input_channels)
-    : callback(NULL), payload(NULL), next_t(0),
-      num_input_channels(in_num_input_channels),
-      input_channels(num_input_channels, NULL), input_buffer()
+    : callback(NULL), payload(NULL), next_in_t(0), 
+    input_channels(in_num_input_channels, NULL), input_frame()
 {
-    for(unsigned i = 0; i < num_input_channels; i++)
-        input_buffer.push_back(std::vector<SAMPLE>(FRAME_SIZE));
+    for(unsigned i = 0; i < in_num_input_channels; i++)
+        input_frame.push_back(0.0);
 }
 
 
@@ -114,7 +109,7 @@ void AudioConsumer::remove_channel(unsigned channel_i)
 
 unsigned AudioConsumer::get_channel_index(Channel* channel)
 {
-    for(unsigned i = 0; i < num_input_channels; i++)
+    for(unsigned i = 0; i < input_channels.size(); i++)
     {
         if(input_channels[i] == channel)
             return i;
@@ -126,37 +121,36 @@ unsigned AudioConsumer::get_channel_index(Channel* channel)
 
 unsigned AudioConsumer::get_num_input_channels()
 {
-    return num_input_channels;
+    return input_channels.size();
 }
 
 
-void AudioConsumer::consume_inputs()
+void AudioConsumer::consume()
 {
     // Read in each channel
     lock.lock();
-    for(unsigned i = 0; i < num_input_channels; i++)
+    for(unsigned i = 0; i < input_channels.size(); i++)
     {
         // If there is no channel currently, read in silence
         if(input_channels[i] == NULL)
         {
             std::cerr << "The requested channel is not connected" << std::endl;
-            for(unsigned j = 0; j < FRAME_SIZE; j++)
-                input_buffer[i][j] = 0.0;
+            input_frame[i] = 0.0;
         }
         else
         {
-            input_channels[i]->get_frame(input_buffer[i], next_t);
+            input_frame[i] = input_channels[i]->get_sample(next_in_t);
         }
     }
     lock.unlock();
 
     // Process
-    process_inputs(input_buffer);
-    next_t += FRAME_SIZE;
+    process_inputs(input_frame, next_in_t);
+    next_in_t++;
 
     // Run the callback
     if(callback != NULL)
-        callback(next_t, payload);
+        callback(next_in_t, payload);
 }
 
 
@@ -167,24 +161,39 @@ void AudioConsumer::register_callback(callback_t in_callback, void* in_payload)
 }
 
 
+unsigned long AudioConsumer::get_next_time()
+{
+    return next_in_t;
+}
+
+
 
 
 AudioFilter::AudioFilter(unsigned in_num_input_channels,
         unsigned in_num_output_channels)
     : AudioGenerator(in_num_output_channels),
-      AudioConsumer(in_num_input_channels)
-{}
-
-
-void AudioFilter::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
+      AudioConsumer(in_num_input_channels), output_frame()
 {
-    consume_inputs();
+    for(unsigned i = 0; i < in_num_output_channels; i++)
+    {
+        output_frame.push_back(0.0);
+    }
 }
 
 
-void AudioFilter::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
+void AudioFilter::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
 {
-    filter(inputs, output_buffer);
+    consume();
+    
+    // Copy our outputs to the final output buffer
+    for(unsigned i = 0; i <= outputs.size(); i++)
+        outputs[i] = output_frame[i];
+}
+
+
+void AudioFilter::process_inputs(std::vector<SAMPLE>& inputs, unsigned long t)
+{
+    filter(inputs, output_frame, t);
 }
 
 

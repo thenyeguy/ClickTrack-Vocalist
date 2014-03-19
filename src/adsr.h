@@ -36,8 +36,8 @@ namespace ClickTrack
             void set_gain(float gain);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input,
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
 
             /* Used to schedule note events
              */

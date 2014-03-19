@@ -22,12 +22,6 @@ namespace ClickTrack
                 BlepSaw, BlepSquare, BlepTri};
             Oscillator(float in_freq, OscMode mode);
 
-            /* Can be used to mute the oscillator
-             */
-            bool is_paused();
-            void pause();
-            void unpause();
-
             /* Sets the mode
              */
             void set_mode(OscMode mode);
@@ -46,22 +40,16 @@ namespace ClickTrack
         private: 
             /* Overridden method for AudioGenerator to provide basic time
              * tracking and output for oscillators
+             *
+             * PolyBLEP oscillators use a periodic offset to remove aliasing
              */
-            void generate_outputs(std::vector< std::vector<SAMPLE> >& outputs);
+            void generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t);
+            float polyBlepOffset(float t);
+            float last_output; // used by blep triangle
 
             /* Used to schedule frequency changes
              */
             FunctionScheduler<Oscillator> scheduler;
-
-            /* The workhorse of an oscillator. It uses the current phase of the
-             * wave in radians to compute the value of the waveform.
-             *
-             * PolyBLEP oscillators use a periodic offset to remove aliasing
-             */
-            float f();
-            float polyBlepOffset(float t);
-
-            float last_output; // used by blep triangle
 
             /* Phase state
              */
@@ -71,7 +59,6 @@ namespace ClickTrack
             /* Oscillator state
              */
             OscMode mode;
-            bool paused;
             float freq;      // hz
 
     };

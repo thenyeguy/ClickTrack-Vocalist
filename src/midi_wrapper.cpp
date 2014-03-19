@@ -58,7 +58,7 @@ void MidiListener::callback(double deltaTime, std::vector<unsigned char>* messag
             listener->buffer_timestamp;
         double nanos = chr::duration_cast<chr::nanoseconds>(diff).count();
         unsigned long delay = nanos / 1e9 * SAMPLE_RATE;
-        time = listener->next_buffer_time + FRAME_SIZE + delay;
+        time = listener->next_buffer_time + PORTAUDIO_BUFFER_SIZE + delay;
     }
 
     // Cast listener to correct type, then case on message type

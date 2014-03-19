@@ -23,8 +23,8 @@ int main()
         std::cout << "Entering process loop" << std::endl;
         while(!wav.is_done())
         {
-            speaker.consume_inputs();
-            write.consume_inputs();
+            speaker.consume();
+            write.consume();
         }
         std::cout << "Exiting" << "\n" << std::endl;
     }

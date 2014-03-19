@@ -5,27 +5,45 @@ using namespace ClickTrack;
 
 
 Microphone::Microphone(unsigned num_channels, bool defaultDevice)
-    : AudioGenerator(num_channels),
+    : AudioGenerator(num_channels), buffer(),
       stream(num_channels,defaultDevice)
-{}
-
-
-void Microphone::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
 {
-    stream.readFromStream(outputs);
+    for(unsigned i = 0; i < num_channels; i++)
+        buffer.push_back(std::vector<SAMPLE>(PORTAUDIO_BUFFER_SIZE));
+}
+
+
+void Microphone::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
+{
+    // If we have run out of samples, refill our buffer
+    if(t % PORTAUDIO_BUFFER_SIZE == 0)
+        stream.readFromStream(buffer);
+
+    // Copy one frame out
+    for(unsigned i = 0; i < outputs.size(); i++)
+        outputs[i] = buffer[i][t % PORTAUDIO_BUFFER_SIZE];
 }
 
 
 
 Speaker::Speaker(unsigned num_inputs, bool defaultDevice)
-    : AudioConsumer(num_inputs),
+    : AudioConsumer(num_inputs), buffer(),
       stream(num_inputs,defaultDevice)
-{}
-
-
-void Speaker::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
 {
-    stream.writeToStream(inputs);
+    for(unsigned i = 0; i < num_inputs; i++)
+        buffer.push_back(std::vector<SAMPLE>(PORTAUDIO_BUFFER_SIZE));
+}
+
+
+void Speaker::process_inputs(std::vector<SAMPLE>& inputs, unsigned long t)
+{
+    // Copy one frame in
+    for(unsigned i = 0; i < inputs.size(); i++)
+        buffer[i][t % PORTAUDIO_BUFFER_SIZE] = inputs[i];
+    
+    // If we have filled our buffer, write out
+    if((t+1) % PORTAUDIO_BUFFER_SIZE == 0)
+        stream.writeToStream(buffer);
 }
 
 
@@ -101,7 +119,7 @@ WavReader::WavReader(const char* in_filename)
 
 bool WavReader::is_done()
 {
-    return samples_read >= samples_total;
+    return samples_read= samples_total;
 }
 
 
@@ -118,7 +136,7 @@ unsigned WavReader::get_total_samples()
 }
 
 
-void WavReader::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
+void WavReader::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
 {
     // TODO: support more than 16-bit
     union {
@@ -127,29 +145,26 @@ void WavReader::generate_outputs(std::vector< std::vector<SAMPLE> >& outputs)
     } left, right;
     left.val = 0; right.val = 0;
 
-    for(int i = 0; i < FRAME_SIZE; i++)
+    // Silence at end
+    if(samples_read == samples_total)
     {
-        // Silence at end
-        if(samples_read >= samples_total)
-        {
-            outputs[0][i] = 0;
-            outputs[1][i] = 0;
-            continue;
-        }
-
-        // If we have stereo audio, read right channel
-        // Otherwise copy left channel
-        file.read(left.raw, byte_depth);
-        if(stereo)
-            file.read(right.raw, byte_depth);
-        else
-            right.val = left.val;
-
-        outputs[0][i] = ((SAMPLE)left.val) / 32768;
-        outputs[1][i] = ((SAMPLE)right.val) / 32768;
-
-        samples_read++;
+        outputs[0] = 0;
+        outputs[1] = 0;
+        return;
     }
+
+    // If we have stereo audio, read right channel
+    // Otherwise copy left channel
+    file.read(left.raw, byte_depth);
+    if(stereo)
+        file.read(right.raw, byte_depth);
+    else
+        right.val = left.val;
+
+    outputs[0] = ((SAMPLE)left.val) / 32768;
+    outputs[1] = ((SAMPLE)right.val) / 32768;
+
+    samples_read++;
 }
 
 
@@ -172,12 +187,12 @@ WavWriter::WavWriter(const char* in_filename, unsigned num_inputs)
     file.write((char*) &section2size, 4);
     short format = 1;
     file.write((char*) &format, 2);
-    file.write((char*) &num_input_channels, 2);
+    file.write((char*) &num_inputs, 2);
     unsigned sample_rate = SAMPLE_RATE;
     file.write((char*) &sample_rate, 4);
-    unsigned byte_rate = sample_rate*num_input_channels*16/8;
+    unsigned byte_rate = sample_rate*num_inputs*16/8;
     file.write((char*) &byte_rate, 4);
-    unsigned short block_align = num_input_channels*16/8;
+    unsigned short block_align = num_inputs*16/8;
     file.write((char*) &block_align, 2);
     unsigned short bit_depth = 16;
     file.write((char*) &bit_depth, 2);
@@ -190,7 +205,7 @@ WavWriter::WavWriter(const char* in_filename, unsigned num_inputs)
 
 WavWriter::~WavWriter()
 {
-    unsigned data_size = samples_written*num_input_channels*16/8;
+    unsigned data_size = samples_written*get_num_input_channels()*16/8;
     unsigned file_size = 36+data_size;
     file.seekp(4); file.write((char*) &file_size, 4);
     file.seekp(40); file.write((char*) &data_size, 4);
@@ -199,20 +214,17 @@ WavWriter::~WavWriter()
 }
 
 
-void WavWriter::process_inputs(std::vector< std::vector<SAMPLE> >& inputs)
+void WavWriter::process_inputs(std::vector<SAMPLE>& inputs, unsigned long t)
 {
-    for(int i = 0; i < FRAME_SIZE; i++)
+    for(int i = 0; i < inputs.size(); i++)
     {
-        for(int j = 0; j < num_input_channels; j++)
-        {
-            // Clip instead of overflowing
-            SAMPLE sample = inputs[j][i];
-            if(sample > 0.999f)  sample = 0.999f;
-            if(sample <= -0.999f) sample = -0.999f;
+        // Clip instead of overflowing
+        SAMPLE sample = inputs[i];
+        if(sample > 0.999f)  sample = 0.999f;
+        if(sample < -0.999f) sample = -0.999f;
 
-            signed short quantized = sample * 32768;
-            file.write((char*) &quantized, 2);
-        }
-        samples_written++;
+        signed short quantized = sample * 32768;
+        file.write((char*) &quantized, 2);
     }
+    samples_written++;
 }

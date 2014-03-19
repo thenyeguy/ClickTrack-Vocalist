@@ -34,7 +34,7 @@ void Delay::set_delay(float in_delay)
     delay = in_delay;
 
     // Reset buffers to empty
-    for(unsigned i = 0; i < num_input_channels; i++)
+    for(unsigned i = 0; i < get_num_input_channels(); i++)
     {
         auto rb = new RingBuffer<SAMPLE>(delay);
         for(unsigned t = 0; t < delay; t++)
@@ -58,19 +58,16 @@ void Delay::set_wetness(float in_wetness)
 }
 
 
-void Delay::filter(std::vector< std::vector<SAMPLE> >& input,
-        std::vector< std::vector<SAMPLE> >& output)
+void Delay::filter(std::vector<SAMPLE>& input,
+        std::vector<SAMPLE>& output, unsigned long t)
 {
-    for(int i = 0; i < num_input_channels; i++)
+    for(int i = 0; i < input.size(); i++)
     {
-        for(int j = 0; j < FRAME_SIZE; j++)
-        {
-            // Add the delayed version of the signal in, respecting wetness
-            SAMPLE delayed_value = delay_buffers[i]->get(next_t + j);
-            output[i][j] = (1.0-wetness)*input[i][j] + wetness*delayed_value;
+        // Add the delayed version of the signal in, respecting wetness
+        SAMPLE delayed_value = delay_buffers[i]->get(t);
+        output[i] = (1.0-wetness)*input[i] + wetness*delayed_value;
 
-            // Scale by the feedback and delay our current input
-            delay_buffers[i]->add(input[i][j] + feedback*delayed_value);
-        }
+        // Scale by the feedback and delay our current input
+        delay_buffers[i]->add(input[i] + feedback*delayed_value);
     }
 }

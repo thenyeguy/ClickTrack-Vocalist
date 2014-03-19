@@ -5,6 +5,7 @@
 using namespace ClickTrack;
 
 
+/*
 ConvolutionFilter::ConvolutionFilter(unsigned impulse_length,
                                      SAMPLE* in_impulse_response)
     : AudioFilter(1),
@@ -85,8 +86,8 @@ ConvolutionFilter::~ConvolutionFilter()
 }
 
 
-void ConvolutionFilter::filter(std::vector< std::vector<SAMPLE> >& input,
-        std::vector< std::vector<SAMPLE> >& output)
+void ConvolutionFilter::filter(std::vector<SAMPLE>& input,
+        std::vector<SAMPLE>& output, unsigned long t)
 {
     // First take the FFT of the input signal
     for(int i = 0; i < FRAME_SIZE; i++)
@@ -129,3 +130,4 @@ void ConvolutionFilter::filter(std::vector< std::vector<SAMPLE> >& input,
     for(int i=0; i < FRAME_SIZE; i++)
         reverb_buffer.add(0.0);
 }
+*/

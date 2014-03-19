@@ -18,8 +18,8 @@ namespace ClickTrack
             void set_gain(float gain);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input,
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
 
             float gain;
     };
@@ -34,8 +34,8 @@ namespace ClickTrack
             Adder(unsigned num_input_channels);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input, 
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
     };
 
 
@@ -48,8 +48,8 @@ namespace ClickTrack
             Multiplier(unsigned num_input_channels);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input, 
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
     };
 
 
@@ -68,8 +68,8 @@ namespace ClickTrack
             void select_channel(unsigned channel);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input, 
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
             
             unsigned channel;
     };
@@ -84,8 +84,8 @@ namespace ClickTrack
             ClipDetector(float rate, unsigned num_channels=1);
             
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input,
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
 
             /* Measures "time" in samples
              */

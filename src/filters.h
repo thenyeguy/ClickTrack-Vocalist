@@ -28,8 +28,8 @@ namespace ClickTrack
             void set_cutoff(PassFilterMode mode, float cutoff);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input,
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
 
             /* Specifies the filter coefficients
              */
@@ -64,8 +64,8 @@ namespace ClickTrack
             void set_gain(float in_gain);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input,
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
 
             /* Specifies the filter coefficients
              */
@@ -100,8 +100,8 @@ namespace ClickTrack
             void set_gain(float gain);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input,
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
 
             /* Specifies the filter coefficients
              */

@@ -38,7 +38,7 @@ int main()
     {
         try
         {
-            speaker.consume_inputs();
+            speaker.consume();
         }
         catch(std::exception& e)
         {

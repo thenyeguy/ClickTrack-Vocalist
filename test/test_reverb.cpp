@@ -21,7 +21,7 @@ int main()
 
         std::cout << "Playing" << std::endl;
         while(true)
-            out.consume_inputs();
+            out.consume();
 
         std::cout << "Done" << std::endl;
     }

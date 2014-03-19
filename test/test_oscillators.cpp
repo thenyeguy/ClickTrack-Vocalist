@@ -23,12 +23,12 @@ int main()
 
     // Loop small number of times to generate enough audio
     std::cout << "Entering process loop" << std::endl;
-    for(unsigned i = 0; i < SAMPLE_RATE/FRAME_SIZE; i++)
+    for(unsigned i = 0; i < SAMPLE_RATE; i++)
     {
         try
         {
-            speaker.consume_inputs();
-            wav.consume_inputs();
+            speaker.consume();
+            wav.consume();
         }
         catch(std::exception& e)
         {

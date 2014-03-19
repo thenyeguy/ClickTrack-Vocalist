@@ -18,33 +18,37 @@ namespace ClickTrack
      * Computes circular convolution using the property that convolution in time
      * is equivalent to multiplication in frequency. Uses linearity of the FFT
      * to only perform a single transform into and out of frequency domain.
+     *
+     * TODO: modify this to fit the new architecture
      */
-    const unsigned fft_multiplier = 16;
-    class ConvolutionFilter : public AudioFilter
-    {
-        public:
-            ConvolutionFilter(unsigned impulse_length,
-                              SAMPLE* in_impulse_response);
-            ~ConvolutionFilter();
-
-        private:
-            void filter(std::vector< std::vector<SAMPLE> >& input, 
-                    std::vector< std::vector<SAMPLE> >& output);
-
-            const unsigned transform_size;
-            Transformer transformer;
-
-            const unsigned num_impulse_blocks;
-            std::vector<std::complex<SAMPLE>*> impulse_response;
-
-            RingBuffer<std::complex<SAMPLE>*> frequency_buffer;
-            RingBuffer<SAMPLE> reverb_buffer;
-
-
-            // Preallocate buffers for speed
-            std::complex<SAMPLE>* input_buffer;
-            std::complex<SAMPLE>* output_buffer;
-    };
+/*
+ *     const unsigned fft_multiplier = 16;
+ *     class ConvolutionFilter : public AudioFilter
+ *     {
+ *         public:
+ *             ConvolutionFilter(unsigned impulse_length,
+ *                               SAMPLE* in_impulse_response);
+ *             ~ConvolutionFilter();
+ * 
+ *         private:
+ *             void filter(std::vector<SAMPLE>& input, 
+ *                     std::vector<SAMPLE>& output, unsigned long t);
+ * 
+ *             const unsigned transform_size;
+ *             Transformer transformer;
+ * 
+ *             const unsigned num_impulse_blocks;
+ *             std::vector<std::complex<SAMPLE>*> impulse_response;
+ * 
+ *             RingBuffer<std::complex<SAMPLE>*> frequency_buffer;
+ *             RingBuffer<SAMPLE> reverb_buffer;
+ * 
+ * 
+ *             // Preallocate buffers for speed
+ *             std::complex<SAMPLE>* input_buffer;
+ *             std::complex<SAMPLE>* output_buffer;
+ *     };
+ */
 }
 
 #endif

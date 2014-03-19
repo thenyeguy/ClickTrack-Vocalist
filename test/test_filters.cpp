@@ -19,11 +19,11 @@ int main()
 
 
     std::cout << "Entering process loop" << std::endl;
-    for(unsigned i = 0; i < 44100/FRAME_SIZE; i++)
+    for(unsigned i = 0; i < 44100; i++)
     {
         try
         {
-            wav.consume_inputs();
+            wav.consume();
         }
         catch(std::exception& e)
         {

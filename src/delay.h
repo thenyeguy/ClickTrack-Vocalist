@@ -28,14 +28,17 @@ namespace ClickTrack
             void set_wetness(float wetness);
 
         private:
-            void filter(std::vector< std::vector<SAMPLE> >& input,
-                    std::vector< std::vector<SAMPLE> >& output);
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
 
+            /* Delay parameters
+             */
             unsigned delay;
             float feedback;
             float wetness;
 
-
+            /* Buffer to store our delayed samples
+             */
             std::vector<RingBuffer<SAMPLE>*> delay_buffers;
     };
 }
