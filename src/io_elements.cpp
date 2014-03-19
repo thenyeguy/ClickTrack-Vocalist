@@ -119,7 +119,7 @@ WavReader::WavReader(const char* in_filename)
 
 bool WavReader::is_done()
 {
-    return samples_read= samples_total;
+    return samples_read >= samples_total;
 }
 
 
