@@ -7,18 +7,6 @@
 
 
 namespace ClickTrack{
-    /* Define an exceptions for use in RingBuffer. Thrown when requesting a time
-     * value that is not in the ring buffer.
-     */
-    class RingBufferOutOfRange: public std::exception
-    {
-        virtual const char* what() const throw()
-        {
-            return "The requested time value is not stored in the buffer.";
-        }
-    };
-
-    
     /* Ringbuffer is a template for a generic circular buffer queue. It contains
      * a single statically sized ring, and it can seamlessly wrap around the
      * edge. It appears to be of infinite length as long as you never have more
@@ -28,16 +16,16 @@ namespace ClickTrack{
     class RingBuffer
     {
         public:
-            /* The constructor allocates the ring array. If no size is
-             * specified, it can contain at most 1024 elements, otherwise it can
-             * contain as many as its argument allows.
+            /* The constructor allocates the ring array. It can contain as many
+             * as its argument allows.
              */
-            RingBuffer(unsigned n_buffer_size=1024);
+            RingBuffer(unsigned n_buffer_size);
 
             /* Allows you to ask for values in the currently available time
              * range of the buffer. If you try to access a time point not
              * available in the current range, throws exception.
              */
+            SampleT& operator[] (const unsigned long t);
             SampleT get(const unsigned long t);
 
             /* Copies a range of values into a provided buffer. If you try to
@@ -51,11 +39,6 @@ namespace ClickTrack{
              * the oldest time step. Returns the timestamp of the added value.
              */
             unsigned long add(SampleT s);
-
-            /* Exposes a reference to an element in the buffer so that you can
-             * manually write to and modify a buffer point.
-             */
-            SampleT& operator[] (unsigned long t);
 
             /* Getters to expose the lowest and high timestamp
              */
@@ -75,6 +58,28 @@ namespace ClickTrack{
 
             unsigned long buffer_size;  // the number of elements in the buffer
             std::vector<SampleT> samples; // the actual ring array
+    };
+
+
+    /* Define an exceptions for use in RingBuffer. Thrown when requesting a time
+     * value that is not in the ring buffer.
+     */
+    class RingBufferOutOfRange: public std::exception
+    {
+        public:
+        RingBufferOutOfRange(unsigned long in_start, unsigned long in_end,
+                unsigned long in_t)
+            : start(in_start), end(in_end), t(in_t){}
+
+        unsigned long start, end, t;
+        virtual const char* what() const throw()
+        {
+            char* buffer = new char[256];
+            sprintf(buffer, "%s\n    Buffer range=[%lu-%lu), t=%lu\n",
+                    "The requested time value is not stored in the buffer.",
+                    start, end, t);
+            return buffer;
+        }
     };
 }
 
