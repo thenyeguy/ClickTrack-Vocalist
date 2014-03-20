@@ -15,6 +15,15 @@ DrumMachine::DrumMachine(const std::string& path)
     // Connect signal chain
     volume.set_input_channel(adder.get_output_channel());
 
+    // Set the voice
+    set_voice(path);
+}
+
+void DrumMachine::set_voice(const std::string& path)
+{
+    // First wipe the old voice
+    voices.clear();
+
     // Open the mapping file
     std::string mapping = path + "keymap.txt";
     std::fstream keymap;

@@ -29,6 +29,10 @@ namespace ClickTrack
 
             Channel* get_output_channel();
 
+            /* Reloads all voices from a new path
+             */
+            void set_voice(const std::string& path);
+
             /* Make the final gain filter public to expose volume changer
              */
             GainFilter volume;
