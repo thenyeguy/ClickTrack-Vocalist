@@ -134,7 +134,7 @@ void AudioConsumer::consume()
         // If there is no channel currently, read in silence
         if(input_channels[i] == NULL)
         {
-            std::cerr << "The requested channel is not connected" << std::endl;
+            //std::cerr << "The requested channel is not connected" << std::endl;
             input_frame[i] = 0.0;
         }
         else
