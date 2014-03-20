@@ -26,26 +26,25 @@ namespace ClickTrack
              */
             MidiListener(GenericInstrument* inst, int channel=-1);
 
-            /* Callback to pass to an audio consumer. The payload should be
-             * a pointer to the MidiListener object
+            /* Callback to pass to the speaker for timing management. The
+             * payload should be a pointer to the MidiListener object
              */
-            static void consumer_callback(unsigned long time, void* payload);
+            static void timing_callback(unsigned long time, void* payload);
 
         private:
             /* Callback for registering with the input stream
              * Parses the MIDI message and passes on its message to the
              * specified destination.
              */
-            static void callback(double deltaTime,
-                                 std::vector<unsigned char>* message,
-                                 void* in_listener);
+            static void midi_callback(double deltaTime,
+                    std::vector<unsigned char>* message, void* in_listener);
 
             /* State for MIDI
              */
             RtMidiIn stream;
             GenericInstrument* inst;
 
-            /* State for computing buffer offsets
+            /* State for timing and computing buffer offsets
              */
             std::chrono::time_point<std::chrono::high_resolution_clock,
                 std::chrono::duration<double> > buffer_timestamp;

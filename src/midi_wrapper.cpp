@@ -9,7 +9,8 @@ namespace chr = std::chrono;
 
 
 MidiListener::MidiListener(GenericInstrument* in_inst, int channel)
-    : stream(), inst(in_inst)
+    : stream(), inst(in_inst), 
+      buffer_timestamp(chr::high_resolution_clock::now()), next_buffer_time(0)
 {
     // If no channel specified, ask the user for a channel
     if(channel == -1)
@@ -35,12 +36,12 @@ MidiListener::MidiListener(GenericInstrument* in_inst, int channel)
     }
 
     // Once we have a channel, initialize it
-    stream.setCallback(&MidiListener::callback, this);
+    stream.setCallback(&MidiListener::midi_callback, this);
     stream.openPort(channel);
 }
 
 
-void MidiListener::callback(double deltaTime, std::vector<unsigned char>* message,
+void MidiListener::midi_callback(double deltaTime, std::vector<unsigned char>* message,
                       void* in_listener)
 {
     MidiListener* listener = (MidiListener*) in_listener;
@@ -58,8 +59,9 @@ void MidiListener::callback(double deltaTime, std::vector<unsigned char>* messag
             listener->buffer_timestamp;
         double nanos = chr::duration_cast<chr::nanoseconds>(diff).count();
         unsigned long delay = nanos / 1e9 * SAMPLE_RATE;
-        time = listener->next_buffer_time + PORTAUDIO_BUFFER_SIZE + delay;
+        time = listener->next_buffer_time + BUFFER_SIZE + delay;
     }
+    std::cout << "event at: " << time << std::endl;
 
     // Cast listener to correct type, then case on message type
     GenericInstrument* inst = listener->inst;
@@ -136,7 +138,7 @@ void MidiListener::callback(double deltaTime, std::vector<unsigned char>* messag
 }
 
 
-void MidiListener::consumer_callback(unsigned long time, void* payload)
+void MidiListener::timing_callback(unsigned long time, void* payload)
 {
     MidiListener* listener = (MidiListener*) payload;
     listener->buffer_timestamp = chr::high_resolution_clock::now();

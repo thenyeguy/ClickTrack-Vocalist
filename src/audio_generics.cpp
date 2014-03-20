@@ -83,8 +83,7 @@ unsigned long AudioGenerator::get_next_time()
 
 
 AudioConsumer::AudioConsumer(unsigned in_num_input_channels)
-    : callback(NULL), payload(NULL), next_in_t(0), 
-    input_channels(in_num_input_channels, NULL), input_frame()
+    : next_in_t(0), input_channels(in_num_input_channels, NULL), input_frame()
 {
     for(unsigned i = 0; i < in_num_input_channels; i++)
         input_frame.push_back(0.0);
@@ -147,17 +146,6 @@ void AudioConsumer::consume()
     // Process
     process_inputs(input_frame, next_in_t);
     next_in_t++;
-
-    // Run the callback
-    if(callback != NULL)
-        callback(next_in_t, payload);
-}
-
-
-void AudioConsumer::register_callback(callback_t in_callback, void* in_payload)
-{
-    callback = in_callback;
-    payload = in_payload;
 }
 
 

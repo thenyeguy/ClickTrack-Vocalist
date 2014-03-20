@@ -19,7 +19,7 @@ int main()
 
     Speaker out;
     out.set_input_channel(clip.get_output_channel());
-    out.register_callback(MidiListener::consumer_callback, &midi);
+    out.register_callback(MidiListener::timing_callback, &midi);
 
     cout << "Entering playback loop..." << endl << endl;
     while(true)

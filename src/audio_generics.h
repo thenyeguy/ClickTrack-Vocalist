@@ -11,7 +11,7 @@ namespace ClickTrack
 {
     /* This determines the size of our internal ring buffers.
      */
-    const unsigned DEFAULT_RINGBUFFER_SIZE = PORTAUDIO_BUFFER_SIZE;
+    const unsigned DEFAULT_RINGBUFFER_SIZE = BUFFER_SIZE;
 
 
     /* An output channel is the basic unit with which an object receives audio.
@@ -133,13 +133,6 @@ namespace ClickTrack
              */
             void consume();
 
-            /* This callback is called whenever consume_inputs triggers. It
-             * passes the starting time of next the buffer to be filled, and the
-             * void* payload provided.
-             */
-            typedef void (*callback_t)(unsigned long time, void* payload);
-            void register_callback(callback_t callback, void* payload);
-
         protected:
             /* When called on input data, processes it. Must be overwritten in
              * subclass.
@@ -156,11 +149,6 @@ namespace ClickTrack
              * channels at the same time
              */
             std::mutex lock;
-
-            /* The callback function
-             */
-            callback_t callback;
-            void* payload;
 
             /* Starting time of next block
              */

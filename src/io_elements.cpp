@@ -9,29 +9,29 @@ Microphone::Microphone(unsigned num_channels, bool defaultDevice)
       stream(num_channels,defaultDevice)
 {
     for(unsigned i = 0; i < num_channels; i++)
-        buffer.push_back(std::vector<SAMPLE>(PORTAUDIO_BUFFER_SIZE));
+        buffer.push_back(std::vector<SAMPLE>(BUFFER_SIZE));
 }
 
 
 void Microphone::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
 {
     // If we have run out of samples, refill our buffer
-    if(t % PORTAUDIO_BUFFER_SIZE == 0)
+    if(t % BUFFER_SIZE == 0)
         stream.readFromStream(buffer);
 
     // Copy one frame out
     for(unsigned i = 0; i < outputs.size(); i++)
-        outputs[i] = buffer[i][t % PORTAUDIO_BUFFER_SIZE];
+        outputs[i] = buffer[i][t % BUFFER_SIZE];
 }
 
 
 
 Speaker::Speaker(unsigned num_inputs, bool defaultDevice)
-    : AudioConsumer(num_inputs), buffer(),
-      stream(num_inputs,defaultDevice)
+    : AudioConsumer(num_inputs), buffer(), stream(num_inputs,defaultDevice),
+      callback(NULL), payload(NULL)
 {
     for(unsigned i = 0; i < num_inputs; i++)
-        buffer.push_back(std::vector<SAMPLE>(PORTAUDIO_BUFFER_SIZE));
+        buffer.push_back(std::vector<SAMPLE>(BUFFER_SIZE));
 }
 
 
@@ -39,11 +39,24 @@ void Speaker::process_inputs(std::vector<SAMPLE>& inputs, unsigned long t)
 {
     // Copy one frame in
     for(unsigned i = 0; i < inputs.size(); i++)
-        buffer[i][t % PORTAUDIO_BUFFER_SIZE] = inputs[i];
+        buffer[i][t % BUFFER_SIZE] = inputs[i];
     
     // If we have filled our buffer, write out
-    if((t+1) % PORTAUDIO_BUFFER_SIZE == 0)
+    if((t+1) % BUFFER_SIZE == 0)
+    {
         stream.writeToStream(buffer);
+
+        // Run the callback
+        if(callback != NULL)
+            callback(get_next_time()+1, payload);
+    }
+}
+
+
+void Speaker::register_callback(callback_t in_callback, void* in_payload)
+{
+    callback = in_callback;
+    payload = in_payload;
 }
 
 

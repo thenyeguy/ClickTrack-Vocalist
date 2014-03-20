@@ -70,12 +70,12 @@ InputStream::InputStream(unsigned in_channels, bool useDefault)
     //Open the stream!
     pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, &inputParams, NULL,
-            SAMPLE_RATE, PORTAUDIO_BUFFER_SIZE, paNoFlag,
+            SAMPLE_RATE, BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 
     // Initialize buffer for writing
-    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
+    buffer = new SAMPLE[channels*BUFFER_SIZE];
 }
 
 
@@ -94,12 +94,12 @@ InputStream::~InputStream()
 void InputStream::readFromStream(std::vector< std::vector<SAMPLE> >& out)
 {
     // Read in from the sream
-    Pa_ReadStream(stream, buffer, PORTAUDIO_BUFFER_SIZE);    
+    Pa_ReadStream(stream, buffer, BUFFER_SIZE);    
 
     // Deinterleave our results
     for(int i = 0; i < channels; i++)
     {
-        for(int j = 0; j < PORTAUDIO_BUFFER_SIZE; j++)
+        for(int j = 0; j < BUFFER_SIZE; j++)
             out[i][j] = buffer[channels*j + i];
     }
 }
@@ -163,12 +163,12 @@ OutputStream::OutputStream(unsigned in_channels, bool useDefault)
     //Open the stream!
     pa_error_check("Pa_OpenStream",
         Pa_OpenStream(&stream, NULL, &outputParams,
-            SAMPLE_RATE, PORTAUDIO_BUFFER_SIZE, paNoFlag,
+            SAMPLE_RATE, BUFFER_SIZE, paNoFlag,
             NULL, NULL));
     pa_error_check("Pa_StartStream", Pa_StartStream(stream));
 
     // Initialize buffer for writing
-    buffer = new SAMPLE[channels*PORTAUDIO_BUFFER_SIZE];
+    buffer = new SAMPLE[channels*BUFFER_SIZE];
 }
 
 
@@ -189,7 +189,7 @@ void OutputStream::writeToStream(std::vector< std::vector<SAMPLE> >& in)
     // Interleave channels
     for(int i = 0; i < channels; i++)
     {
-        for(int j = 0; j < PORTAUDIO_BUFFER_SIZE; j++)
+        for(int j = 0; j < BUFFER_SIZE; j++)
         {
             SAMPLE sample = in[i][j];
             if(sample > 1.0) sample = 1.0;
@@ -199,5 +199,5 @@ void OutputStream::writeToStream(std::vector< std::vector<SAMPLE> >& in)
     }
 
     // Write out to the stream
-    Pa_WriteStream(stream, buffer, PORTAUDIO_BUFFER_SIZE);
+    Pa_WriteStream(stream, buffer, BUFFER_SIZE);
 }
