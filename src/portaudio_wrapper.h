@@ -22,7 +22,7 @@ namespace ClickTrack
      * skipfree on my laptop.
      */
     const unsigned SAMPLE_RATE = 44100; //hz
-    const unsigned BUFFER_SIZE = 32*128;
+    const unsigned BUFFER_SIZE = 256;
 
 
     /* A wrapper for the portaudio boilerplate code. Should initialize and close
