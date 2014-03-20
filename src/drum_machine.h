@@ -37,7 +37,6 @@ namespace ClickTrack
              */
             GainFilter volume;
 
-        protected:
             /* The following callbacks are used to trigger and update the state
              * of our voices. They are entirely handled by this generic class.
              */
@@ -53,11 +52,11 @@ namespace ClickTrack
             void on_midi_message(std::vector<unsigned char>* message,
                     unsigned long time=0);
 
+        private:
             /* Sums our different voices
              */
             Adder adder;
 
-        private:
             /* The following map simply maps MIDI numbers to their drum voice
              */
             std::map<unsigned, DrumVoice*> voices;
