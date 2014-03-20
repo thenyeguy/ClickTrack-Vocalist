@@ -12,7 +12,7 @@ int main()
         std::cout << "Establishing signal chain" << std::endl;
         Microphone mic;
 
-        SimpleReverb rev(1.0, 0.2, 0.5, 1);
+        MoorerReverb rev(MoorerReverb::HALL, 1.0, 0.3, 0.5, 1);
         rev.set_input_channel(mic.get_output_channel());
 
         Speaker out;
