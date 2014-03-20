@@ -27,7 +27,22 @@ namespace ClickTrack
             MoorerReverb(Room room, float rev_time, float gain, float wetness,
                          unsigned num_channels);
 
+            /* Setters for the reverb parameters. Currently, the room itself
+             * can't be changed after initialization
+             */
+            void set_rev_time(float rev_time);
+            void set_gain(float gain);
+            void set_wetness(float wetness);
+
         private:
+            /* The following are used to reinitialize coefficients when
+             * parameters change
+             */
+            void set_comb_filter_gains();
+            void allocate_ringbuffers();
+
+            /* The filter function 
+             */
             void filter(std::vector<SAMPLE>& input,
                     std::vector<SAMPLE>& output, unsigned long t);
 
@@ -103,12 +118,14 @@ namespace ClickTrack
      * arrays represent the impulse response given in the left and right
      * channels.
      */
-    typedef struct {
-        unsigned num_samples;
-        SAMPLE* left;
-        SAMPLE* right;
-    } impulse_pair;
-    impulse_pair* impulse_from_wav(const char* filename);
+    /*
+     * typedef struct {
+     *     unsigned num_samples;
+     *     SAMPLE* left;
+     *     SAMPLE* right;
+     * } impulse_pair;
+     * impulse_pair* impulse_from_wav(const char* filename);
+     */
 }
 
 #endif

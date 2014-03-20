@@ -28,6 +28,40 @@ MoorerReverb::MoorerReverb(Room in_room, float in_rev_time, float in_gain,
             break;
     }
 
+    // Set output delays so last FIR exit corresponds to first exit from the
+    // comb filter. Set lowest to one to avoid breaking
+    tapped_out_delay = 0;
+    comb_out_delay = tapped_delays.back();
+
+    // Set the comb filter gains
+    set_comb_filter_gains();
+
+    // Allocate the ringbuffers
+    allocate_ringbuffers();
+}
+
+
+void MoorerReverb::set_rev_time(float in_rev_time)
+{
+    rev_time = in_rev_time;
+    set_comb_filter_gains(); // reset gains to get the correct reverb time
+}
+
+
+void MoorerReverb::set_gain(float in_gain)
+{
+    gain = in_gain;
+}
+
+
+void MoorerReverb::set_wetness(float in_wetness)
+{
+    wetness = in_wetness;
+}
+
+
+void MoorerReverb::set_comb_filter_gains()
+{
     // Set comb filter gains for a certain reverberation time
     for(unsigned i = 0; i < comb_delays.size(); i++)
     {
@@ -35,14 +69,13 @@ MoorerReverb::MoorerReverb(Room in_room, float in_rev_time, float in_gain,
                     -3.0 * comb_delays[i]/SAMPLE_RATE * rev_time));
     }
     comb_out_gain = 1 - 0.366/rev_time;
+}
 
-    // Set output delays so last FIR exit corresponds to first exit from the
-    // comb filter. Set lowest to one to avoid breaking
-    tapped_out_delay = 0;
-    comb_out_delay = tapped_delays.back();
 
+void MoorerReverb::allocate_ringbuffers()
+{
     // Allocated ringbuffers and pad them with zeros
-    for(unsigned i = 0; i < num_channels; i++)
+    for(unsigned i = 0; i < get_num_input_channels(); i++)
     {
         // Tapped delay line out - one more element than the largest delay
         // Then pad out the buffer
@@ -152,20 +185,22 @@ void MoorerReverb::filter(std::vector<SAMPLE>& input,
 
 
 
-impulse_pair* ClickTrack::impulse_from_wav(const char* filename)
-{
-    WavReader wav(filename);
-
-    impulse_pair* out = new impulse_pair;
-    out->num_samples = wav.get_total_samples();
-    out->left = new SAMPLE[out->num_samples];
-    out->right = new SAMPLE[out->num_samples];
-
-    for(unsigned t = 0; t < out->num_samples; t++)
-    {
-        out->left[t] = wav.get_output_channel(0)->get_sample(t);
-        out->right[t] = wav.get_output_channel(0)->get_sample(t);
-    }
-
-    return out;
-}
+/*
+ * impulse_pair* ClickTrack::impulse_from_wav(const char* filename)
+ * {
+ *     WavReader wav(filename);
+ * 
+ *     impulse_pair* out = new impulse_pair;
+ *     out->num_samples = wav.get_total_samples();
+ *     out->left = new SAMPLE[out->num_samples];
+ *     out->right = new SAMPLE[out->num_samples];
+ * 
+ *     for(unsigned t = 0; t < out->num_samples; t++)
+ *     {
+ *         out->left[t] = wav.get_output_channel(0)->get_sample(t);
+ *         out->right[t] = wav.get_output_channel(0)->get_sample(t);
+ *     }
+ * 
+ *     return out;
+ * }
+ */
