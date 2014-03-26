@@ -3,6 +3,7 @@
 
 #include <list>
 #include <map>
+#include <queue>
 
 
 namespace ClickTrack
@@ -41,12 +42,25 @@ namespace ClickTrack
             unsigned run(unsigned long time);
 
         private:
-            /* Internally, we map sample timestamps to their caller, function,
-             * and payload to be triggered.
+            /* Store the calling class so we can trigger its events
              */
             scheduledClass& caller;
-            struct event_t { callback_t f; void* payload; };
-            std::map<unsigned long, std::list<struct event_t> > events;
+
+            /* Internally, we map sample timestamps to their time, function,
+             * and payload to be triggered. Events are ordered by their time and
+             * stored in a priority queue.
+             */
+            struct event_t { unsigned long t; callback_t f; void* payload; };
+            struct event_t_comp
+            { 
+                bool operator()(const struct event_t e1, const struct event_t e2)
+                {
+                    return e1.t < e2.t;
+                }
+            };
+
+            std::priority_queue<struct event_t, std::vector<struct event_t>,
+                struct event_t_comp> events;
     };
 }
 

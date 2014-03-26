@@ -25,8 +25,8 @@ namespace ClickTrack{
              * range of the buffer. If you try to access a time point not
              * available in the current range, throws exception.
              */
-            SampleT& operator[] (const unsigned long t);
-            SampleT get(const unsigned long t);
+            inline SampleT& operator[] (const unsigned long t);
+            inline SampleT get(const unsigned long t);
 
             /* Copies a range of values into a provided buffer. If you try to
              * access any time points not available in the current range, throws
@@ -38,12 +38,12 @@ namespace ClickTrack{
             /* Adds a sample as the next time step in the buffer. May overwrite
              * the oldest time step. Returns the timestamp of the added value.
              */
-            unsigned long add(SampleT s);
+            inline unsigned long add(SampleT s);
 
             /* Getters to expose the lowest and high timestamp
              */
-            unsigned long get_lowest_timestamp();
-            unsigned long get_highest_timestamp();
+            inline unsigned long get_lowest_timestamp();
+            inline unsigned long get_highest_timestamp();
 
             /* WARNING: This function should not be used in ordinary
              * circumstances. It exists only for adding a new buffer during

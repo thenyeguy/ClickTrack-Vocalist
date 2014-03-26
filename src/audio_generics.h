@@ -2,7 +2,6 @@
 #define AUDIOGENERICS_H
 
 #include <vector>
-#include <mutex>
 #include "portaudio_wrapper.h"
 #include "ringbuffer.h"
 
@@ -145,11 +144,6 @@ namespace ClickTrack
             unsigned long get_next_time();
 
         private:
-            /* The lock is used to prevent computing outputs and modifying the
-             * channels at the same time
-             */
-            std::mutex lock;
-
             /* Starting time of next block
              */
             unsigned long next_in_t;
