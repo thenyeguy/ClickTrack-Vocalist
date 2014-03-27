@@ -2,7 +2,6 @@
 #define SCHEDULER_CPP
 
 #include "scheduler.h"
-#include <iostream>
 
 using namespace ClickTrack;
 

@@ -1,7 +1,6 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
-#include <iostream>
 #include <exception>
 #include <vector>
 
