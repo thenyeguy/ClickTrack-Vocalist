@@ -8,7 +8,7 @@ ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
                        float in_sustain_level, float in_release_time,
                        float in_gain, unsigned in_num_channels)
     : AudioFilter(in_num_channels, in_num_channels), scheduler(*this),
-      state(silent), t(0), trigger_time(0), end_time(0), multiplier(0), 
+      state(silent), trigger_time(0), end_time(0), multiplier(0), 
       delta_mult(0)
 {
     attack_time  = in_attack_time  * SAMPLE_RATE;
@@ -26,7 +26,7 @@ void ADSRFilter::on_note_down(unsigned long time)
         time = get_next_time();
 
     // Run the callback with no payload
-    scheduler.schedule(time, ADSRFilter::note_down_callback, NULL);
+    scheduler.schedule(time, ADSRFilter::note_down_callback, (void*)time);
 }
 
 
@@ -36,17 +36,19 @@ void ADSRFilter::on_note_up(unsigned long time)
         time = get_next_time();
 
     // Run the callback with no payload
-    scheduler.schedule(time, ADSRFilter::note_up_callback, NULL);
+    scheduler.schedule(time, ADSRFilter::note_up_callback, (void*)time);
 }
 
 
 void ADSRFilter::note_down_callback(ADSRFilter& caller, void* payload)
 {
-    // Ignore payload
+    // Get payload
+    unsigned long t = (unsigned long) payload;
+
     // Set the state
     caller.state = attack;
-    caller.trigger_time = caller.t;
-    caller.end_time = caller.t + caller.attack_time;
+    caller.trigger_time = t;
+    caller.end_time = t + caller.attack_time;
     
     // Recalculate the multiplier delta
     caller.delta_mult = (1.0 - caller.multiplier)/caller.attack_time;
@@ -55,11 +57,13 @@ void ADSRFilter::note_down_callback(ADSRFilter& caller, void* payload)
 
 void ADSRFilter::note_up_callback(ADSRFilter& caller, void* payload)
 {
-    // Ignore payload
+    // Get payload
+    unsigned long t = (unsigned long) payload;
+
     // Set the state
     caller.state = release;
-    caller.trigger_time = caller.t;
-    caller.end_time = caller.t + caller.release_time;
+    caller.trigger_time = t;
+    caller.end_time = t + caller.release_time;
 
     // Recalculate the multiplier delta
     caller.delta_mult = (0.0 - caller.multiplier)/caller.release_time;
@@ -68,25 +72,25 @@ void ADSRFilter::note_up_callback(ADSRFilter& caller, void* payload)
 
 void ADSRFilter::set_attack_time(float in)
 {
-    attack_time = in;
+    attack_time = SAMPLE_RATE*in;
 }
 
 
 void ADSRFilter::set_decay_time(float in)
 {
-    decay_time = in;
+    decay_time = SAMPLE_RATE*in;
 }
 
 
 void ADSRFilter::set_sustain_level(float in)
 {
-    sustain_level = in;
+    sustain_level = SAMPLE_RATE*in;
 }
 
 
 void ADSRFilter::set_release_time(float in)
 {
-    release_time = in;
+    release_time = SAMPLE_RATE*in;
 }
 
 
