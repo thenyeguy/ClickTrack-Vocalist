@@ -27,8 +27,8 @@ namespace ClickTrack
             /* Voice selection for each oscillator - each oscillator can be one
              * of several modes as defined in oscillator.h
              */
-            void set_osc1_mode(Oscillator::OscMode mode);
-            void set_osc2_mode(Oscillator::OscMode mode);
+            void set_osc1_mode(Oscillator::Mode mode);
+            void set_osc2_mode(Oscillator::Mode mode);
 
             /* Setters for the ADSR state
              */

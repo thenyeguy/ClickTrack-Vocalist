@@ -6,13 +6,14 @@
 
 using namespace ClickTrack;
 
-Oscillator::Oscillator(float in_freq, OscMode in_mode)
+Oscillator::Oscillator(Mode in_mode, float in_freq)
     : AudioGenerator(1), last_output(0.0), scheduler(*this), phase(0.0),
-      phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), mode(in_mode), freq(in_freq)
+      phase_inc(in_freq * 2*M_PI/SAMPLE_RATE), transpose(1.0), mode(in_mode), 
+      freq(in_freq)
 {}
 
 
-void Oscillator::set_mode(OscMode in_mode)
+void Oscillator::set_mode(Mode in_mode)
 {
     mode = in_mode;
 }
@@ -27,6 +28,12 @@ void Oscillator::set_freq(float in_freq, unsigned long time)
     float* payload = new float;
     *payload = in_freq;
     scheduler.schedule(time, Oscillator::set_freq_callback, payload);
+}
+
+
+void Oscillator::set_transposition(float steps)
+{
+    transpose = pow(2, steps/12);
 }
 
 
@@ -50,7 +57,7 @@ void Oscillator::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
     scheduler.run(t);
 
     // Update the phase
-    phase += phase_inc;
+    phase += phase_inc * transpose;
     if(phase > 2*M_PI) phase -= 2*M_PI;
 
     // Generate this output

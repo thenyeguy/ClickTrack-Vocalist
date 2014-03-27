@@ -32,14 +32,14 @@ Channel* SubtractiveSynth::get_output_channel()
 }
 
 
-void SubtractiveSynth::set_osc1_mode(Oscillator::OscMode mode)
+void SubtractiveSynth::set_osc1_mode(Oscillator::Mode mode)
 {
     for(auto voice : voices)
         voice->osc1.set_mode(mode);
 }
 
 
-void SubtractiveSynth::set_osc2_mode(Oscillator::OscMode mode)
+void SubtractiveSynth::set_osc2_mode(Oscillator::Mode mode)
 {
     for(auto voice : voices)
         voice->osc2.set_mode(mode);
@@ -77,8 +77,8 @@ void SubtractiveSynth::set_release_time(float release_time)
 
 
 SubtractiveSynthVoice::SubtractiveSynthVoice(SubtractiveSynth* in_parent_synth)
-    : PolyphonicVoice(in_parent_synth), osc1(440, Oscillator::Saw), 
-      osc2(440, Oscillator::Saw), adder(2), adsr()
+    : PolyphonicVoice(in_parent_synth), osc1(Oscillator::Saw, 440), 
+      osc2(Oscillator::Saw, 440), adder(2), adsr()
 {
     // Connect signal chain
     adder.set_input_channel(osc1.get_output_channel(), 0);

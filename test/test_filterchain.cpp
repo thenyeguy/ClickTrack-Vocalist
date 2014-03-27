@@ -18,7 +18,7 @@ int main()
     GainFilter mic_gain(0.5);
     mic_gain.set_input_channel(delay.get_output_channel());
 
-    Oscillator tri(440.f, Oscillator::BlepTri);
+    Oscillator tri(Oscillator::BlepTri, 440);
     GainFilter tri_gain(0.5);
     tri_gain.set_input_channel(tri.get_output_channel());
 

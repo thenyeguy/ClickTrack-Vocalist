@@ -9,8 +9,10 @@ int main()
 {
     std::cout << "Initializing signal chain" << std::endl;
 
-    Oscillator blep(8*440.f, Oscillator::BlepTri);
-    Oscillator naive(8*440.f, Oscillator::Tri);
+    Oscillator blep(Oscillator::BlepTri, 440);
+    blep.set_transposition(12*3);
+    Oscillator naive(Oscillator::Tri, 440);
+    naive.set_transposition(12*3);
 
     Speaker speaker(2);
     speaker.set_input_channel(blep.get_output_channel(), 0);

@@ -15,22 +15,27 @@ namespace ClickTrack
         friend class FunctionScheduler<Oscillator>;
 
         public:
-            /* The oscillator supports many modes.
+            /* The oscillator supports many waveform modes.
              * Blep oscillators use PolyBlep to generate alias-free waveforms
              */
-            enum OscMode { Sine, Saw, Square, Tri, WhiteNoise, 
+            enum Mode { Sine, Saw, Square, Tri, WhiteNoise, 
                 BlepSaw, BlepSquare, BlepTri};
-            Oscillator(float in_freq, OscMode mode);
+            Oscillator(Mode mode, float in_freq);
 
-            /* Sets the mode
+            /* Sets the waveform mode
              */
-            void set_mode(OscMode mode);
+            void set_mode(Mode mode);
 
             /* Sets the frequency; uses a function scheduler to trigger this
              * event at the specified time. If no time is given, applies
              * immediately
              */
             void set_freq(float freq, unsigned long time=0);
+
+            /* Given an increment in steps, transposes the output frequency of
+             * the osciilator by that many steps
+             */
+            void set_transposition(float steps);
 
         protected:
             /* This callback can only be set by the scheduler
@@ -55,11 +60,12 @@ namespace ClickTrack
              */
             float phase;     // rads
             float phase_inc; // rads
+            float transpose;
 
             /* Oscillator state
              */
-            OscMode mode;
-            float freq;      // hz
+            Mode mode;
+            float freq; // hz
 
     };
 }
