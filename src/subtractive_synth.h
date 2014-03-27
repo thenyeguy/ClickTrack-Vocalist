@@ -2,6 +2,7 @@
 #define SUBTRACTIVE_SYNTH_H
 
 #include "adsr.h"
+#include "filters.h"
 #include "oscillator.h"
 #include "polyphonic_instrument.h"
 
@@ -35,6 +36,10 @@ namespace ClickTrack
             void set_decay_time(float decay_time);
             void set_sustain_level(float sustain_level);
             void set_release_time(float release_time);
+
+            /* A filter in the signal chain
+             */
+            SecondOrderFilter filter;
 
             /* Output gain for the oscillator
              */

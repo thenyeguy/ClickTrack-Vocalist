@@ -11,6 +11,8 @@ int main()
     SubtractiveSynth inst(10);
     MidiListener midi(&inst, 1);
 
+    inst.filter.set_cutoff(1000);
+
     cout << "Initializing signal chain" << endl;
     ClipDetector clip(1.0);
     clip.set_input_channel(inst.get_output_channel());

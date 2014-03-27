@@ -1,13 +1,14 @@
-#include "subtractive_synth.h"
 #include <iterator>
 #include <cmath>
-
+#include "subtractive_synth.h"
 
 using namespace ClickTrack;
 
 
 SubtractiveSynth::SubtractiveSynth(int num_voices)
-    : PolyphonicInstrument(num_voices), volume(0.3)
+    : PolyphonicInstrument(num_voices), 
+      filter(SecondOrderFilter::LOWPASS, 20000),
+      volume(0.2)
 {
     // Initialize our voices
     std::vector<PolyphonicVoice*> temp;
@@ -20,7 +21,8 @@ SubtractiveSynth::SubtractiveSynth(int num_voices)
     add_voices(temp);
 
     // Configure our signal chain
-    volume.set_input_channel(PolyphonicInstrument::get_output_channel());
+    filter.set_input_channel(PolyphonicInstrument::get_output_channel());
+    volume.set_input_channel(filter.get_output_channel());
 }
 
 
