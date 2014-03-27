@@ -2,7 +2,6 @@
 #define SUBTRACTIVE_SYNTH_H
 
 #include "adsr.h"
-#include "equalizer.h"
 #include "oscillator.h"
 #include "polyphonic_instrument.h"
 
@@ -36,11 +35,6 @@ namespace ClickTrack
             void set_decay_time(float decay_time);
             void set_sustain_level(float sustain_level);
             void set_release_time(float release_time);
-
-            /* The synth is fed through an EQ at the end of the signal chain.
-             * This EQ is public so as to expose its existing interface
-             */
-            FourPointEqualizer eq;
 
             /* Output gain for the oscillator
              */

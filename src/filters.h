@@ -12,108 +12,92 @@
  */
 namespace ClickTrack
 {
-    /* A pass filter is a filter that attenuates all frequencies above or below
-     * a cutoff frequency at 12dB per octave, and -3dB at the cutoff.
+    /* First order filters use a first order all pass filter.
      *
-     * To initialize, one must simply specify whether the filter is highpass
-     * or lowpass, the cutoff in Hz, and the gain in decibels.
+     * Lowpass/highpass filter at 6dB per octave, and -3dB at the cutoff, and
+     * ignore their gain parameter.
+     *
+     * Shelf filters set frequencies above/below the specified cutoff to the
+     * specified gain.
+     *
+     * Cutoff is in Hz, gain is in dB
      */
-    class PassFilter : public AudioFilter
+    class FirstOrderFilter : public AudioFilter
     {
         public:
-            enum PassFilterMode { low, high };
-            PassFilter(PassFilterMode mode, float cutoff,
+            enum Mode { LOWPASS, LOWSHELF, HIGHPASS, HIGHSHELF };
+            FirstOrderFilter(Mode mode, float cutoff, float gain=1.0,
                     unsigned num_channels = 1);
 
-            void set_cutoff(PassFilterMode mode, float cutoff);
-
-        private:
-            void filter(std::vector<SAMPLE>& input,
-                    std::vector<SAMPLE>& output, unsigned long t);
-
-            /* Specifies the filter coefficients
-             */
-            void calculate_coefficients();
-            PassFilterMode mode;
-            float cutoff;
-
-            float a;
-             
-            /* Previous computation results. Used to implement a single pole in
-             * the filters
-             */
-            std::vector<float> x_last, y1_last;
-    };
-
-
-    /* A shelf filter is a filter that can either cut or boost frequencies,
-     * below of above a cutoff frequency.
-     *
-     * To initialize, one must simply specify whether the shelf is high (above
-     * the cutoff), or low (below the cutoff), the cutoff in Hz, and the gain in
-     * decibels.
-     */
-    class ShelfFilter : public AudioFilter
-    {
-        public:
-            enum ShelfFilterMode { low, high };
-            ShelfFilter(ShelfFilterMode mode, float cutoff, float gain,
-                    unsigned num_channels = 1);
-
-            void set_cutoff(ShelfFilterMode mode, float cutoff);
-            void set_gain(float in_gain);
-
-        private:
-            void filter(std::vector<SAMPLE>& input,
-                    std::vector<SAMPLE>& output, unsigned long t);
-
-            /* Specifies the filter coefficients
-             */
-            void calculate_coefficients();
-            
-            ShelfFilterMode mode;
-            float cutoff, gain;
-
-            float H0, V0, a;
-             
-            /* Previous computation results. Used to implement a single pole in
-             * the filters
-             */
-            std::vector<float> x_last, y1_last;
-    };
-
-
-    /* A peak filter is a filter that can either cut or boost frequencies,
-     * centered around a cutoff frequency.
-     *
-     * To initialize, one must simply specify the cutoff in Hz, the filter Q,
-     * and the gain in decibels.
-     */
-    class PeakFilter : public AudioFilter
-    {
-        public:
-            PeakFilter(float cutoff, float Q, float gain,
-                    unsigned num_channels = 1);
-            
+            void set_mode(Mode mode);
             void set_cutoff(float cutoff);
-            void set_Q(float Q);
             void set_gain(float gain);
 
         private:
             void filter(std::vector<SAMPLE>& input,
                     std::vector<SAMPLE>& output, unsigned long t);
 
-            /* Specifies the filter coefficients
+            /* Used to recompute coefficients
              */
             void calculate_coefficients();
-            float cutoff, Q, gain;
 
-            float H0, V0, d, a;
+            /* The filter parameters and coefficients
+             */
+            Mode mode;
+            float cutoff, gain;
+
+            float a;
+            float V0, H0;
              
             /* Previous computation results. Used to implement a single pole in
              * the filters
              */
-            std::vector<float> x_last1, x_last2, y1_last1, y1_last2;
+            std::vector<float> x_last, y1_last;
+    };
+
+
+    /* Second order filters use a second order IIR filter.
+     *
+     * Low/high pass filters use only the cutoff
+     *
+     * Shelf filters ignore the Q factor
+     *
+     * Peak filters place a peak with a gain at the cutoff, and no change
+     * everywhere else. Q determines how sharp the peak is
+     *
+     * Cutoff is in Hz, gain is in dB
+     */
+    class SecondOrderFilter : public AudioFilter
+    {
+        public:
+            enum Mode { LOWPASS, LOWSHELF, HIGHPASS, HIGHSHELF, PEAK };
+            SecondOrderFilter(Mode mode, float cutoff, float gain=1.0, 
+                    float Q=1.0, unsigned num_channels = 1);
+            
+            void set_mode(Mode mode);
+            void set_cutoff(float cutoff);
+            void set_gain(float gain);
+            void set_Q(float Q);
+
+        private:
+            void filter(std::vector<SAMPLE>& input,
+                    std::vector<SAMPLE>& output, unsigned long t);
+
+            /* Used to recompute coefficients
+             */
+            void calculate_coefficients();
+
+            /* The filter parameters and coefficients
+             */
+            Mode mode;
+            float cutoff, Q, gain;
+
+            float b0, b1, b2, a1, a2;
+             
+            /* Previous computation results. Used to implement a single pole in
+             * the filters
+             */
+            std::vector<float> x_last1, x_last2, y_last1, y_last2;
     };
 }
 

@@ -11,11 +11,14 @@ int main()
     std::cout << "Initializing signal chain" << std::endl;
     WavReader impulse("wav/delta.wav");
 
-    PassFilter filter(PassFilter::low, 4410);
+    SecondOrderFilter filter(SecondOrderFilter::PEAK, 5000, -3, 10.0);
     filter.set_input_channel(impulse.get_output_channel());
 
+    SecondOrderFilter filter2(SecondOrderFilter::PEAK, 15000, 3, 10.0);
+    filter2.set_input_channel(filter.get_output_channel());
+
     WavWriter wav("wav/test_filters.wav");
-    wav.set_input_channel(filter.get_output_channel());
+    wav.set_input_channel(filter2.get_output_channel());
 
 
     std::cout << "Entering process loop" << std::endl;
