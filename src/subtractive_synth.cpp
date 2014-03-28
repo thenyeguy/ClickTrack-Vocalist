@@ -46,6 +46,20 @@ void SubtractiveSynth::set_osc2_mode(Oscillator::Mode mode)
 }
 
 
+void SubtractiveSynth::set_osc1_transposition(float steps)
+{
+    for(auto voice : voices)
+        voice->osc1.set_transposition(steps);
+}
+
+
+void SubtractiveSynth::set_osc2_transposition(float steps)
+{
+    for(auto voice : voices)
+        voice->osc2.set_transposition(steps);
+}
+
+
 void SubtractiveSynth::set_attack_time(float attack_time)
 {
     for(auto voice : voices)

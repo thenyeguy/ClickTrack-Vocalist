@@ -30,6 +30,12 @@ namespace ClickTrack
             void set_osc1_mode(Oscillator::Mode mode);
             void set_osc2_mode(Oscillator::Mode mode);
 
+            /* Transposition selection for each oscillator - transpose in
+             * arbitrary step intervals
+             */
+            void set_osc1_transposition(float steps);
+            void set_osc2_transposition(float steps);
+
             /* Setters for the ADSR state
              */
             void set_attack_time(float attack_time);
