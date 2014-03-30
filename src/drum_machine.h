@@ -1,12 +1,12 @@
 #ifndef DRUM_MACHINE_H
 #define DRUM_MACHINE_H
 
-#include <list>
 #include <map>
 #include <string>
+#include "adder.h"
 #include "audio_generics.h"
+#include "gain_filter.h"
 #include "generic_instrument.h"
-#include "basic_elements.h"
 #include "scheduler.h"
 
 namespace ClickTrack

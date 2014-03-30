@@ -1,6 +1,6 @@
 #include <cmath>
+#include "wav_reader.h"
 #include "reverb.h"
-#include "io_elements.h"
 
 using namespace ClickTrack;
 

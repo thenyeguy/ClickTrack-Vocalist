@@ -1,4 +1,3 @@
-#include <iostream>
 #include "delay.h"
 
 using namespace ClickTrack;

@@ -1,6 +1,6 @@
-#include "../src/basic_elements.h"
+#include "../src/clip_detector.h"
 #include "../src/drum_machine.h"
-#include "../src/io_elements.h"
+#include "../src/speaker.h"
 #include "../src/midi_wrapper.h"
 
 using namespace ClickTrack;

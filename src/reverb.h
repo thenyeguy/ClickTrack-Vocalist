@@ -2,7 +2,6 @@
 #define REVERB_H
 
 #include "audio_generics.h"
-#include "basic_elements.h"
 #include "convolve.h"
 
 

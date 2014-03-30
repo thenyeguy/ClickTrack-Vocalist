@@ -1,7 +1,8 @@
 #ifndef PORTAUDIO_WRAPPER_H
 #define PORTAUDIO_WRAPPER_H
-#include <vector>
+
 #include <portaudio.h>
+#include <vector>
 
 
 /* Define the constants for portaudio library.

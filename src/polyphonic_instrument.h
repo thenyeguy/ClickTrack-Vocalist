@@ -3,9 +3,9 @@
 
 #include <list>
 #include <map>
+#include "adder.h"
 #include "audio_generics.h"
 #include "generic_instrument.h"
-#include "basic_elements.h"
 
 namespace ClickTrack
 {

@@ -1,8 +1,8 @@
-#include <iostream>
 #include <cmath>
+#include <iostream>
 #include <random>
-#include "portaudio_wrapper.h"
 #include "oscillator.h"
+#include "portaudio_wrapper.h"
 
 using namespace ClickTrack;
 

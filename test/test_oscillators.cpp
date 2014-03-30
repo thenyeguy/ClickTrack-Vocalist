@@ -1,6 +1,8 @@
+#include <cstdlib>
 #include <iostream>
-#include "../src/io_elements.h"
 #include "../src/oscillator.h"
+#include "../src/speaker.h"
+#include "../src/wav_writer.h"
 
 using namespace ClickTrack;
 

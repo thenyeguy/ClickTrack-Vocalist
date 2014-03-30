@@ -1,9 +1,6 @@
 #include <cstdlib>
-#include <fstream>
-#include <iostream>
 #include <string>
-#include <sstream>
-#include "io_elements.h"
+#include "wav_reader.h"
 #include "drum_machine.h"
 
 using namespace ClickTrack;

@@ -2,9 +2,10 @@
 #define SUBTRACTIVE_SYNTH_H
 
 #include "adsr.h"
-#include "filters.h"
+#include "gain_filter.h"
 #include "oscillator.h"
 #include "polyphonic_instrument.h"
+#include "second_order_filter.h"
 
 
 namespace ClickTrack

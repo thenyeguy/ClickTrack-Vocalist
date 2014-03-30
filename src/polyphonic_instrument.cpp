@@ -1,6 +1,3 @@
-#ifndef POLYPHONIC_INSTRUMENT_CPP
-#define POLYPHONIC_INSTRUMENT_CPP
-
 #include <math.h>
 #include "polyphonic_instrument.h"
 
@@ -203,5 +200,3 @@ unsigned PolyphonicVoice::get_note()
 {
     return note;
 }
-
-#endif

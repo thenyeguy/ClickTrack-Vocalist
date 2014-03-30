@@ -1,6 +1,7 @@
 #include <iostream>
-#include "../src/io_elements.h"
+#include "../src/clip_detector.h"
 #include "../src/midi_wrapper.h"
+#include "../src/speaker.h"
 #include "../src/subtractive_synth.h"
 
 int main()

@@ -1,6 +1,8 @@
+#include <cstdlib>
 #include <iostream>
-#include "../src/io_elements.h"
+#include "../src/microphone.h"
 #include "../src/reverb.h"
+#include "../src/speaker.h"
 
 using namespace ClickTrack;
 

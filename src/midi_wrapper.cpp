@@ -1,8 +1,8 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
-#include "midi_wrapper.h"
 #include "generic_instrument.h"
+#include "midi_wrapper.h"
 
 using namespace ClickTrack;
 namespace chr = std::chrono;

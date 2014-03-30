@@ -1,5 +1,5 @@
-#ifndef AUDIOGENERICS_H
-#define AUDIOGENERICS_H
+#ifndef AUDIO_GENERICS_H
+#define AUDIO_GENERICS_H
 
 #include <vector>
 #include "portaudio_wrapper.h"

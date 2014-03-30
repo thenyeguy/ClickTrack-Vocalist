@@ -2,6 +2,7 @@
 #define RINGBUFFER_H
 
 #include <exception>
+#include <cstdio>
 #include <vector>
 
 

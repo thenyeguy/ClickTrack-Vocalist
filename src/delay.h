@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "audio_generics.h"
+#include "ringbuffer.h"
 
 
 namespace ClickTrack

@@ -1,7 +1,10 @@
+#include <cstdlib>
 #include <iostream>
-#include "../src/filters.h"
-#include "../src/io_elements.h"
+#include "../src/first_order_filter.h"
 #include "../src/oscillator.h"
+#include "../src/second_order_filter.h"
+#include "../src/wav_reader.h"
+#include "../src/wav_writer.h"
 
 using namespace ClickTrack;
 

@@ -3,7 +3,6 @@
 
 #include <complex>
 #include <vector>
-#include <fftw3.h>
 #include "portaudio_wrapper.h"
 
 

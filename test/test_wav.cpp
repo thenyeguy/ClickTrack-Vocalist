@@ -1,5 +1,7 @@
 #include <iostream>
-#include "../src/io_elements.h"
+#include "../src/speaker.h"
+#include "../src/wav_reader.h"
+#include "../src/wav_writer.h"
 
 using namespace ClickTrack;
 

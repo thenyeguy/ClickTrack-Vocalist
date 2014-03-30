@@ -1,5 +1,6 @@
 #ifndef RINGBUFFER_CPP
 #define RINGBUFFER_CPP
+
 #include "ringbuffer.h"
 
 using namespace ClickTrack;

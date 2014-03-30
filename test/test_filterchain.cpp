@@ -1,8 +1,11 @@
+#include <cstdlib>
 #include <iostream>
-#include "../src/basic_elements.h"
+#include "../src/adder.h"
 #include "../src/delay.h"
-#include "../src/io_elements.h"
+#include "../src/gain_filter.h"
+#include "../src/microphone.h"
 #include "../src/oscillator.h"
+#include "../src/speaker.h"
 
 using namespace ClickTrack;
 

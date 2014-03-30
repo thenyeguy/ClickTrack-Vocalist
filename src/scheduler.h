@@ -1,8 +1,6 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include <list>
-#include <map>
 #include <queue>
 
 
