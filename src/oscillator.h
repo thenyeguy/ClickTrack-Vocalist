@@ -37,6 +37,13 @@ namespace ClickTrack
              */
             void set_transposition(float steps);
 
+            /* The LFO modulates the output waveform frequency in a certain step
+             * degree; this can be fractional. If no LFO is specified, or if the
+             * input is set to nullptr, no modulation is done.
+             */
+            void set_lfo_input(Channel* input);
+            void set_lfo_intensity(float steps);
+
         protected:
             /* This callback can only be set by the scheduler
              */
@@ -56,6 +63,11 @@ namespace ClickTrack
              */
             FunctionScheduler<Oscillator> scheduler;
 
+            /* LFO input
+             */
+            Channel* lfo;
+            float lfo_intensity;
+
             /* Phase state
              */
             float phase;     // rads
@@ -66,7 +78,6 @@ namespace ClickTrack
              */
             Mode mode;
             float freq; // hz
-
     };
 }
 

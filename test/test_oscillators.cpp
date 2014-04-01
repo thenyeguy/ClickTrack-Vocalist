@@ -11,28 +11,26 @@ int main()
 {
     std::cout << "Initializing signal chain" << std::endl;
 
-    Oscillator blep(Oscillator::BlepTri, 440);
-    blep.set_transposition(12*3);
-    Oscillator naive(Oscillator::Tri, 440);
-    naive.set_transposition(12*3);
+    // Set up oscillator
+    Oscillator osc(Oscillator::BlepTri, 440);
+    osc.set_transposition(-3);
 
-    Speaker speaker(2);
-    speaker.set_input_channel(blep.get_output_channel(), 0);
-    speaker.set_input_channel(naive.get_output_channel(), 1);
+    // Set up LFO
+    Oscillator lfo(Oscillator::Sine, 5);
+    osc.set_lfo_input(lfo.get_output_channel());
+    osc.set_lfo_intensity(.3);
 
-    WavWriter wav("wav/test_osc.wav", 2);
-    wav.set_input_channel(blep.get_output_channel(), 0);
-    wav.set_input_channel(naive.get_output_channel(), 1);
+    Speaker speaker;
+    speaker.set_input_channel(osc.get_output_channel());
 
 
     // Loop small number of times to generate enough audio
     std::cout << "Entering process loop" << std::endl;
-    for(unsigned i = 0; i < SAMPLE_RATE; i++)
+    while(true)
     {
         try
         {
             speaker.consume();
-            wav.consume();
         }
         catch(std::exception& e)
         {
