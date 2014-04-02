@@ -14,6 +14,9 @@ int main()
 
     inst.filter.set_cutoff(1000);
 
+    inst.set_lfo_vibrato(0.1);
+    inst.set_lfo_tremelo(.2);
+
     cout << "Initializing signal chain" << endl;
     ClipDetector clip(1.0);
     clip.set_input_channel(inst.get_output_channel());

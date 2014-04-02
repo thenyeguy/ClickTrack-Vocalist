@@ -8,7 +8,8 @@ using namespace ClickTrack;
 SubtractiveSynth::SubtractiveSynth(int num_voices)
     : PolyphonicInstrument(num_voices), 
       filter(SecondOrderFilter::LOWPASS, 20000),
-      volume(0.2)
+      lfo(Oscillator::Sine, 5),
+      volume(-10)
 {
     // Initialize our voices
     std::vector<PolyphonicVoice*> temp;
@@ -23,12 +24,26 @@ SubtractiveSynth::SubtractiveSynth(int num_voices)
     // Configure our signal chain
     filter.set_input_channel(PolyphonicInstrument::get_output_channel());
     volume.set_input_channel(filter.get_output_channel());
+
+    // Connect the LFO
+    for(auto voice : voices)
+    {
+        voice->osc1.set_lfo_input(lfo.get_output_channel());
+        voice->osc2.set_lfo_input(lfo.get_output_channel());
+    }
+    volume.set_lfo_input(lfo.get_output_channel());
 }
 
 
 Channel* SubtractiveSynth::get_output_channel()
 {
     return volume.get_output_channel();
+}
+
+
+void SubtractiveSynth::set_gain(float in_gain)
+{
+    volume.set_gain(in_gain);
 }
 
 
@@ -85,6 +100,22 @@ void SubtractiveSynth::set_release_time(float release_time)
 {
     for(auto voice : voices)
         voice->adsr.set_release_time(release_time);
+}
+
+
+void SubtractiveSynth::set_lfo_vibrato(float steps)
+{
+    for(auto voice : voices)
+    {
+        voice->osc1.set_lfo_intensity(steps);
+        voice->osc2.set_lfo_intensity(steps);
+    }
+}
+
+
+void SubtractiveSynth::set_lfo_tremelo(float db)
+{
+    volume.set_lfo_intensity(db);
 }
 
 

@@ -25,6 +25,10 @@ namespace ClickTrack
              */
             Channel* get_output_channel();
 
+            /* Sets the output gain of the synth, in decibels
+             */
+            void set_gain(float gain);
+
             /* Voice selection for each oscillator - each oscillator can be one
              * of several modes as defined in oscillator.h
              */
@@ -48,11 +52,22 @@ namespace ClickTrack
              */
             SecondOrderFilter filter;
 
-            /* Output gain for the oscillator
+            /* The LFO is connected to the oscillators to generate vibrato, and
+             * to the output gain to generate tremolo.
+             *
+             * Vibrato is specified in steps, tremelo in decibal variation
+             */
+            Oscillator lfo;
+            void set_lfo_vibrato(float steps);
+            void set_lfo_tremelo(float db);
+
+        private:
+            /* Output gain for the oscillator. Also performs tremelo
              */
             GainFilter volume;
 
-        private:
+            /* Our list of voices so we may set their parameters
+             */
             std::vector<SubtractiveSynthVoice*> voices;
     };
 
