@@ -27,7 +27,9 @@ namespace ClickTrack
                          unsigned num_channels);
 
             /* Setters for the reverb parameters. Currently, the room itself
-             * can't be changed after initialization
+             * can't be changed after initialization.
+             *
+             * Time is in seconds, gain is in decibels
              */
             void set_rev_time(float rev_time);
             void set_gain(float gain);

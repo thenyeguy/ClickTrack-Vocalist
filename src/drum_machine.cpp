@@ -6,7 +6,7 @@
 using namespace ClickTrack;
 
 DrumMachine::DrumMachine(const std::string& path)
-    : volume(0.5), adder(128), voices()
+    : volume(-3), adder(128), voices()
       //one for each possible MIDI channel
 {
     // Connect signal chain

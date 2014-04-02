@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include "adsr.h"
 
@@ -14,7 +15,7 @@ ADSRFilter::ADSRFilter(float in_attack_time, float in_decay_time,
     attack_time  = in_attack_time  * SAMPLE_RATE;
     decay_time   = in_decay_time   * SAMPLE_RATE;
     release_time = in_release_time * SAMPLE_RATE;
-    gain = in_gain;
+    gain = pow(10,in_gain/10);
 
     sustain_level = in_sustain_level;
 }
@@ -94,9 +95,9 @@ void ADSRFilter::set_release_time(float in)
 }
 
 
-void ADSRFilter::set_gain(float in)
+void ADSRFilter::set_gain(float in_gain)
 {
-    gain = in;
+    gain = pow(10,in_gain/10);
 }
 
 

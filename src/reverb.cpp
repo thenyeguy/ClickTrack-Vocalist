@@ -8,7 +8,7 @@ using namespace ClickTrack;
 MoorerReverb::MoorerReverb(Room in_room, float in_rev_time, float in_gain, 
         float in_wetness, unsigned num_channels)
     : AudioFilter(num_channels, num_channels), room(in_room), 
-      rev_time(in_rev_time), gain(in_gain), wetness(in_wetness),
+      rev_time(in_rev_time), gain(pow(10,in_gain/10)), wetness(in_wetness),
       tapped_delay_lines(), comb_delay_lines(), tapped_delay_line_outputs(), 
       comb_outputs()
 {
@@ -50,7 +50,7 @@ void MoorerReverb::set_rev_time(float in_rev_time)
 
 void MoorerReverb::set_gain(float in_gain)
 {
-    gain = in_gain;
+    gain = pow(10,in_gain/10);
 }
 
 

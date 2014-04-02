@@ -14,10 +14,10 @@ namespace ClickTrack
     class ADSRFilter : public AudioFilter
     {
         public:
-            /* Constructor... times are expressed in seconds */
+            /* Constructor. Times are expressed in seconds, gain in decibels */
             ADSRFilter(float attack_time=.005, float decay_time=.1,
                        float sustain_level=.5, float release_time=.1,
-                       float gain=1.0, unsigned num_channels=1);
+                       float gain=0.0, unsigned num_channels=1);
 
             /* These functions are used to trigger the envelope to begin or end
              */
