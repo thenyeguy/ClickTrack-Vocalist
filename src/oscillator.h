@@ -19,7 +19,7 @@ namespace ClickTrack
              * Blep oscillators use PolyBlep to generate alias-free waveforms
              */
             enum Mode { Sine, Saw, Square, Tri, WhiteNoise, 
-                BlepSaw, BlepSquare, BlepTri};
+                BlepSaw, BlepSquare, BlepTri, PulseTrain};
             Oscillator(Mode mode, float in_freq);
 
             /* Sets the waveform mode

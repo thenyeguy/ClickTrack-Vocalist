@@ -146,6 +146,16 @@ void Oscillator::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
             out = 2*sf - 1;
             break;
         }
+
+        case PulseTrain:
+        {
+            // If we wrapped around...
+            if(phase < phase_inc)
+                out = 1.0;
+            else
+                out = 0.0;
+            break;
+        }
     }
     outputs[0] = out;
 }
