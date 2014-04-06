@@ -7,6 +7,7 @@
 #include "gain_filter.h"
 #include "generic_instrument.h"
 #include "oscillator.h"
+#include "ringbuffer.h"
 
 namespace ClickTrack
 {
@@ -17,10 +18,25 @@ namespace ClickTrack
      *      MidiNumber path/to/your sample.wav
      * Blank lines and lines starting with # are ignored.
      */
+    class VocalistFilter : public AudioFilter
+    {
+        friend class Vocalist;
+
+        public:
+            VocalistFilter();
+
+        private:
+            void filter(std::vector<SAMPLE>& input, 
+                    std::vector<SAMPLE>& output, unsigned long t);
+
+            /* Store filter coefficients for different vowels
+             */
+            std::vector<float> coeffs;
+            RingBuffer<SAMPLE> ys;
+    };
+
     class Vocalist : public GenericInstrument
     {
-        friend class DrumVoice;
-
         public:
             Vocalist();
 
@@ -47,6 +63,8 @@ namespace ClickTrack
             Oscillator vibrato_lfo;
             Oscillator voice;
             Oscillator noise;
+
+            VocalistFilter filter;
 
             GainFilter tremelo_lfo;
             GainFilter tremelo;

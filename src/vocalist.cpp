@@ -1,8 +1,56 @@
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include "vocalist.h"
 
 using namespace ClickTrack;
+
+
+VocalistFilter::VocalistFilter()
+    : AudioFilter(2,1), coeffs(), ys(1)
+{
+    // Load the vowel coefficients
+    std::fstream coeffFile;
+    std::string line;
+    coeffFile.open("data/A.dat");
+
+    // Read the header
+    std::string name;
+    coeffFile >> name; // ignore the name
+
+    unsigned numCoeffs;
+    coeffFile >> numCoeffs;
+
+    // Read the coefficients into our vector
+    coeffs = std::vector<SAMPLE>();
+    for(unsigned i = 0; i < numCoeffs; i++)
+    {
+        float c;
+        coeffFile >> c;
+        coeffs.push_back(c);
+    }
+
+    // Update the ringbuffer
+    ys = RingBuffer<SAMPLE>(numCoeffs);
+}
+
+
+void VocalistFilter::filter(std::vector<SAMPLE>& input, 
+        std::vector<SAMPLE>& output, unsigned long t)
+{
+    // Get the voiced sample
+    SAMPLE out = input[0];
+
+    // Apply an IIR filter
+    for(unsigned i = 1; i < coeffs.size() && t >= i; i++)
+        out -= coeffs[i] * ys[t - i];
+
+    // Write the sample out
+    ys.add(out);
+    output[0] = out / 20;
+}
+
+
 
 
 Vocalist::Vocalist()
@@ -10,13 +58,17 @@ Vocalist::Vocalist()
       vibrato_lfo(Oscillator::Sine, 5),
       voice(Oscillator::PulseTrain, 220),
       noise(Oscillator::WhiteNoise, 0),
+      filter(),
       tremelo_lfo(Oscillator::Sine, 5),
       tremelo(-INFINITY),
       note(0), pitch_multiplier(1.0),
       playing(false), sustained(false), held(false)
 {
     // Configure signal chain
-    tremelo.set_input_channel(voice.get_output_channel());
+    filter.set_input_channel(voice.get_output_channel(),0);
+    filter.set_input_channel(noise.get_output_channel(),1);
+
+    tremelo.set_input_channel(filter.get_output_channel());
     
     // Configure LFOs
     voice.set_lfo_input(vibrato_lfo.get_output_channel());
