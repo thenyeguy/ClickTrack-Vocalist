@@ -1,7 +1,7 @@
 # Define compiler and flags
 CC      = clang++
-CFLAGS  = -std=c++11 -Wall -Werror -g -I/usr/local/include
-LIBS    = -L/usr/local/lib -lportaudio -lrtmidi
+CFLAGS  = -std=c++11 -Wall -Werror -g
+LIBS    = -lportaudio -lrtmidi
 
 # Define compile paths
 SRCDIR = src
