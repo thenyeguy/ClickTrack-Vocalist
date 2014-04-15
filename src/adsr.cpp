@@ -85,7 +85,7 @@ void ADSRFilter::set_decay_time(float in)
 
 void ADSRFilter::set_sustain_level(float in)
 {
-    sustain_level = SAMPLE_RATE*in;
+    sustain_level = in;
 }
 
 
