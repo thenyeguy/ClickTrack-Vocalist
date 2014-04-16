@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include "../src/compressor.h"
 #include "../src/limiter.h"
 #include "../src/wav_reader.h"
 #include "../src/wav_writer.h"
@@ -18,6 +19,12 @@ int main()
     WavWriter limiter_wav("wav/test_limiter.wav");
     limiter_wav.set_input_channel(limiter.get_output_channel());
 
+    Compressor compressor(-6, 0.5);
+    compressor.set_input_channel(test_wav.get_output_channel());
+
+    WavWriter compressor_wav("wav/test_compressor.wav");
+    compressor_wav.set_input_channel(compressor.get_output_channel());
+
 
     std::cout << "Entering process loop" << std::endl;
     for(unsigned i = 0; i < test_wav.get_total_samples(); i++)
@@ -25,6 +32,7 @@ int main()
         try
         {
             limiter_wav.consume();
+            compressor_wav.consume();
         }
         catch(std::exception& e)
         {

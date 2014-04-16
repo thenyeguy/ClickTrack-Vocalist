@@ -1,32 +1,40 @@
 #include <cmath>
-#include "limiter.h"
+#include "compressor.h"
 
 using namespace ClickTrack;
 
 
-Limiter::Limiter(float in_threshold, float in_gain, float in_lookahead)
+Compressor::Compressor(float in_threshold, float in_compression_ratio,
+        float in_gain, float in_lookahead)
     : AudioFilter(1,1), 
       lookahead(SAMPLE_RATE*in_lookahead),
       threshold(pow(10, in_threshold/20)),
+      compression_ratio(in_compression_ratio),
       gain(pow(10, in_gain/20)),
       envelope(), 
       inputs(lookahead+1)
 {}
 
 
-void Limiter::set_gain(float in_gain)
+void Compressor::set_gain(float in_gain)
 {
     gain = pow(10, in_gain/20);
 }
 
 
-void Limiter::set_threshold(float in_threshold)
+void Compressor::set_compression_ratio(float in_compression_ratio)
+{
+    compression_ratio = in_compression_ratio;
+}
+
+
+void Compressor::set_threshold(float in_threshold)
 {
     threshold = pow(10, in_threshold/20);
 }
 
 
-void Limiter::filter(std::vector<SAMPLE>& input,
+void Compressor::filter(std::vector<SAMPLE>& input,
         std::vector<SAMPLE>& output, unsigned long t)
 {
     // Push the sample using the lookahead
@@ -36,11 +44,11 @@ void Limiter::filter(std::vector<SAMPLE>& input,
         in = inputs[t-lookahead];
 
     // Calculate the limiter gain from the threshold
-    float limiter_gain = 1.0;
+    float compression = 1.0;
     float level = envelope.get_next_level(input[0]);
     if(level > threshold)
-        limiter_gain = threshold / level;
+        compression = compression_ratio*threshold/level + 1-compression_ratio;
 
     // Set the output with the limiter_gain
-    output[0] = gain*limiter_gain*in;
+    output[0] = gain*compression*in;
 }

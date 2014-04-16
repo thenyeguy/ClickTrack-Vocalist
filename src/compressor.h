@@ -1,5 +1,5 @@
-#ifndef LIMITER_H
-#define LIMITER_H
+#ifndef COMPRESSOR_H
+#define COMPRESSOR_H
 
 #include "level_detector.h"
 #include "ringbuffer.h"
@@ -7,19 +7,23 @@
 
 namespace ClickTrack
 {
-    /* The limiter takes in a threshold in decibels, and then limits the
-     * amplitude of its input to that threshold. 
+    /* The compression takes in a threshold in decibels, and a ratio that
+     * specifies the ratio of attenuation above the threshold. For example,
+     * a compression ratio of 0 provides NO attenuation. A compression ratio of
+     * attenuates down the the
      *
      * An optional gain in dB is applied to the output. An optional lookahead
-     * (given in ms) allows the limiter to delay its inputs and prepare the
+     * (given in ms) allows the compressor to delay its inputs and prepare the
      * envelope in advance.
      */
-    class Limiter : public AudioFilter
+    class Compressor : public AudioFilter
     {
         public:
-            Limiter(float threshold, float gain = 0.0, float lookahead=0.0);
+            Compressor(float threshold, float compression_ratio,
+                    float gain=0.0, float lookahead=0.0);
 
             void set_threshold(float threshold);
+            void set_compression_ratio(float compression_ratio);
             void set_gain(float gain);
 
         private:
@@ -30,6 +34,7 @@ namespace ClickTrack
              */ 
             unsigned lookahead;
             float threshold;
+            float compression_ratio;
             float gain;
 
             /* State tracking
