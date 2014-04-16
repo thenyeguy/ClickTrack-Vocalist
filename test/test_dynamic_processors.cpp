@@ -2,6 +2,7 @@
 #include <iostream>
 #include "../src/compressor.h"
 #include "../src/limiter.h"
+#include "../src/noise_gate.h"
 #include "../src/wav_reader.h"
 #include "../src/wav_writer.h"
 
@@ -15,16 +16,18 @@ int main()
 
     Limiter limiter(-6);
     limiter.set_input_channel(test_wav.get_output_channel());
-
     WavWriter limiter_wav("wav/test_limiter.wav");
     limiter_wav.set_input_channel(limiter.get_output_channel());
 
     Compressor compressor(-6, 0.5);
     compressor.set_input_channel(test_wav.get_output_channel());
-
     WavWriter compressor_wav("wav/test_compressor.wav");
     compressor_wav.set_input_channel(compressor.get_output_channel());
 
+    NoiseGate noise_gate(-6, -9);
+    noise_gate.set_input_channel(test_wav.get_output_channel());
+    WavWriter noise_gate_wav("wav/test_noise_gate.wav");
+    noise_gate_wav.set_input_channel(noise_gate.get_output_channel());
 
     std::cout << "Entering process loop" << std::endl;
     for(unsigned i = 0; i < test_wav.get_total_samples(); i++)
@@ -33,6 +36,7 @@ int main()
         {
             limiter_wav.consume();
             compressor_wav.consume();
+            noise_gate_wav.consume();
         }
         catch(std::exception& e)
         {
