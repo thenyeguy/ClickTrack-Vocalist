@@ -10,7 +10,11 @@ namespace ClickTrack
     /* The compression takes in a threshold in decibels, and a ratio that
      * specifies the ratio of attenuation above the threshold. For example,
      * a compression ratio of 0 provides NO attenuation. A compression ratio of
-     * attenuates down the the
+     * 1 forces the output down to the threshold.
+     *
+     * Note that values greater than one can be used to force it back BELOW the
+     * threshold, and negative values will push the amplitude HIGHER above the
+     * threshold.
      *
      * An optional gain in dB is applied to the output. An optional lookahead
      * (given in ms) allows the compressor to delay its inputs and prepare the
