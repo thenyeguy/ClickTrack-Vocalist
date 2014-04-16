@@ -10,7 +10,7 @@ Limiter::Limiter(float in_threshold, float in_lookahead)
       lookahead(SAMPLE_RATE*in_lookahead),
       threshold(pow(10, in_threshold/20)),
       envelope(), 
-      inputs(lookahead)
+      inputs(lookahead+1)
 {}
 
 
@@ -23,15 +23,18 @@ void Limiter::set_threshold(float in_threshold)
 void Limiter::filter(std::vector<SAMPLE>& input,
         std::vector<SAMPLE>& output, unsigned long t)
 {
+    // Push the sample using the lookahead
+    inputs.add(input[0]);
+    float in = 0.0;
+    if(t >= lookahead)
+        in = inputs[t-lookahead];
+
     // Calculate the gain from the threshold
     float gain = 1.0;
     float level = envelope.get_next_level(input[0]);
     if(level > threshold)
-    {
-        std::cout << t << ": " << level << std::endl;
         gain = threshold / level;
-    }
 
     // Set the output with the gain
-    output[0] = gain*input[0];
+    output[0] = gain*in;
 }
