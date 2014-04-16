@@ -21,7 +21,7 @@ full: clean all
 # List of output targets
 targets: subtractive_synth drum_machine
 tests: test_ringbuffer test_fft test_filterchain test_wav test_convolve \
-       test_reverb test_filters test_oscillators
+       test_reverb test_filters test_oscillators test_dynamic_processors
 
 # Collect all the src and object files
 ALL_SRC = $(wildcard $(SRCDIR)/*.cpp)
@@ -68,6 +68,10 @@ test_filters: $(ALL_OBJ) $(OBJDIR)/test_filters.o | $(BINDIR)
 	@$(CC) $(CFLAGS) $(LIBS) $^ -o $(BINDIR)/$@
 
 test_oscillators: $(ALL_OBJ) $(OBJDIR)/test_oscillators.o | $(BINDIR)
+	@echo "Linking $(BINDIR)/$@...\n"
+	@$(CC) $(CFLAGS) $(LIBS) $^ -o $(BINDIR)/$@
+
+test_dynamic_processors: $(ALL_OBJ) $(OBJDIR)/test_dynamic_processors.o | $(BINDIR)
 	@echo "Linking $(BINDIR)/$@...\n"
 	@$(CC) $(CFLAGS) $(LIBS) $^ -o $(BINDIR)/$@
 
