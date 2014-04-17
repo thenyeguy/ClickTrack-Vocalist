@@ -7,7 +7,10 @@ using namespace ClickTrack;
 
 
 VocalistFilter::VocalistFilter()
-    : AudioFilter(2,1), coeffs(), ys(1)
+    : AudioFilter(2,1),
+      reflection_coeffs(),
+      forward_errors(),
+      backward_errors()
 {
     // Load the vowel coefficients
     std::fstream coeffFile;
@@ -18,36 +21,42 @@ VocalistFilter::VocalistFilter()
     std::string name;
     coeffFile >> name; // ignore the name
 
-    unsigned numCoeffs;
-    coeffFile >> numCoeffs;
+    coeffFile >> num_coeffs;
 
-    // Read the coefficients into our vector
-    coeffs = std::vector<SAMPLE>();
-    for(unsigned i = 0; i < numCoeffs; i++)
+    reflection_coeffs.push_back(0.0);
+    forward_errors.push_back(0.0);
+    backward_errors.push_back(0.0);
+
+    // Read the coefficients into our vector, and size our error containers
+    for(unsigned i = 0; i < num_coeffs; i++)
     {
         float c;
         coeffFile >> c;
-        coeffs.push_back(c);
+        reflection_coeffs.push_back(c);
+        forward_errors.push_back(0.0);
+        backward_errors.push_back(0.0);
     }
-
-    // Update the ringbuffer
-    ys = RingBuffer<SAMPLE>(numCoeffs);
 }
 
 
 void VocalistFilter::filter(std::vector<SAMPLE>& input, 
         std::vector<SAMPLE>& output, unsigned long t)
 {
-    // Get the voiced sample
-    SAMPLE out = input[0];
+    // Feed the lattice with input
+    forward_errors[num_coeffs] = input[0];
 
-    // Apply an IIR filter
-    for(unsigned i = 1; i < coeffs.size() && t >= i; i++)
-        out -= coeffs[i] * ys[t - i];
+    // Propogate the errors through the lattice
+    for(unsigned i = num_coeffs; i > 0; i--)
+    {
+        forward_errors[i-1] = forward_errors[i] + 
+            reflection_coeffs[i] * backward_errors[i-1];
+        backward_errors[i] = -reflection_coeffs[i]*forward_errors[i-1] + 
+            backward_errors[i-1];
+    }
 
     // Write the sample out
-    ys.add(out);
-    output[0] = out / 20;
+    backward_errors[0] = forward_errors[0];
+    output[0] = forward_errors[0] / 20;
 }
 
 

@@ -31,8 +31,10 @@ namespace ClickTrack
 
             /* Store filter coefficients for different vowels
              */
-            std::vector<float> coeffs;
-            RingBuffer<SAMPLE> ys;
+            unsigned num_coeffs;
+            std::vector<float> reflection_coeffs;
+            std::vector<SAMPLE> forward_errors;
+            std::vector<SAMPLE> backward_errors;
     };
 
     class Vocalist : public GenericInstrument
