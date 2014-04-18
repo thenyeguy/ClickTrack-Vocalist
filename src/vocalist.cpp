@@ -8,34 +8,57 @@ using namespace ClickTrack;
 
 VocalistFilter::VocalistFilter()
     : AudioFilter(2,1),
+      all_coeffs(),
       reflection_coeffs(),
       forward_errors(),
       backward_errors()
 {
-    // Load the vowel coefficients
+    /* Load our sound sets
+     */
+    load_sound(VocalistFilter::A, "data/A.dat", 
+            all_coeffs[VocalistFilter::A]);
+    load_sound(VocalistFilter::E, "data/E.dat", 
+            all_coeffs[VocalistFilter::E]);
+
+    current_sound = VocalistFilter::A;
+
+    /* Initialize our containers
+     */
+    reflection_coeffs.push_back(0.0); //zeroth element never accessed
+    forward_errors.push_back(0.0);
+    backward_errors.push_back(0.0);
+
+    for(unsigned i = 0; i < num_coeffs; i++)
+    {
+        reflection_coeffs.push_back(all_coeffs[current_sound][i]);
+        forward_errors.push_back(0.0);
+        backward_errors.push_back(0.0);
+    }
+}
+
+
+void VocalistFilter::load_sound(Sound sound, std::string file,
+        std::vector<float>& coeffs)
+{
+    // Open our file
     std::fstream coeffFile;
-    std::string line;
-    coeffFile.open("data/A.dat");
+    coeffFile.open(file);
 
     // Read the header
     std::string name;
     coeffFile >> name; // ignore the name
-
     coeffFile >> num_coeffs;
 
-    reflection_coeffs.push_back(0.0);
-    forward_errors.push_back(0.0);
-    backward_errors.push_back(0.0);
-
-    // Read the coefficients into our vector, and size our error containers
+    // Read the coefficients into our vector
     for(unsigned i = 0; i < num_coeffs; i++)
     {
         float c;
         coeffFile >> c;
-        reflection_coeffs.push_back(c);
-        forward_errors.push_back(0.0);
-        backward_errors.push_back(0.0);
+        coeffs.push_back(c);
     }
+
+    // Close the file
+    coeffFile.close();
 }
 
 

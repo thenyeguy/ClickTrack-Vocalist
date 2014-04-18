@@ -31,9 +31,20 @@ namespace ClickTrack
             void filter(std::vector<SAMPLE>& input, 
                     std::vector<SAMPLE>& output, unsigned long t);
 
-            /* Store filter coefficients for different vowels
+            /* Helper function for loading vowels
+             */
+            enum Sound { A, E };
+            void load_sound(Sound sound, std::string file, 
+                    std::vector<float>& coeffs);
+
+            /* Store sets of reflection coeffs for each vowel
              */
             unsigned num_coeffs;
+            std::map<Sound, std::vector<float> > all_coeffs;
+
+            /* Store filter coefficients for the lattice
+             */
+            Sound current_sound;
             std::vector<float> reflection_coeffs;
             std::vector<SAMPLE> forward_errors;
             std::vector<SAMPLE> backward_errors;
