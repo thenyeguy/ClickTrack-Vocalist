@@ -8,6 +8,7 @@ function model = trainModel(file, P)
 %
 % Outputs: model - a struct as follows:
 %              model.name - the filename
+%              model.wav - the raw waveform
 %              model.alphas - the denominator polynomial of an IIR filter
 %              model.ks - the reflection coeffs of an all pole lattice
 %
@@ -21,7 +22,7 @@ end
 [~,model.name,~] = fileparts(file);
 
 % Read in the file and compute LPC params
-x = wavread(file);
-[model.alphas model.ks] = computeLpc(x, P);
+model.wav = wavread(file);
+[model.alphas model.ks] = computeLpc(model.wav, P);
 
 end
