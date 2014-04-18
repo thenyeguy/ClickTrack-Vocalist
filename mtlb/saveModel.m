@@ -1,9 +1,8 @@
-function saveFilterCoeffs(name, reflectionCoeffs)
+function saveModel(model)
 %
 % Saves a set of coefficients in a format readable from the C++ instrument
 %
-% Inputs:  name - the name of the letter we are modeling
-%          lpcCoeffs - a vector of lpc reflection coefficients
+% Inputs:  model - a model struct with name and ks fields
 %
 % Outputs: a file called PROJECTROOT/data/NAME.dat
 %           NAME
@@ -14,15 +13,15 @@ function saveFilterCoeffs(name, reflectionCoeffs)
 %
 
 % Open our file
-file = fopen(['../data/' name '.dat'], 'w');
+file = fopen(['../data/' model.name '.dat'], 'w');
 
 % Write out the header
-fprintf(file, '%s\n', name);
-fprintf(file, '%d\n', numel(reflectionCoeffs));
+fprintf(file, '%s\n', model.name);
+fprintf(file, '%d\n', numel(model.ks));
 
 % Write out our coeffs one by one
-for c = reflectionCoeffs
-    fprintf(file, '%f\n', c);
+for k = model.ks
+    fprintf(file, '%f\n', k);
 end
 
 % Close the file

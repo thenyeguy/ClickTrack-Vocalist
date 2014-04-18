@@ -1,6 +1,6 @@
-function [alphas, ks] = trainLpcModel(x, P)
+function [alphas, ks] = computeLpc(x, P)
 %
-% trainLpcModel calculates coefficients for an all pole model of the signal
+% computeLpc calculates coefficients for an all pole model of the signal
 %
 % Inputs:  x - a vector representing our acoustic signal
 %          P - the number of poles to calculate
