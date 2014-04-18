@@ -1,4 +1,13 @@
-function [alphas, ks, errors] = trainLpcModel(x, P)
+function [alphas, ks] = trainLpcModel(x, P)
+%
+% trainLpcModel calculates coefficients for an all pole model of the signal
+%
+% Inputs:  x - a vector representing our acoustic signal
+%          P - the number of poles to calculate
+%
+% Outputs: alphas - a denominator polynomial for our filter response
+%          ks - the reflection coefficients for an all pole lattice
+%
 
 if nargin < 2
     P = length(x);
