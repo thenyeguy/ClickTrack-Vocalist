@@ -67,30 +67,33 @@ Vocalist::Vocalist()
       vibrato_lfo(Oscillator::Sine, 5),
       voice(Oscillator::PulseTrain, 220),
       noise(Oscillator::WhiteNoise, 0),
-      filter(),
+      voiceModel(),
       tremelo_lfo(Oscillator::Sine, 5),
       tremelo(-INFINITY),
+      filter(SecondOrderFilter::LOWPASS, 5000),
       note(0), pitch_multiplier(1.0),
       playing(false), sustained(false), held(false)
 {
     // Configure signal chain
-    filter.set_input_channel(voice.get_output_channel(),0);
-    filter.set_input_channel(noise.get_output_channel(),1);
+    voiceModel.set_input_channel(voice.get_output_channel(),0);
+    voiceModel.set_input_channel(noise.get_output_channel(),1);
 
-    tremelo.set_input_channel(filter.get_output_channel());
+    tremelo.set_input_channel(voiceModel.get_output_channel());
+
+    filter.set_input_channel(tremelo.get_output_channel());
     
     // Configure LFOs
     voice.set_lfo_input(vibrato_lfo.get_output_channel());
-    voice.set_lfo_intensity(0.0);
+    voice.set_lfo_intensity(0.1);
 
     tremelo.set_lfo_input(tremelo_lfo.get_output_channel());
-    tremelo.set_lfo_intensity(0.0);
+    tremelo.set_lfo_intensity(3.0);
 }
 
 
 Channel* Vocalist::get_output_channel()
 {
-    return tremelo.get_output_channel();
+    return filter.get_output_channel();
 }
 
 

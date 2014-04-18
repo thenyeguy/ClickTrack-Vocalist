@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 #include "audio_generics.h"
+#include "first_order_filter.h"
+#include "second_order_filter.h"
 #include "gain_filter.h"
 #include "generic_instrument.h"
 #include "oscillator.h"
@@ -66,10 +68,12 @@ namespace ClickTrack
             Oscillator voice;
             Oscillator noise;
 
-            VocalistFilter filter;
+            VocalistFilter voiceModel;
 
             GainFilter tremelo_lfo;
             GainFilter tremelo;
+
+            SecondOrderFilter filter;
 
             /* Current note status
              */
