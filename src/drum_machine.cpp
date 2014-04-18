@@ -6,17 +6,68 @@
 using namespace ClickTrack;
 
 DrumMachine::DrumMachine(const std::string& path)
-    : volume(-3), adder(128), voices()
-      //one for each possible MIDI channel
+    : volume(-3)
 {
+    // Create the adder
+    adder = new DrumAdder();
+
     // Connect signal chain
-    volume.set_input_channel(adder.get_output_channel());
+    volume.set_input_channel(adder->get_output_channel());
 
     // Set the voice
     set_voice(path);
 }
 
 void DrumMachine::set_voice(const std::string& path)
+{
+    adder->set_voice(path);
+}
+
+
+DrumMachine::~DrumMachine()
+{
+    delete adder;
+}
+
+
+Channel* DrumMachine::get_output_channel()
+{
+    return volume.get_output_channel();
+}
+
+
+void DrumMachine::on_note_down(unsigned note, float velocity, 
+        unsigned long time)
+{
+    adder->on_note_down(note, velocity, time);
+}
+
+
+// Ignore every message other than note down
+void DrumMachine::on_note_up(unsigned note, float velocity, 
+        unsigned long time) {}
+void DrumMachine::on_sustain_down(unsigned long time) {}
+void DrumMachine::on_sustain_up(unsigned long time) {}
+void DrumMachine::on_pitch_wheel(unsigned value, unsigned long time) {}
+void DrumMachine::on_midi_message(std::vector<unsigned char>* message, 
+        unsigned long time) {}
+
+
+
+
+DrumAdder::DrumAdder()
+    : AudioGenerator(1), scheduler(*this), voices()
+{}
+
+
+DrumAdder::~DrumAdder()
+{
+    for(auto noteAndVoice: voices)
+        delete noteAndVoice.second;
+}
+
+
+void DrumAdder::set_voice(const std::string& path)
 {
     // First wipe the old voice
     voices.clear();
@@ -45,51 +96,55 @@ void DrumMachine::set_voice(const std::string& path)
         // Create a drum voice
         voices.insert(std::pair<unsigned,DrumVoice*>
                 (note, new DrumVoice(filename)));
-        adder.set_input_channel(voices.at(note)->get_output_channel(), note);
     }
 
     keymap.close();
 }
 
 
-DrumMachine::~DrumMachine()
+void DrumAdder::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
 {
+    // Run the scheduler
+    scheduler.run(t);
+
+    // Compute the output
+    outputs[0] = 0.0; 
     for(auto noteAndVoice: voices)
-        delete noteAndVoice.second;
+    {
+        // For each voice, get its next sample
+        auto voice = noteAndVoice.second;
+        if(voice->is_playing())
+            outputs[0] += voice->get_next_sample();
+    }
 }
 
-
-Channel* DrumMachine::get_output_channel()
-{
-    return volume.get_output_channel();
-}
-
-
-void DrumMachine::on_note_down(unsigned note, float velocity, 
-        unsigned long time)
+void DrumAdder::on_note_down(unsigned note, float velocity, unsigned long t)
 {
     // Ignore if this note doesn't exist
     if(voices.find(note) == voices.end())
         return;
 
-    voices.at(note)->on_note_down(note, velocity, time);
+    // Schedule this note
+    unsigned* notePtr = new unsigned;
+    *notePtr = note;
+    scheduler.schedule(t, DrumAdder::handle_note_down, notePtr);
 }
 
 
-// Ignore every message other than note down
-void DrumMachine::on_note_up(unsigned note, float velocity, 
-        unsigned long time) {}
-void DrumMachine::on_sustain_down(unsigned long time) {}
-void DrumMachine::on_sustain_up(unsigned long time) {}
-void DrumMachine::on_pitch_wheel(unsigned value, unsigned long time) {}
-void DrumMachine::on_midi_message(std::vector<unsigned char>* message, 
-        unsigned long time) {}
+void DrumAdder::handle_note_down(DrumAdder& caller, void* payload)
+{
+    // Extract the note
+    unsigned note = *((unsigned*) payload);
+
+    // Trigger the note down
+    caller.voices.at(note)->on_note_down();
+}
 
 
 
 
 DrumVoice::DrumVoice(const std::string& filename)
-    : AudioGenerator(1), scheduler(*this), samples(), next_i(0), playing(false)
+    : samples(), next_i(0), playing(false)
 {
     // Read the wavfile into the buffer
     WavReader wav(filename.c_str());
@@ -99,47 +154,35 @@ DrumVoice::DrumVoice(const std::string& filename)
 }
 
 
-void DrumVoice::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
+SAMPLE DrumVoice::get_next_sample()
 {
-    // Run the scheduler
-    scheduler.run(t);
-
     // Generate sample
     if(playing)
     {
-        outputs[0] = samples[next_i];
+        SAMPLE out = samples[next_i];
         next_i++;
 
         if(next_i >= samples.size())
             playing = false;
+
+        return out;
     }
     else
     {
-        outputs[0] = 0.0;
+        return 0.0;
     }
 }
 
 
-void DrumVoice::on_note_down(unsigned note, float velocity, 
-        unsigned long time)
+void DrumVoice::on_note_down()
 {
-    if(time == 0)
-        time = get_next_time();
-
-    // Put the frequency in the payload and schedule the call
-    float* payload = new float;
-    *payload = velocity;
-    scheduler.schedule(time, DrumVoice::handle_note_down, payload);
+    // Set state
+    next_i = 0;
+    playing = true;
 }
 
 
-void DrumVoice::handle_note_down(DrumVoice& caller, void* payload)
+bool DrumVoice::is_playing()
 {
-    // Get the payload
-    float* velocity = (float*) payload;
-    delete velocity;
-
-    // Set state
-    caller.next_i = 0;
-    caller.playing = true;
+    return playing;
 }

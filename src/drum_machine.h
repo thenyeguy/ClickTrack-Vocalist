@@ -19,6 +19,7 @@ namespace ClickTrack
      * Blank lines and lines starting with # are ignored.
      */
     class DrumVoice;
+    class DrumAdder;
     class DrumMachine : public GenericInstrument
     {
         friend class DrumVoice;
@@ -55,7 +56,40 @@ namespace ClickTrack
         private:
             /* Sums our different voices
              */
-            Adder adder;
+            DrumAdder* adder;
+    };
+
+
+    /* Drum adder is an adder with less overhead for large numbers of elements.
+     */
+    class DrumAdder : public AudioGenerator
+    {
+        friend class DrumMachine;
+
+        protected:
+            DrumAdder();
+            ~DrumAdder();
+
+            /* Used to change the tones on our voices
+             */
+            void set_voice(const std::string& path);
+
+            /* Looks through the voices to determine which are playing
+             */
+            void generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t);
+
+            /* Callback to trigger a note. Only called by a drum machine.
+             *
+             * The function is scheduled, and will use the function scheduler to
+             * trigger the callback handler, which is passed the note as
+             * a payload.
+             */
+            void on_note_down(unsigned note, float velocity, unsigned long t);
+            static void handle_note_down(DrumAdder& caller, void* payload);
+
+            /* Scheduler for note downs
+             */
+            FunctionScheduler<DrumAdder> scheduler;
 
             /* The following map simply maps MIDI numbers to their drum voice
              */
@@ -67,31 +101,21 @@ namespace ClickTrack
      * into memory for playback. It will retrigger its sound on repeated note
      * down.
      */
-    class DrumVoice : public AudioGenerator
+    class DrumVoice
     {
-        friend class DrumMachine;
-
-        public:
-            DrumVoice(const std::string& filename);
+        friend class DrumAdder;
 
         protected:
-            /* Output function. Plays a wav file from buffer
-             */
-            void generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t);
+            DrumVoice(const std::string& filename);
 
-            /* Callback to trigger a note. Only called by a drum machine.
-             *
-             * The function is scheduled, and will use the function scheduler to
-             * trigger the callback handler, which is passed the velocity as
-             * a payload.
+            /* Handle getting notes
              */
-            void on_note_down(unsigned note, float velocity, 
-                    unsigned long time=0);
-            static void handle_note_down(DrumVoice& caller, void* payload);
+            SAMPLE get_next_sample();
+            void on_note_down();
 
-            /* Scheduler for note downs
+            /* Returns true if playing
              */
-            FunctionScheduler<DrumVoice> scheduler;
+            bool is_playing();
 
             /* State for audio buffer
              */

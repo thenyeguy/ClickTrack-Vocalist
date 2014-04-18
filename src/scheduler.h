@@ -46,14 +46,19 @@ namespace ClickTrack
 
             /* Internally, we map sample timestamps to their time, function,
              * and payload to be triggered. Events are ordered by their time and
-             * stored in a priority queue.
+             * stored in a priority queue. Attach an index to ensure first in
+             * first out ordering
              */
-            struct event_t { unsigned long t; callback_t f; void* payload; };
+            unsigned event_i;
+            struct event_t { unsigned i; unsigned long t; callback_t f; 
+                void* payload; };
             struct event_t_comp
             { 
                 bool operator()(const struct event_t e1, const struct event_t e2)
                 {
-                    return e1.t < e2.t;
+                    if(e1.t == e2.t)
+                        return e1.i > e2.i;
+                    return e1.t > e2.t;
                 }
             };
 

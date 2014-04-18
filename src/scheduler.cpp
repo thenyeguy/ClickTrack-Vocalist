@@ -8,14 +8,15 @@ using namespace ClickTrack;
 
 template<typename scheduledClass>
 FunctionScheduler<scheduledClass>::FunctionScheduler(scheduledClass& in_caller)
-    : caller(in_caller), events() {}
+    : caller(in_caller), event_i(0), events() {}
 
 template<typename scheduledClass>
 void FunctionScheduler<scheduledClass>::schedule(unsigned long time, 
         callback_t f, void* payload)
 {
     // Push a tuple to the back
-    events.push( {time, f, payload} );
+    events.push( {event_i, time, f, payload} );
+    event_i++;
 }
 
 
@@ -35,7 +36,7 @@ unsigned FunctionScheduler<scheduledClass>::run(unsigned long time)
         event.f(caller, event.payload);
     }
 
-    // Erase this event from the map and return
+    // Return
     return eventsTriggered;
 }
 
