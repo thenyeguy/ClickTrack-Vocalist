@@ -37,6 +37,15 @@ VocalistFilter::VocalistFilter()
 }
 
 
+void VocalistFilter::set_sound(Sound sound)
+{
+    current_sound = sound;
+
+    for(unsigned i = 0; i < num_coeffs; i++)
+        reflection_coeffs[i+1] = all_coeffs[current_sound][i];
+}
+
+
 void VocalistFilter::load_sound(Sound sound, std::string file,
         std::vector<float>& coeffs)
 {
@@ -122,14 +131,52 @@ Channel* Vocalist::get_output_channel()
 
 void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time)
 {
-    // Update the state
-    note = in_note;
-    held = true;
-    playing = true;
+    // Check what note was playing and decide our action
+    // The second octave is mapped to changing the vocal sounds
+    // The third octave (C3 to E4) is or performance range
+    if(36 <= in_note && in_note <= 47) // change sound
+    {
+        // Change the note sound based on the key
+        switch(in_note)
+        {
+            case 37:
+                std::cout << "Setting vowel to A" << std::endl;
+                voiceModel.set_sound(VocalistFilter::A);
+                break;
+            case 39:
+                std::cout << "Setting vowel to E" << std::endl;
+                voiceModel.set_sound(VocalistFilter::E);
+                break;
+            case 42:
+                std::cout << "Setting vowel to I" << std::endl;
+                voiceModel.set_sound(VocalistFilter::I);
+                break;
+            case 44:
+                std::cout << "Setting vowel to O" << std::endl;
+                voiceModel.set_sound(VocalistFilter::O);
+                break;
+            case 46:
+                std::cout << "Setting vowel to U" << std::endl;
+                voiceModel.set_sound(VocalistFilter::U);
+                break;
+        }
+    }
+    else if(48 <= in_note && in_note <= 64) // sing note
+    {
+        // Update the state
+        note = in_note;
+        held = true;
+        playing = true;
 
-    // Trigger the changes
-    voice.set_freq(midiNoteToFreq(note) * pitch_multiplier);
-    tremelo.set_gain(0.0);
+        // Trigger the changes
+        voice.set_freq(midiNoteToFreq(note) * pitch_multiplier);
+        tremelo.set_gain(0.0);
+    }
+    else // alert out of range
+    {
+        std::cout << "Ignoring MIDI note: " << in_note << std::endl;
+    }
+
 }
 
 

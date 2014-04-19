@@ -24,8 +24,11 @@ namespace ClickTrack
     {
         friend class Vocalist;
 
-        public:
+        protected:
             VocalistFilter();
+
+            enum Sound { A, E, I, O, U };
+            void set_sound(Sound sound);
 
         private:
             void filter(std::vector<SAMPLE>& input, 
@@ -33,7 +36,6 @@ namespace ClickTrack
 
             /* Helper function for loading vowels
              */
-            enum Sound { A, E };
             void load_sound(Sound sound, std::string file, 
                     std::vector<float>& coeffs);
 
