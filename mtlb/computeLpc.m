@@ -1,4 +1,4 @@
-function [alphas, ks] = computeLpc(x, P)
+function [alphas, ks, gain] = computeLpc(x, P)
 %
 % computeLpc calculates coefficients for an all pole model of the signal
 %
@@ -15,6 +15,7 @@ end
 
 % Get the autocorrelation and shift it so that cor(1) is the zero lag
 phi = ifftshift(xcorr(x, P));
+phi = phi(1:ceil(end/2));
 
 % Initialize the containers
 errors = zeros(P,1);

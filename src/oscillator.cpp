@@ -75,7 +75,7 @@ void Oscillator::generate_outputs(std::vector<SAMPLE>& outputs, unsigned long t)
 
     // Update the phase
     phase += phase_inc * transpose * lfo_transpose;
-    if(phase > 2*M_PI) phase -= 2*M_PI;
+    if(phase >= 2*M_PI) phase -= 2*M_PI;
 
     // Generate this output
     SAMPLE out;

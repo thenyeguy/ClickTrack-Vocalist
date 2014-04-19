@@ -18,8 +18,7 @@ coeffs.ks = [];
 stepSize = 44100/1000 * binSize;
 for ii=1 : stepSize : (length(x) - stepSize)
     seg = x(ii : ii+stepSize);
-    cor = xcorr(seg); cor = cor(floor(length(cor)/2) : end);
-    [A,K] = trainLpcModel(cor, 50);
+    [A,K] = computeLpc(seg, 50);
     coeffs.as = [coeffs.as A];
     coeffs.ks = [coeffs.ks K];
 end

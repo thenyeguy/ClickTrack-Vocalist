@@ -21,8 +21,23 @@ end
 % Store the name
 [~,model.name,~] = fileparts(file);
 
-% Read in the file and compute LPC params
+% Read in the file and compute segmends and compute LPC params
 model.wav = wavread(file);
-[model.alphas model.ks] = computeLpc(model.wav, P);
+segs = segmentRecording(model.wav,0.1);
+
+% Compute LPC for whole model
+x = [];
+for ii = 1:length(segs)
+    x = [x; segs{ii}]; %#ok append
+end
+[model.alphas model.ks] = computeLpc(x, P);
+
+% Also compute submodels for each segments
+model.notes = [];
+for ii = 1:length(segs)
+    model.notes(ii).wav = segs{ii};
+    [model.notes(ii).alphas model.notes(ii).ks] = ...
+        computeLpc(segs{ii}, P);
+end
 
 end

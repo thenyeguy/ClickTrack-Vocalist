@@ -13,6 +13,7 @@ function y = latticeFilter(x, ks)
 
 if min(size(ks)) == 1
     ks = repmat(ks,1,length(x));
+    ks = ks + .001*randn(size(ks));
 end
 
 % Get constants

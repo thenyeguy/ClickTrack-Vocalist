@@ -19,6 +19,12 @@ VocalistFilter::VocalistFilter()
             all_coeffs[VocalistFilter::A]);
     load_sound(VocalistFilter::E, "data/E.dat", 
             all_coeffs[VocalistFilter::E]);
+    load_sound(VocalistFilter::I, "data/I.dat", 
+            all_coeffs[VocalistFilter::I]);
+    load_sound(VocalistFilter::O, "data/O.dat", 
+            all_coeffs[VocalistFilter::O]);
+    load_sound(VocalistFilter::U, "data/U.dat", 
+            all_coeffs[VocalistFilter::U]);
 
     current_sound = VocalistFilter::A;
 
