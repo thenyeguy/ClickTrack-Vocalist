@@ -15,18 +15,17 @@ VocalistFilter::VocalistFilter()
 {
     /* Load our sound sets
      */
-    load_sound(VocalistFilter::A, "data/A.dat", 
+    load_sound(VocalistFilter::A, "data/A.dat", gains[VocalistFilter::A],
             all_coeffs[VocalistFilter::A]);
-    load_sound(VocalistFilter::E, "data/E.dat", 
+    load_sound(VocalistFilter::E, "data/E.dat", gains[VocalistFilter::E],
             all_coeffs[VocalistFilter::E]);
-    load_sound(VocalistFilter::I, "data/I.dat", 
+    load_sound(VocalistFilter::I, "data/I.dat", gains[VocalistFilter::I],
             all_coeffs[VocalistFilter::I]);
-    load_sound(VocalistFilter::O, "data/O.dat", 
+    load_sound(VocalistFilter::O, "data/O.dat", gains[VocalistFilter::O],
             all_coeffs[VocalistFilter::O]);
-    load_sound(VocalistFilter::U, "data/U.dat", 
+    load_sound(VocalistFilter::U, "data/U.dat", gains[VocalistFilter::U],
             all_coeffs[VocalistFilter::U]);
 
-    current_sound = VocalistFilter::A;
 
     /* Initialize our containers
      */
@@ -34,6 +33,10 @@ VocalistFilter::VocalistFilter()
     forward_errors.push_back(0.0);
     backward_errors.push_back(0.0);
 
+    /* Initialize our play state
+     */
+    current_sound = VocalistFilter::A;
+    gain = gains[VocalistFilter::A];
     for(unsigned i = 0; i < num_coeffs; i++)
     {
         reflection_coeffs.push_back(all_coeffs[current_sound][i]);
@@ -52,7 +55,7 @@ void VocalistFilter::set_sound(Sound sound)
 }
 
 
-void VocalistFilter::load_sound(Sound sound, std::string file,
+void VocalistFilter::load_sound(Sound sound, std::string file, float& gain,
         std::vector<float>& coeffs)
 {
     // Open our file
@@ -62,6 +65,7 @@ void VocalistFilter::load_sound(Sound sound, std::string file,
     // Read the header
     std::string name;
     coeffFile >> name; // ignore the name
+    coeffFile >> gain;
     coeffFile >> num_coeffs;
 
     // Read the coefficients into our vector
@@ -94,7 +98,7 @@ void VocalistFilter::filter(std::vector<SAMPLE>& input,
 
     // Write the sample out
     backward_errors[0] = forward_errors[0];
-    output[0] = forward_errors[0] / 20;
+    output[0] = forward_errors[0] * gain / 500;
 }
 
 
@@ -103,12 +107,12 @@ void VocalistFilter::filter(std::vector<SAMPLE>& input,
 Vocalist::Vocalist()
     : GenericInstrument(), 
       vibrato_lfo(Oscillator::Sine, 5),
-      voice(Oscillator::PulseTrain, 220),
+      voice(Oscillator::BlepSaw, 220),
       noise(Oscillator::WhiteNoise, 0),
       voiceModel(),
       tremelo_lfo(Oscillator::Sine, 5),
       tremelo(-INFINITY),
-      filter(SecondOrderFilter::LOWPASS, 5000),
+      filter(SecondOrderFilter::LOWPASS, 20000),
       note(0), pitch_multiplier(1.0),
       playing(false), sustained(false), held(false)
 {
@@ -176,7 +180,7 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
 
         // Trigger the changes
         voice.set_freq(midiNoteToFreq(note) * pitch_multiplier);
-        tremelo.set_gain(0.0);
+        tremelo.set_gain(-12.0);
     }
     else // alert out of range
     {

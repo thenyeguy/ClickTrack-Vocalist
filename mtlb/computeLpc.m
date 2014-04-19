@@ -7,6 +7,7 @@ function [alphas, ks, gain] = computeLpc(x, P)
 %
 % Outputs: alphas - a denominator polynomial for our filter response
 %          ks - the reflection coefficients for an all pole lattice
+%          gain - the gain of the LPC filter
 %
 
 if nargin < 2
@@ -43,5 +44,7 @@ end
 
 % Extract just the last alphas, and convert to the filter denominator form
 alphas = [1; -1*alphas(:,end)];
+
+gain = sqrt(phi' * alphas);
 
 end

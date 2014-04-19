@@ -30,14 +30,14 @@ x = [];
 for ii = 1:length(segs)
     x = [x; segs{ii}]; %#ok append
 end
-[model.alphas model.ks] = computeLpc(x, P);
+[model.alphas model.ks model.gain] = computeLpc(x, P);
 
 % Also compute submodels for each segments
 model.notes = [];
 for ii = 1:length(segs)
     model.notes(ii).wav = segs{ii};
-    [model.notes(ii).alphas model.notes(ii).ks] = ...
-        computeLpc(segs{ii}, P);
+%     [model.notes(ii).alphas model.notes(ii).ks] = ...
+%         computeLpc(segs{ii}, P);
 end
 
 end

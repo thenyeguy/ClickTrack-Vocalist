@@ -36,17 +36,19 @@ namespace ClickTrack
 
             /* Helper function for loading vowels
              */
-            void load_sound(Sound sound, std::string file, 
+            void load_sound(Sound sound, std::string file, float& gain,
                     std::vector<float>& coeffs);
 
             /* Store sets of reflection coeffs for each vowel
              */
             unsigned num_coeffs;
             std::map<Sound, std::vector<float> > all_coeffs;
+            std::map<Sound, float> gains;
 
             /* Store filter coefficients for the lattice
              */
             Sound current_sound;
+            float gain;
             std::vector<float> reflection_coeffs;
             std::vector<SAMPLE> forward_errors;
             std::vector<SAMPLE> backward_errors;
