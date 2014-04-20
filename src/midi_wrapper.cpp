@@ -128,12 +128,6 @@ void MidiListener::midi_callback(double deltaTime, std::vector<unsigned char>* m
         UNHANDLED:
         default:
         {
-            std::cout << "Unknown messsage: 0x";
-            for(int i=0; i < message->size(); i++)
-                std::cout << std::hex << std::setfill('0') << std::setw(2) << 
-                    (unsigned) message->at(i);
-            std::cout << std::endl;
-
             inst->on_midi_message(message, time);
         }
     }

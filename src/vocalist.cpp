@@ -1,6 +1,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include "vocalist.h"
 
 using namespace ClickTrack;
@@ -35,6 +36,7 @@ VocalistFilter::VocalistFilter()
 
     /* Initialize our play state
      */
+    playing = false;
     current_sound = VocalistFilter::A;
     gain = gains[VocalistFilter::A];
     for(unsigned i = 0; i < num_coeffs; i++)
@@ -52,6 +54,18 @@ void VocalistFilter::set_sound(Sound sound)
 
     for(unsigned i = 0; i < num_coeffs; i++)
         reflection_coeffs[i+1] = all_coeffs[current_sound][i];
+}
+
+
+void VocalistFilter::on_note_down()
+{
+    playing = true;
+}
+
+
+void VocalistFilter::on_note_up()
+{
+    playing = false;
 }
 
 
@@ -85,7 +99,7 @@ void VocalistFilter::filter(std::vector<SAMPLE>& input,
         std::vector<SAMPLE>& output, unsigned long t)
 {
     // Feed the lattice with input
-    forward_errors[num_coeffs] = input[0];
+    forward_errors[num_coeffs] = playing ? input[0] : 0.0;
 
     // Propogate the errors through the lattice
     for(unsigned i = num_coeffs; i > 0; i--)
@@ -111,7 +125,7 @@ Vocalist::Vocalist()
       noise(Oscillator::WhiteNoise, 0),
       voiceModel(),
       tremelo_lfo(Oscillator::Sine, 5),
-      tremelo(-INFINITY),
+      tremelo(-12),
       filter(SecondOrderFilter::LOWPASS, 20000),
       note(0), pitch_multiplier(1.0),
       playing(false), sustained(false), held(false)
@@ -180,7 +194,7 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
 
         // Trigger the changes
         voice.set_freq(midiNoteToFreq(note) * pitch_multiplier);
-        tremelo.set_gain(-12.0);
+        voiceModel.on_note_down();
     }
     else // alert out of range
     {
@@ -203,7 +217,7 @@ void Vocalist::on_note_up(unsigned in_note, float velocity, unsigned long time)
         if(playing && !sustained)
         {
             playing = false;
-            tremelo.set_gain(-INFINITY);
+            voiceModel.on_note_up();
         }
     }
 }
@@ -224,26 +238,61 @@ void Vocalist::on_sustain_up(unsigned long time)
         if(playing && !held) 
         {
             playing = false;
-            tremelo.set_gain(-INFINITY);
+            voiceModel.on_note_up();
         }
     }
 }
 
 
-void Vocalist::on_pitch_wheel(unsigned value, unsigned long time)
+void Vocalist::on_pitch_wheel(float value, unsigned long time)
 {
-    // Convert pitch wheel value to signed representation
-    // Then allow a max bend of one step
-    int centered = value - 0x2000;
-    pitch_multiplier = pow(2, ((float)centered / 0x2000) * 2.0/12.0);
+    // Allow a max bend of one step
+    pitch_multiplier = pow(2, value * 2.0/12.0);
 
     // Apply the bend
     voice.set_freq(midiNoteToFreq(note) * pitch_multiplier);
+}
+
+void Vocalist::on_modulation_wheel(float value, unsigned long time)
+{
+    // Mod wheel controls vibrato
+    voice.set_lfo_intensity(value);
 }
 
 
 void Vocalist::on_midi_message(std::vector<unsigned char>* message,
         unsigned long time)
 {
-    std::cout << "Midi message" << std::endl;
+    // Handle sliders from my MIDI keyboard
+    if(message->at(0) == 0xb0)
+    {
+        switch(message->at(1))
+        {
+            case 0x16: // volume
+            {
+                float value = (float)message->at(2) / 127;
+                tremelo.set_gain((value - 1.0) * 20);
+                break;
+            }
+            case 0x17: // tremelo
+            {
+                float value = (float)message->at(2) / 127;
+                tremelo.set_lfo_intensity(value * 20);
+                break;
+            }
+            default:
+            {
+                std::cout << "Ignoring control " << message->at(1) << std::endl;
+            }
+        }
+    }
+    else
+    {
+        std::cout << "Unknown messsage: 0x";
+        for(int i=0; i < message->size(); i++)
+            std::cout << std::hex << std::setfill('0') << std::setw(2) << 
+                (unsigned) message->at(i);
+        std::cout << std::endl;
+    }
+
 }

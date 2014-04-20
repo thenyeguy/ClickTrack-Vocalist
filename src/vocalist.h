@@ -30,6 +30,9 @@ namespace ClickTrack
             enum Sound { A, E, I, O, U };
             void set_sound(Sound sound);
 
+            void on_note_down();
+            void on_note_up();
+
         private:
             void filter(std::vector<SAMPLE>& input, 
                     std::vector<SAMPLE>& output, unsigned long t);
@@ -47,6 +50,8 @@ namespace ClickTrack
 
             /* Store filter coefficients for the lattice
              */
+            bool playing;
+
             Sound current_sound;
             float gain;
             std::vector<float> reflection_coeffs;
@@ -68,7 +73,8 @@ namespace ClickTrack
             void on_note_up(unsigned note, float velocity, unsigned long time=0);
             void on_sustain_down(unsigned long time=0);
             void on_sustain_up(unsigned long time=0);
-            void on_pitch_wheel(unsigned value, unsigned long time=0);
+            void on_pitch_wheel(float value, unsigned long time=0);
+            void on_modulation_wheel(float value, unsigned long time=0);
 
             /* Other MIDI messages vary from instrument to instrument. This can
              * be overriden to handle them
