@@ -51,7 +51,10 @@ namespace ClickTrack
             virtual void on_sustain_down(unsigned long time=0) = 0;
             virtual void on_sustain_up(unsigned long time=0) = 0;
 
-            virtual void on_pitch_wheel(unsigned value, unsigned long time=0) = 0;
+            virtual void on_pitch_wheel(float value, 
+                    unsigned long time=0) = 0;
+            virtual void on_modulation_wheel(float value, 
+                    unsigned long time=0) = 0;
 
             virtual void on_midi_message(std::vector<unsigned char>* message,
                     unsigned long time=0) = 0;

@@ -48,7 +48,8 @@ void DrumMachine::on_note_up(unsigned note, float velocity,
         unsigned long time) {}
 void DrumMachine::on_sustain_down(unsigned long time) {}
 void DrumMachine::on_sustain_up(unsigned long time) {}
-void DrumMachine::on_pitch_wheel(unsigned value, unsigned long time) {}
+void DrumMachine::on_pitch_wheel(float value, unsigned long time) {}
+void DrumMachine::on_modulation_wheel(float value, unsigned long time) {}
 void DrumMachine::on_midi_message(std::vector<unsigned char>* message, 
         unsigned long time) {}
 

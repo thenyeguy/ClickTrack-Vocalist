@@ -95,17 +95,18 @@ void PolyphonicInstrument::on_sustain_up(unsigned long time)
 }
 
 
-void PolyphonicInstrument::on_pitch_wheel(unsigned value, unsigned long time)
+void PolyphonicInstrument::on_pitch_wheel(float value, unsigned long time)
 {
-    // Convert pitch wheel value to signed representation
     // Then allow a max bend of one step
-    int centered = value - 0x2000;
-    float bend = pow(2, ((float)centered / 0x2000) * 2.0/12.0);
+    float bend = pow(2, value * 2.0/12.0);
 
     // Then apply to all voices
     for(auto voice : all_voices) 
         voice->on_pitch_wheel(bend, time);
 }
+
+void PolyphonicInstrument::on_modulation_wheel(float value, unsigned long time)
+{}
 
 
 void PolyphonicInstrument::on_midi_message(

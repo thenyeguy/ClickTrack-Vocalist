@@ -45,7 +45,8 @@ namespace ClickTrack
             void on_note_up(unsigned note, float velocity, unsigned long time=0);
             void on_sustain_down(unsigned long time=0);
             void on_sustain_up(unsigned long time=0);
-            void on_pitch_wheel(unsigned value, unsigned long time=0);
+            void on_pitch_wheel(float value, unsigned long time=0);
+            void on_modulation_wheel(float value, unsigned long time=0);
 
             /* Other MIDI messages vary from instrument to instrument. This can
              * be overriden to handle them

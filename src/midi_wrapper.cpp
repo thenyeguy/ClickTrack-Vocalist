@@ -91,9 +91,8 @@ void MidiListener::midi_callback(double deltaTime, std::vector<unsigned char>* m
             {
                 case 0x01: // modulation wheel
                 {
-                    unsigned char value = message->at(2);
-                    std::cout << "Ignoring modulation message: " << 
-                        ((unsigned)value) << std::endl;
+                    float value = (float)message->at(2) / 127;
+                    inst->on_modulation_wheel(value, time);
                     break;
                 }
 
@@ -117,8 +116,12 @@ void MidiListener::midi_callback(double deltaTime, std::vector<unsigned char>* m
 
         case 0xE: // Pitch wheel
         {
+            // Convert to float between -1.0 and 1.0
             unsigned value = (message->at(2) << 7) | message->at(1);
-            inst->on_pitch_wheel(value, time);
+            int centered = value - 0x2000;
+            float bend = (float)centered / 0x2000;
+
+            inst->on_pitch_wheel(bend, time);
             break;
         }
         
