@@ -17,6 +17,21 @@ U = trainModel('../wav/raw/U.wav', poles);
 disp 'Complete.'
 
 
+%% Normalize gains
+disp 'Normalizing gains...'
+all = [A E I O U];
+gains = [all.gain];
+maxGain = max(gains);
+
+A.gain = A.gain/maxGain;
+E.gain = E.gain/maxGain;
+I.gain = I.gain/maxGain;
+O.gain = O.gain/maxGain;
+U.gain = U.gain/maxGain;
+
+clear all gains maxGain;
+
+
 %% Save models
 disp 'Saving model data...'
 saveModel(A);

@@ -18,7 +18,7 @@ file = fopen(['../data/' model.name '.dat'], 'w');
 
 % Write out the header
 fprintf(file, '%s\n', model.name);
-fprintf(file, '%s\n', model.gain);
+fprintf(file, '%f\n', model.gain);
 fprintf(file, '%d\n', numel(model.ks));
 
 % Write out our coeffs one by one

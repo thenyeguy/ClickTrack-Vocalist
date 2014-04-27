@@ -51,7 +51,7 @@ VocalistFilter::VocalistFilter()
 void VocalistFilter::set_sound(Sound sound)
 {
     current_sound = sound;
-
+    gain = gains[current_sound];
     for(unsigned i = 0; i < num_coeffs; i++)
         reflection_coeffs[i+1] = all_coeffs[current_sound][i];
 }
@@ -112,7 +112,7 @@ void VocalistFilter::filter(std::vector<SAMPLE>& input,
 
     // Write the sample out
     backward_errors[0] = forward_errors[0];
-    output[0] = forward_errors[0] * gain / 500;
+    output[0] = forward_errors[0] * gain / 20;
 }
 
 
