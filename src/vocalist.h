@@ -4,74 +4,15 @@
 #include <map>
 #include <string>
 #include "audio_generics.h"
-#include "first_order_filter.h"
-#include "second_order_filter.h"
 #include "gain_filter.h"
 #include "generic_instrument.h"
 #include "oscillator.h"
-#include "ringbuffer.h"
 
 namespace ClickTrack
 {
-    /* The following implements a basic drum machine. It triggers samples based
-     * on a configuration file, called keymap.txt
-     *
-     * The config file consists of one sample per line in the following format:
-     *      MidiNumber path/to/your sample.wav
-     * Blank lines and lines starting with # are ignored.
+    /* The vocalist is an instrument that functions like a voice
      */
-    class VocalistFilter : public AudioFilter
-    {
-        friend class Vocalist;
-
-        protected:
-            VocalistFilter();
-
-            enum Sound { A, E, I, O, U, H };
-            void set_sound(Sound sound);
-
-            void on_note_down();
-            void on_note_up();
-
-        private:
-            void filter(std::vector<SAMPLE>& input, 
-                    std::vector<SAMPLE>& output, unsigned long t);
-
-            /* Helper function for loading a new sound set
-             */
-            void load_sound(Sound sound, std::string file, float& gain,
-                    std::vector<float>& coeffs);
-
-            /* Store ADSR parameters
-             */
-            unsigned attack_duration;
-
-            /* Store sets of reflection coeffs for each vowel
-             */
-            unsigned num_coeffs;
-            std::map<Sound, std::vector<float> > all_coeffs;
-            std::map<Sound, float> gains;
-
-            /* Store synthesizer state
-             */
-            Sound attack_sound;
-            Sound held_sound;
-
-            enum State { ATTACK, SUSTAIN, SILENT };
-            State current_state;
-
-            unsigned long attack_time;
-
-            /* Store filter coefficients for the lattice
-             */
-            Sound current_sound;
-            float gain;
-            std::vector<float> reflection_coeffs;
-            std::vector<SAMPLE> forward_errors;
-            std::vector<SAMPLE> backward_errors;
-    };
-
-    class Vocalist : public GenericInstrument
+    class Vocalist : public GenericInstrument, AudioGenerator
     {
         public:
             Vocalist();
@@ -88,6 +29,9 @@ namespace ClickTrack
             void on_pitch_wheel(float value, unsigned long time=0);
             void on_modulation_wheel(float value, unsigned long time=0);
 
+            void handle_note_down(float target_freq);
+            void handle_note_up();
+
             /* Other MIDI messages vary from instrument to instrument. This can
              * be overriden to handle them
              */
@@ -95,18 +39,28 @@ namespace ClickTrack
                     unsigned long time=0);
 
         private:
+            /* Override the generator.
+             */
+            void generate_outputs(std::vector<SAMPLE>& output, unsigned long t);
+
+            /* Helper function for changing sound sets
+             */
+            enum Sound { A, E, I, O, U, H };
+            void set_sound(Sound sound);
+
+            /* Helper function for loading sounds during initialization
+             */
+            void load_sound(Sound sound, std::string file, float& gain,
+                    std::vector<float>& coeffs);
+
             /* Define our signal chain
              */
             Oscillator vibrato_lfo;
             Oscillator voice;
             Oscillator noise;
 
-            VocalistFilter voiceModel;
-
             GainFilter tremelo_lfo;
             GainFilter tremelo;
-
-            SecondOrderFilter filter;
 
             /* Current note status
              */
@@ -118,6 +72,35 @@ namespace ClickTrack
             bool playing;
             bool sustained;
             bool held;
+
+            /* Store ADSR parameters
+             */
+            unsigned attack_duration;
+
+            /* Store sets of reflection coeffs for each vowel
+             */
+            unsigned num_coeffs;
+            std::map<Sound, std::vector<float> > all_coeffs;
+            std::map<Sound, float> gains;
+
+            /* Store synthesizer state
+             */
+            Sound attack_sound;
+            Sound held_sound;
+
+            enum State { ATTACK, GLIDE, SUSTAIN, SILENT };
+            State current_state;
+
+            unsigned long attack_time;
+            //unsigned long glide_time;
+
+            /* Store filter coefficients for the lattice
+             */
+            Sound current_sound;
+            float gain;
+            std::vector<float> reflection_coeffs;
+            std::vector<SAMPLE> forward_errors;
+            std::vector<SAMPLE> backward_errors;
     };
 }
 
