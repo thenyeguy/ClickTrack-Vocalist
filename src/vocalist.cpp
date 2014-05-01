@@ -9,23 +9,15 @@ using namespace ClickTrack;
 
 VocalistFilter::VocalistFilter()
     : AudioFilter(2,1),
-      all_coeffs(),
-      reflection_coeffs(),
-      forward_errors(),
-      backward_errors()
+      attack_duration(3200)
 {
     /* Load our sound sets
      */
-    load_sound(VocalistFilter::A, "data/A.dat", gains[VocalistFilter::A],
-            all_coeffs[VocalistFilter::A]);
-    load_sound(VocalistFilter::E, "data/E.dat", gains[VocalistFilter::E],
-            all_coeffs[VocalistFilter::E]);
-    load_sound(VocalistFilter::I, "data/I.dat", gains[VocalistFilter::I],
-            all_coeffs[VocalistFilter::I]);
-    load_sound(VocalistFilter::O, "data/O.dat", gains[VocalistFilter::O],
-            all_coeffs[VocalistFilter::O]);
-    load_sound(VocalistFilter::U, "data/U.dat", gains[VocalistFilter::U],
-            all_coeffs[VocalistFilter::U]);
+    load_sound(A, "data/A.dat", gains[A], all_coeffs[A]);
+    load_sound(E, "data/E.dat", gains[E], all_coeffs[E]);
+    load_sound(I, "data/I.dat", gains[I], all_coeffs[I]);
+    load_sound(O, "data/O.dat", gains[O], all_coeffs[O]);
+    load_sound(U, "data/U.dat", gains[U], all_coeffs[U]);
 
 
     /* Initialize our containers
@@ -36,9 +28,12 @@ VocalistFilter::VocalistFilter()
 
     /* Initialize our play state
      */
-    playing = false;
-    current_sound = VocalistFilter::A;
-    gain = gains[VocalistFilter::A];
+    attack_sound = H;
+    held_sound = A;
+
+    current_state = SILENT;
+    current_sound = A;
+    gain = gains[A];
     for(unsigned i = 0; i < num_coeffs; i++)
     {
         reflection_coeffs.push_back(all_coeffs[current_sound][i]);
@@ -59,13 +54,21 @@ void VocalistFilter::set_sound(Sound sound)
 
 void VocalistFilter::on_note_down()
 {
-    playing = true;
+    // Handle state transition
+    if(current_state == SILENT)
+    {
+        current_state = ATTACK;
+        attack_time = get_next_time();
+    }
+
+    // Set the current sound
+    current_sound = attack_sound;
 }
 
 
 void VocalistFilter::on_note_up()
 {
-    playing = false;
+    current_state = SILENT;
 }
 
 
@@ -99,7 +102,39 @@ void VocalistFilter::filter(std::vector<SAMPLE>& input,
         std::vector<SAMPLE>& output, unsigned long t)
 {
     // Feed the lattice with input
-    forward_errors[num_coeffs] = playing ? input[0] : 0.0;
+    switch(current_state)
+    {
+        case ATTACK:
+        {
+            // Check for state transition
+            unsigned attack_t = t - attack_time;
+            if(attack_t >= attack_duration)
+            {
+                current_state = SUSTAIN;
+                current_sound = held_sound;
+            }
+
+            float alpha = 1.0*attack_t / attack_duration;
+
+            // For H, fade in noise with voicing, cross fade in middle
+            forward_errors[num_coeffs] = 
+                (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)* input[0] + 
+                1.0/gain * (alpha > 0.6 ? 1.0 : alpha/0.6) * (1-alpha)*input[1];
+            break;
+        }
+
+        case SUSTAIN:
+        {
+            forward_errors[num_coeffs] = input[0];
+            break;
+        }
+
+        case SILENT:
+        {
+            forward_errors[num_coeffs] = 0.0;
+            break;
+        }
+    }
 
     // Propogate the errors through the lattice
     for(unsigned i = num_coeffs; i > 0; i--)
@@ -200,7 +235,6 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
     {
         std::cout << "Ignoring MIDI note: " << in_note << std::endl;
     }
-
 }
 
 

@@ -27,7 +27,7 @@ namespace ClickTrack
         protected:
             VocalistFilter();
 
-            enum Sound { A, E, I, O, U };
+            enum Sound { A, E, I, O, U, H };
             void set_sound(Sound sound);
 
             void on_note_down();
@@ -37,10 +37,14 @@ namespace ClickTrack
             void filter(std::vector<SAMPLE>& input, 
                     std::vector<SAMPLE>& output, unsigned long t);
 
-            /* Helper function for loading vowels
+            /* Helper function for loading a new sound set
              */
             void load_sound(Sound sound, std::string file, float& gain,
                     std::vector<float>& coeffs);
+
+            /* Store ADSR parameters
+             */
+            unsigned attack_duration;
 
             /* Store sets of reflection coeffs for each vowel
              */
@@ -48,10 +52,18 @@ namespace ClickTrack
             std::map<Sound, std::vector<float> > all_coeffs;
             std::map<Sound, float> gains;
 
+            /* Store synthesizer state
+             */
+            Sound attack_sound;
+            Sound held_sound;
+
+            enum State { ATTACK, SUSTAIN, SILENT };
+            State current_state;
+
+            unsigned long attack_time;
+
             /* Store filter coefficients for the lattice
              */
-            bool playing;
-
             Sound current_sound;
             float gain;
             std::vector<float> reflection_coeffs;
