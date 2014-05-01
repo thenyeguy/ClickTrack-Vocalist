@@ -196,6 +196,18 @@ void Vocalist::on_midi_message(std::vector<unsigned char>* message,
                 tremelo.set_lfo_intensity(value * 20);
                 break;
             }
+            case 0x18: // attack time
+            {
+                float value = (float)message->at(2) / 127;
+                attack_duration = value * 20000;
+                break;
+            }
+            case 0x19: // glide time
+            {
+                float value = (float)message->at(2) / 127;
+                glide_duration = value * 20000;
+                break;
+            }
             default:
             {
                 std::cout << "Ignoring control " << message->at(1) << std::endl;
