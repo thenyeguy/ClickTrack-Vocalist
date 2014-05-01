@@ -45,8 +45,10 @@ namespace ClickTrack
 
             /* Helper function for changing sound sets
              */
-            enum Sound { A, E, I, O, U, H };
-            void set_sound(Sound sound);
+            enum Sound { A, E, I, O, U, 
+                V, F, Z, S, H };
+            void set_hold(Sound sound);
+            void set_attack(Sound sound);
 
             /* Helper function for loading sounds during initialization
              */
@@ -76,10 +78,13 @@ namespace ClickTrack
             bool sustained;
             bool held;
 
-            /* Store ADSR parameters
+            /* Store ADSRish parameters
              */
             unsigned attack_duration;
+            unsigned release_duration;
+
             unsigned glide_duration;
+            unsigned interpolate_duration;
 
             /* Store sets of reflection coeffs for each vowel
              */
@@ -89,14 +94,21 @@ namespace ClickTrack
 
             /* Store ADSRish state
              */
-            enum State { ATTACK, GLIDE, SUSTAIN, SILENT };
+            enum State { ATTACK, SUSTAIN, RELEASE, SILENT };
             State current_state;
 
             unsigned long attack_time;
-            unsigned long glide_time;
+            unsigned long release_time;;
 
+            bool gliding;
+            unsigned long glide_time;
             float current_freq;
             float delta_freq;
+
+            bool interpolating;
+            unsigned interpolate_time;
+            float gain_delta;
+            std::vector<SAMPLE> reflection_coeffs_delta;
 
             /* Store filter coefficients for the lattice
              */

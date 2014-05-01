@@ -19,8 +19,10 @@ Vocalist::Vocalist()
       note(0), pitch_multiplier(1.0),
       playing(false), sustained(false), held(false),
 
-      attack_duration(3200), // 73 ms
-      glide_duration(2000)
+      attack_duration(2600),
+      release_duration(10000),
+      glide_duration(2000),
+      interpolate_duration(500)
 {
     /* Configure signal chain
      */
@@ -42,23 +44,30 @@ Vocalist::Vocalist()
     load_sound(O, "data/O.dat", gains[O], all_coeffs[O]);
     load_sound(U, "data/U.dat", gains[U], all_coeffs[U]);
 
+    load_sound(V, "data/V.dat", gains[V], all_coeffs[V]);
+    load_sound(Z, "data/Z.dat", gains[Z], all_coeffs[Z]);
+
     /* Initialize our containers
      */
     reflection_coeffs.push_back(0.0); //zeroth element never accessed
+    reflection_coeffs_delta.push_back(0.0);
     forward_errors.push_back(0.0);
     backward_errors.push_back(0.0);
 
     /* Initialize our play state
      */
-    attack_sound = H;
+    attack_sound = V;
     held_sound = A;
 
+    interpolating = false;
     current_state = SILENT;
     current_sound = A;
     gain = gains[A];
+    gain_delta = 0;
     for(unsigned i = 0; i < num_coeffs; i++)
     {
         reflection_coeffs.push_back(all_coeffs[current_sound][i]);
+        reflection_coeffs_delta.push_back(0.0);
         forward_errors.push_back(0.0);
         backward_errors.push_back(0.0);
     }
@@ -83,23 +92,48 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
         {
             case 37:
                 std::cout << "Setting vowel to A" << std::endl;
-                set_sound(A);
+                set_hold(A);
                 break;
             case 39:
                 std::cout << "Setting vowel to E" << std::endl;
-                set_sound(E);
+                set_hold(E);
                 break;
             case 42:
                 std::cout << "Setting vowel to I" << std::endl;
-                set_sound(I);
+                set_hold(I);
                 break;
             case 44:
                 std::cout << "Setting vowel to O" << std::endl;
-                set_sound(O);
+                set_hold(O);
                 break;
             case 46:
                 std::cout << "Setting vowel to U" << std::endl;
-                set_sound(U);
+                set_hold(U);
+                break;
+
+            case 36:
+                std::cout << "Setting attack to H" << std::endl;
+                set_attack(H);
+                break;
+            case 38:
+                std::cout << "Setting attack to V" << std::endl;
+                set_attack(V);
+                break;
+            case 40:
+                std::cout << "Setting attack to F" << std::endl;
+                set_attack(F);
+                break;
+            case 41:
+                std::cout << "Setting attack to Z" << std::endl;
+                set_attack(Z);
+                break;
+            case 43:
+                std::cout << "Setting attack to S" << std::endl;
+                set_attack(S);
+                break;
+
+            default:
+                std::cout << "Ignoring sound change" << std::endl;
                 break;
         }
     }
@@ -233,6 +267,7 @@ void Vocalist::handle_note_down(float target_freq)
     switch(current_state)
     {
         case ATTACK:
+        case RELEASE:
         case SILENT:
             current_freq = target_freq;
             voice.set_freq(target_freq*pitch_multiplier);
@@ -241,11 +276,10 @@ void Vocalist::handle_note_down(float target_freq)
             attack_time = get_next_time();
             break;
 
-        case GLIDE:
         case SUSTAIN:
             delta_freq = (target_freq - current_freq) / glide_duration;
 
-            current_state = GLIDE;
+            gliding = true;
             glide_time = get_next_time();
             break;
     }
@@ -257,7 +291,8 @@ void Vocalist::handle_note_down(float target_freq)
 
 void Vocalist::handle_note_up()
 {
-    current_state = SILENT;
+    current_state = RELEASE;
+    release_time = get_next_time();
 }
 
 
@@ -267,6 +302,7 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
     SAMPLE voiced = voice.get_output_channel()->get_sample(t);
     SAMPLE unvoiced = noise.get_output_channel()->get_sample(t);
     SAMPLE out;
+    SAMPLE envelope = 1.0;
     switch(current_state)
     {
         case ATTACK:
@@ -287,35 +323,54 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
             break;
         }
 
-        case GLIDE:
-        {
-            // Check for state transition
-            unsigned glide_t = t - glide_time;
-            if(glide_t >= glide_duration)
-            {
-                current_state = SUSTAIN;
-            }
-
-            // Continue gliding
-            current_freq += delta_freq;
-            voice.set_freq(current_freq*pitch_multiplier);
-
-            // Compute output
-            out = voiced;
-            break;
-        }
-
         case SUSTAIN:
         {
             out = voiced;
             break;
         }
 
+        case RELEASE:
+        {
+            unsigned release_t = t - release_time;
+            if(release_t >= release_duration)
+                current_state = SILENT;
+
+            envelope = 1 - ((float) release_t) / release_duration;
+            out = voiced;
+            break;
+        }
+
         case SILENT:
         {
+            envelope = 0.0;
             out = 0.0;
             break;
         }
+    }
+
+    // Handle pitch gliding
+    if(gliding)
+    {
+        // Check for state transition
+        unsigned glide_t = t - glide_time;
+        if(glide_t >= glide_duration)
+            gliding = false;
+
+        // Continue gliding
+        current_freq += delta_freq;
+        voice.set_freq(current_freq*pitch_multiplier);
+    }
+
+    // Handle reflection coefficient updates
+    if(interpolating)
+    {
+        // Check for state change
+        if(t-interpolate_time >= interpolate_duration)
+            interpolating = false;
+
+        for(unsigned i = 1; i <= num_coeffs; i++)
+            reflection_coeffs[i] += reflection_coeffs_delta[i];
+        gain += gain_delta;
     }
 
     // Propogate the errors through the lattice
@@ -330,16 +385,44 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
 
     // Write the sample out
     backward_errors[0] = forward_errors[0];
-    output[0] = forward_errors[0] * gain / 20;
+    output[0] = forward_errors[0] * gain / 20 * envelope;
 }
 
 
-void Vocalist::set_sound(Sound sound)
+void Vocalist::set_hold(Sound sound)
 {
-    current_sound = sound;
-    gain = gains[current_sound];
-    for(unsigned i = 0; i < num_coeffs; i++)
-        reflection_coeffs[i+1] = all_coeffs[current_sound][i];
+    // Determine interpolation
+    switch(current_state)
+    {
+        case ATTACK:
+        case RELEASE:
+        case SILENT:
+            gain = gains[sound];
+            for(unsigned i = 0; i < num_coeffs; i++)
+                reflection_coeffs[i+1] = all_coeffs[sound][i];
+            break;
+
+        case SUSTAIN:
+            interpolating = true;
+            interpolate_time = get_next_time();
+
+            for(unsigned i = 0; i < num_coeffs; i++)
+                reflection_coeffs_delta[i+1] = 
+                   (all_coeffs[sound][i] - reflection_coeffs[i+1]) / 
+                   interpolate_duration;
+            gain_delta = (gains[sound] - gain) / interpolate_duration;
+
+            break;
+    }
+
+    // Set sound
+    held_sound = sound;
+}
+
+
+void Vocalist::set_attack(Sound sound)
+{
+    attack_sound = sound;
 }
 
 

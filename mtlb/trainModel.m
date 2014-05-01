@@ -22,11 +22,11 @@ end
 [~,model.name,~] = fileparts(file);
 
 % Read in the file and compute segmends and compute LPC params
-model.wav = wavread(file);
-segs = segmentRecording(model.wav,0.1);
+wav = wavread(file);
+segs = segmentRecording(wav,0.1);
 
 % Compute LPC for whole model
-x = vertcat(segs{:});
-[model.alphas model.ks model.gain] = computeLpc(x(:), P);
+model.wav = vertcat(segs{:});
+[model.alphas model.ks model.gain] = computeLpc(model.wav, P);
 
 end
