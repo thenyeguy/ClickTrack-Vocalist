@@ -67,6 +67,9 @@ namespace ClickTrack
             unsigned note;
             float pitch_multiplier;
 
+            Sound attack_sound;
+            Sound held_sound;
+
             /* Current play status
              */
             bool playing;
@@ -76,6 +79,7 @@ namespace ClickTrack
             /* Store ADSR parameters
              */
             unsigned attack_duration;
+            unsigned glide_duration;
 
             /* Store sets of reflection coeffs for each vowel
              */
@@ -83,16 +87,16 @@ namespace ClickTrack
             std::map<Sound, std::vector<float> > all_coeffs;
             std::map<Sound, float> gains;
 
-            /* Store synthesizer state
+            /* Store ADSRish state
              */
-            Sound attack_sound;
-            Sound held_sound;
-
             enum State { ATTACK, GLIDE, SUSTAIN, SILENT };
             State current_state;
 
             unsigned long attack_time;
-            //unsigned long glide_time;
+            unsigned long glide_time;
+
+            float current_freq;
+            float delta_freq;
 
             /* Store filter coefficients for the lattice
              */

@@ -19,8 +19,8 @@ Vocalist::Vocalist()
       note(0), pitch_multiplier(1.0),
       playing(false), sustained(false), held(false),
 
-      attack_duration(3200) // 73 ms
-//      glide_time(3200)
+      attack_duration(3200), // 73 ms
+      glide_duration(2000)
 {
     /* Configure signal chain
      */
@@ -217,12 +217,25 @@ void Vocalist::on_midi_message(std::vector<unsigned char>* message,
 void Vocalist::handle_note_down(float target_freq)
 {
     // Set the frequency
-    voice.set_freq(target_freq*pitch_multiplier);
     // Handle state transition
-    if(current_state == SILENT)
+    switch(current_state)
     {
-        current_state = ATTACK;
-        attack_time = get_next_time();
+        case ATTACK:
+        case SILENT:
+            current_freq = target_freq;
+            voice.set_freq(target_freq*pitch_multiplier);
+
+            current_state = ATTACK;
+            attack_time = get_next_time();
+            break;
+
+        case GLIDE:
+        case SUSTAIN:
+            delta_freq = (target_freq - current_freq) / glide_duration;
+
+            current_state = GLIDE;
+            glide_time = get_next_time();
+            break;
     }
 
     // Set the current sound
@@ -241,6 +254,7 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
     // Feed the lattice with input
     SAMPLE voiced = voice.get_output_channel()->get_sample(t);
     SAMPLE unvoiced = noise.get_output_channel()->get_sample(t);
+    SAMPLE out;
     switch(current_state)
     {
         case ATTACK:
@@ -256,31 +270,44 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
             float alpha = 1.0*attack_t / attack_duration;
 
             // For H, fade in noise with voicing, cross fade in middle
-            forward_errors[num_coeffs] = 
-                (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced+ 
+            out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
                 1.0/gain * (alpha > 0.6 ? 1.0 : alpha/0.6) * (1-alpha)*unvoiced;
             break;
         }
 
         case GLIDE:
         {
+            // Check for state transition
+            unsigned glide_t = t - glide_time;
+            if(glide_t >= glide_duration)
+            {
+                current_state = SUSTAIN;
+            }
+
+            // Continue gliding
+            current_freq += delta_freq;
+            voice.set_freq(current_freq*pitch_multiplier);
+
+            // Compute output
+            out = voiced;
             break;
         }
 
         case SUSTAIN:
         {
-            forward_errors[num_coeffs] = voiced;
+            out = voiced;
             break;
         }
 
         case SILENT:
         {
-            forward_errors[num_coeffs] = 0.0;
+            out = 0.0;
             break;
         }
     }
 
     // Propogate the errors through the lattice
+    forward_errors[num_coeffs] = out;
     for(unsigned i = num_coeffs; i > 0; i--)
     {
         forward_errors[i-1] = forward_errors[i] + 
