@@ -20,7 +20,7 @@ Vocalist::Vocalist()
       playing(false), sustained(false), held(false),
 
       attack_duration(2600),
-      release_duration(10000),
+      release_duration(4000),
       glide_duration(2000),
       interpolate_duration(500)
 {
@@ -236,10 +236,22 @@ void Vocalist::on_midi_message(std::vector<unsigned char>* message,
                 attack_duration = value * 20000;
                 break;
             }
-            case 0x19: // glide time
+            case 0x19: // release time
+            {
+                float value = (float)message->at(2) / 127;
+                release_duration = value * 20000;
+                break;
+            }
+            case 0x1A: // glide time
             {
                 float value = (float)message->at(2) / 127;
                 glide_duration = value * 20000;
+                break;
+            }
+            case 0x1B: // interpolate time
+            {
+                float value = (float)message->at(2) / 127;
+                interpolate_duration = value * 20000;
                 break;
             }
             default:
