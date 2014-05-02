@@ -50,6 +50,10 @@ namespace ClickTrack
             void set_hold(Sound sound);
             void set_attack(Sound sound);
 
+            /* Helper to trigger an interpolation of the reflection coefficients
+             */
+            void interpolate_sound(Sound sound, unsigned duration);
+
             /* Helper function for loading sounds during initialization
              */
             void load_sound(Sound sound, std::string file, float& gain,
@@ -82,9 +86,8 @@ namespace ClickTrack
              */
             unsigned attack_duration;
             unsigned release_duration;
-
             unsigned glide_duration;
-            unsigned interpolate_duration;
+            unsigned held_interpolate_duration;
 
             /* Store sets of reflection coeffs for each vowel
              */
@@ -106,13 +109,13 @@ namespace ClickTrack
             float delta_freq;
 
             bool interpolating;
+            unsigned interpolate_duration;
             unsigned interpolate_time;
             float gain_delta;
             std::vector<SAMPLE> reflection_coeffs_delta;
 
             /* Store filter coefficients for the lattice
              */
-            Sound current_sound;
             float gain;
             std::vector<float> reflection_coeffs;
             std::vector<SAMPLE> forward_errors;

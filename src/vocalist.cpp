@@ -16,13 +16,10 @@ Vocalist::Vocalist()
       tremelo_lfo(Oscillator::Sine, 5),
       tremelo(-12),
 
-      note(0), pitch_multiplier(1.0),
-      playing(false), sustained(false), held(false),
-
-      attack_duration(2600),
+      attack_duration(0), // set based on consonant
       release_duration(4000),
       glide_duration(2000),
-      interpolate_duration(500)
+      held_interpolate_duration(500) //500
 {
     /* Configure signal chain
      */
@@ -49,28 +46,40 @@ Vocalist::Vocalist()
 
     /* Initialize our containers
      */
+    gain = 0;
+    gain_delta = 0;
+
     reflection_coeffs.push_back(0.0); //zeroth element never accessed
     reflection_coeffs_delta.push_back(0.0);
     forward_errors.push_back(0.0);
     backward_errors.push_back(0.0);
 
-    /* Initialize our play state
-     */
-    attack_sound = V;
-    held_sound = A;
-
-    interpolating = false;
-    current_state = SILENT;
-    current_sound = A;
-    gain = gains[A];
-    gain_delta = 0;
     for(unsigned i = 0; i < num_coeffs; i++)
     {
-        reflection_coeffs.push_back(all_coeffs[current_sound][i]);
+        reflection_coeffs.push_back(0.0);
         reflection_coeffs_delta.push_back(0.0);
         forward_errors.push_back(0.0);
         backward_errors.push_back(0.0);
     }
+
+    /* Initialize our play state
+     */
+    playing = false;
+    sustained = false;
+    held = false;
+
+    note = 0;
+    pitch_multiplier = 1.0;
+
+    gliding = false;
+    interpolating = false;
+
+    current_state = SILENT;
+
+    /* Initialize our default sounds
+     */
+    set_hold(E);
+    set_attack(F);
 }
 
 
@@ -251,7 +260,7 @@ void Vocalist::on_midi_message(std::vector<unsigned char>* message,
             case 0x1B: // interpolate time
             {
                 float value = (float)message->at(2) / 127;
-                interpolate_duration = value * 20000;
+                held_interpolate_duration = value * 20000;
                 break;
             }
             default:
@@ -281,23 +290,49 @@ void Vocalist::handle_note_down(float target_freq)
         case ATTACK:
         case RELEASE:
         case SILENT:
+        {
+            // Handle frequnecy
             current_freq = target_freq;
             voice.set_freq(target_freq*pitch_multiplier);
 
+            // Handle state transition
             current_state = ATTACK;
             attack_time = get_next_time();
+
+            // Prepare the reflection coeffs
+            Sound sound_coeffs;
+            switch(attack_sound)
+            {
+                case V:
+                case F:
+                    sound_coeffs = V;
+                    break;
+
+                case Z:
+                case S:
+                    sound_coeffs = Z;
+                    break;
+
+                default:
+                    sound_coeffs = held_sound;
+                    break;
+            }
+            gain = gains[sound_coeffs];
+            for(unsigned i = 0; i <= num_coeffs; i++)
+                reflection_coeffs[i+1] = all_coeffs[sound_coeffs][i];
+
             break;
+        }
 
         case SUSTAIN:
+        {
+            // Set up a glide to the new note
             delta_freq = (target_freq - current_freq) / glide_duration;
-
             gliding = true;
             glide_time = get_next_time();
             break;
+        }
     }
-
-    // Set the current sound
-    current_sound = attack_sound;
 }
 
 
@@ -312,8 +347,9 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
 {
     // Feed the lattice with input
     SAMPLE voiced = voice.get_output_channel()->get_sample(t);
-    SAMPLE unvoiced = noise.get_output_channel()->get_sample(t);
-    SAMPLE out;
+    SAMPLE unvoiced = 1.0/gain * noise.get_output_channel()->get_sample(t);
+
+    SAMPLE out = 0.0;
     SAMPLE envelope = 1.0;
     switch(current_state)
     {
@@ -322,16 +358,42 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
             // Check for state transition
             unsigned attack_t = t - attack_time;
             if(attack_t >= attack_duration)
-            {
                 current_state = SUSTAIN;
-                current_sound = held_sound;
-            }
 
             float alpha = 1.0*attack_t / attack_duration;
+            switch(attack_sound)
+            {
+                case H:
+                    // Fade in noise with voicing, cross fade in middle
+                    out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
+                        (alpha > 0.6 ? 1.0 : alpha/0.6) * (1-alpha)*unvoiced;
+                    break;
 
-            // For H, fade in noise with voicing, cross fade in middle
-            out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
-                1.0/gain * (alpha > 0.6 ? 1.0 : alpha/0.6) * (1-alpha)*unvoiced;
+                case F:
+                case S:
+                    // Fade in noise with voicing, cross fade in middle
+                    out = (alpha > 0.6 ? (alpha-0.6)/0.4 : 0.0)*voiced + 
+                        0.7*(alpha > 0.4 ? 1.0 : alpha/0.4) * (1-alpha)*unvoiced;
+
+                    // Trigger an early interpolation to target
+                    if(!interpolating && alpha > 0.85)
+                        interpolate_sound(held_sound, attack_duration*0.05);
+                    break;
+
+                case V:
+                case Z:
+                    // Frontload attack, mix in noise
+                    out = (alpha < 0.2 ? alpha/0.2 : 1.0)*voiced + 
+                        0.6*(alpha < 0.4 ? alpha/0.4 : 1.0) * (1-alpha)*unvoiced;
+
+                    if(!interpolating && alpha > 0.6)
+                        interpolate_sound(held_sound, attack_duration*0.2);
+                    break;
+
+                default:
+                    out = 0.0;
+                    break;
+            }
             break;
         }
 
@@ -415,15 +477,7 @@ void Vocalist::set_hold(Sound sound)
             break;
 
         case SUSTAIN:
-            interpolating = true;
-            interpolate_time = get_next_time();
-
-            for(unsigned i = 0; i < num_coeffs; i++)
-                reflection_coeffs_delta[i+1] = 
-                   (all_coeffs[sound][i] - reflection_coeffs[i+1]) / 
-                   interpolate_duration;
-            gain_delta = (gains[sound] - gain) / interpolate_duration;
-
+            interpolate_sound(sound, held_interpolate_duration);
             break;
     }
 
@@ -435,6 +489,43 @@ void Vocalist::set_hold(Sound sound)
 void Vocalist::set_attack(Sound sound)
 {
     attack_sound = sound;
+
+    // Set attack time
+    switch(sound)
+    {
+        case H:
+            attack_duration = 2600;
+            break;
+        case V:
+            attack_duration = 5000;
+            break;
+        case F:
+            attack_duration = 7000;
+            break;
+        case Z:
+            attack_duration = 6000;
+            break;
+        case S:
+            attack_duration = 8000;
+            break;
+        default:
+            attack_duration = 0;
+            break;
+    }
+}
+
+
+void Vocalist::interpolate_sound(Sound sound, unsigned duration)
+{
+    interpolating = true;
+    interpolate_time = get_next_time();
+    interpolate_duration = duration;
+
+    for(unsigned i = 0; i < num_coeffs; i++)
+        reflection_coeffs_delta[i+1] = 
+           (all_coeffs[sound][i] - reflection_coeffs[i+1]) / 
+           interpolate_duration;
+    gain_delta = (gains[sound] - gain) / interpolate_duration;
 }
 
 
