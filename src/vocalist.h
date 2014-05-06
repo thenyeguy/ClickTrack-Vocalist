@@ -45,8 +45,12 @@ namespace ClickTrack
 
             /* Helper function for changing sound sets
              */
-            enum Sound { A, E, I, O, U, 
-                V, F, Z, S, H };
+            enum Sound { 
+                A, E, I, O, U,    //vowels
+                V, F, Z, S,       //fricatives
+                T, D, P, B, K, G, //stops
+                M, N,             //nasals
+                H };
             void set_hold(Sound sound);
             void set_attack(Sound sound);
 
@@ -56,8 +60,7 @@ namespace ClickTrack
 
             /* Helper function for loading sounds during initialization
              */
-            void load_sound(Sound sound, std::string file, float& gain,
-                    std::vector<float>& coeffs);
+            void load_sound(Sound sound, std::string file);
 
             /* Define our signal chain
              */

@@ -35,14 +35,21 @@ Vocalist::Vocalist()
 
     /* Load our sound sets
      */
-    load_sound(A, "data/A.dat", gains[A], all_coeffs[A]);
-    load_sound(E, "data/E.dat", gains[E], all_coeffs[E]);
-    load_sound(I, "data/I.dat", gains[I], all_coeffs[I]);
-    load_sound(O, "data/O.dat", gains[O], all_coeffs[O]);
-    load_sound(U, "data/U.dat", gains[U], all_coeffs[U]);
+    load_sound(A, "data/A.dat");
+    load_sound(E, "data/E.dat");
+    load_sound(I, "data/I.dat");
+    load_sound(O, "data/O.dat");
+    load_sound(U, "data/U.dat");
 
-    load_sound(V, "data/V.dat", gains[V], all_coeffs[V]);
-    load_sound(Z, "data/Z.dat", gains[Z], all_coeffs[Z]);
+    load_sound(V, "data/V.dat");
+    load_sound(Z, "data/Z.dat");
+
+    load_sound(M, "data/M.dat");
+    load_sound(N, "data/N.dat");
+
+    load_sound(T, "data/T.dat");
+    load_sound(P, "data/P.dat");
+    load_sound(K, "data/K.dat");
 
     /* Initialize our containers
      */
@@ -78,8 +85,8 @@ Vocalist::Vocalist()
 
     /* Initialize our default sounds
      */
-    set_hold(E);
-    set_attack(F);
+    set_hold(I);
+    set_attack(H);
 }
 
 
@@ -125,20 +132,28 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
                 set_attack(H);
                 break;
             case 38:
-                std::cout << "Setting attack to V" << std::endl;
-                set_attack(V);
+                std::cout << "Setting attack to T" << std::endl;
+                set_attack(T);
                 break;
             case 40:
-                std::cout << "Setting attack to F" << std::endl;
-                set_attack(F);
+                std::cout << "Setting attack to K" << std::endl;
+                set_attack(K);
                 break;
             case 41:
-                std::cout << "Setting attack to Z" << std::endl;
-                set_attack(Z);
+                std::cout << "Setting attack to P" << std::endl;
+                set_attack(P);
                 break;
             case 43:
-                std::cout << "Setting attack to S" << std::endl;
-                set_attack(S);
+                std::cout << "Setting attack to D" << std::endl;
+                set_attack(D);
+                break;
+            case 45:
+                std::cout << "Setting attack to G" << std::endl;
+                set_attack(G);
+                break;
+            case 47:
+                std::cout << "Setting attack to B" << std::endl;
+                set_attack(B);
                 break;
 
             default:
@@ -303,18 +318,29 @@ void Vocalist::handle_note_down(float target_freq)
             Sound sound_coeffs;
             switch(attack_sound)
             {
-                case V:
+                // Map voiceless fircatives to their voiced equivalents
                 case F:
                     sound_coeffs = V;
                     break;
-
-                case Z:
                 case S:
                     sound_coeffs = Z;
                     break;
-
-                default:
+                // Map voiced stops to their voiceless equivalents
+                case D:
+                    sound_coeffs = T;
+                    break;
+                case B:
+                    sound_coeffs = P;
+                    break;
+                case G:
+                    sound_coeffs = K;
+                    break;
+                // Map H to its vowel
+                case H:
                     sound_coeffs = held_sound;
+                    break;
+                default:
+                    sound_coeffs = attack_sound;
                     break;
             }
             gain = gains[sound_coeffs];
@@ -388,6 +414,52 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
 
                     if(!interpolating && alpha > 0.6)
                         interpolate_sound(held_sound, attack_duration*0.2);
+                    break;
+
+                case M:
+                case N:
+                    out = (alpha < 0.2 ? alpha/0.2 : 1.0)*voiced;
+
+                    if(!interpolating && alpha > 0.8)
+                        interpolate_sound(held_sound, attack_duration*0.2);
+                    break;
+
+                case T:
+                    // Start with noise, cross fade to voiced
+                    out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
+                       (1-alpha)*unvoiced;
+
+                    if(!interpolating && alpha > 0.6)
+                        interpolate_sound(held_sound, attack_duration*0.4);
+                    break;
+
+                case K:
+                    // Start with noise, cross fade to voiced
+                    out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
+                        (1-alpha)*unvoiced;
+
+                    if(!interpolating && alpha > 0.6)
+                        interpolate_sound(held_sound, attack_duration*0.4);
+                    break;
+
+                case P:
+                    // Start with noise, cross fade to voiced
+                    out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
+                        0.7*(1-alpha)*unvoiced;
+
+                    if(!interpolating && alpha > 0.6)
+                        interpolate_sound(held_sound, attack_duration*0.4);
+                    break;
+
+                case D:
+                case G:
+                case B:
+                    // Fade in noise with voicing, cross fade in middle
+                    out = voiced + 
+                       (alpha > 0.5 ? 0.0 : 0.5 - alpha)*unvoiced;
+
+                    if(!interpolating && alpha < 0.1)
+                        interpolate_sound(held_sound, attack_duration);
                     break;
 
                 default:
@@ -493,20 +565,28 @@ void Vocalist::set_attack(Sound sound)
     // Set attack time
     switch(sound)
     {
-        case H:
-            attack_duration = 2600;
-            break;
-        case V:
-            attack_duration = 5000;
-            break;
         case F:
-            attack_duration = 7000;
+            attack_duration = 6000;
             break;
         case Z:
             attack_duration = 6000;
             break;
         case S:
-            attack_duration = 8000;
+            attack_duration = 6000;
+            break;
+        case M:
+        case N:
+            attack_duration = 4500;
+            break;
+        case H:
+        case T:
+        case P:
+        case K:
+        case D:
+        case B:
+        case G:
+        case V:
+            attack_duration = 2600;
             break;
         default:
             attack_duration = 0;
@@ -529,8 +609,7 @@ void Vocalist::interpolate_sound(Sound sound, unsigned duration)
 }
 
 
-void Vocalist::load_sound(Sound sound, std::string file, float& gain,
-        std::vector<float>& coeffs)
+void Vocalist::load_sound(Sound sound, std::string file)
 {
     // Open our file
     std::fstream coeffFile;
@@ -539,7 +618,7 @@ void Vocalist::load_sound(Sound sound, std::string file, float& gain,
     // Read the header
     std::string name;
     coeffFile >> name; // ignore the name
-    coeffFile >> gain;
+    coeffFile >> gains[sound];
     coeffFile >> num_coeffs;
 
     // Read the coefficients into our vector
@@ -547,7 +626,7 @@ void Vocalist::load_sound(Sound sound, std::string file, float& gain,
     {
         float c;
         coeffFile >> c;
-        coeffs.push_back(c);
+        all_coeffs[sound].push_back(c);
     }
 
     // Close the file
