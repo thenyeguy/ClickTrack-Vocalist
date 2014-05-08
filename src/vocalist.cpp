@@ -136,24 +136,24 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
                 set_attack(T);
                 break;
             case 40:
-                std::cout << "Setting attack to K" << std::endl;
-                set_attack(K);
+                std::cout << "Setting attack to D" << std::endl;
+                set_attack(D);
                 break;
             case 41:
                 std::cout << "Setting attack to P" << std::endl;
                 set_attack(P);
                 break;
             case 43:
-                std::cout << "Setting attack to D" << std::endl;
-                set_attack(D);
+                std::cout << "Setting attack to F" << std::endl;
+                set_attack(F);
                 break;
             case 45:
-                std::cout << "Setting attack to G" << std::endl;
-                set_attack(G);
+                std::cout << "Setting attack to V" << std::endl;
+                set_attack(V);
                 break;
             case 47:
-                std::cout << "Setting attack to B" << std::endl;
-                set_attack(B);
+                std::cout << "Setting attack to M" << std::endl;
+                set_attack(M);
                 break;
 
             default:
@@ -427,16 +427,16 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
                 case T:
                     // Start with noise, cross fade to voiced
                     out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
-                       (1-alpha)*unvoiced;
+                       (1-sqrt(alpha))*unvoiced;
 
-                    if(!interpolating && alpha > 0.6)
-                        interpolate_sound(held_sound, attack_duration*0.4);
+                    if(!interpolating && alpha > 0.7)
+                        interpolate_sound(held_sound, attack_duration*0.3);
                     break;
 
                 case K:
                     // Start with noise, cross fade to voiced
                     out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
-                        (1-alpha)*unvoiced;
+                        0.8*(1-sqrt(alpha))*unvoiced;
 
                     if(!interpolating && alpha > 0.6)
                         interpolate_sound(held_sound, attack_duration*0.4);
@@ -445,21 +445,37 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
                 case P:
                     // Start with noise, cross fade to voiced
                     out = (alpha > 0.4 ? (alpha-0.4)/0.6 : 0.0)*voiced + 
-                        0.7*(1-alpha)*unvoiced;
+                        0.4*(1-sqrt(alpha))*unvoiced;
 
                     if(!interpolating && alpha > 0.6)
                         interpolate_sound(held_sound, attack_duration*0.4);
                     break;
 
                 case D:
+                    // Fade in noise with voicing, cross fade in middle
+                    out = voiced + 
+                       0.3*(1-sqrt(alpha))*unvoiced;
+
+                    if(!interpolating && alpha > 0.3 && alpha < 0.4)
+                        interpolate_sound(held_sound, 0.3*attack_duration);
+                    break;
+
                 case G:
+                    // Fade in noise with voicing, cross fade in middle
+                    out = voiced + 
+                       0.1*(1-alpha)*unvoiced;
+
+                    if(!interpolating && alpha > 0.5 && alpha < 0.6)
+                        interpolate_sound(held_sound, 0.3*attack_duration);
+                    break;
+
                 case B:
                     // Fade in noise with voicing, cross fade in middle
                     out = voiced + 
-                       (alpha > 0.5 ? 0.0 : 0.5 - alpha)*unvoiced;
+                       0.3*(1-alpha)*unvoiced;
 
-                    if(!interpolating && alpha < 0.1)
-                        interpolate_sound(held_sound, attack_duration);
+                    if(!interpolating && alpha > 0.6 && alpha < 0.7)
+                        interpolate_sound(held_sound, 0.3*attack_duration);
                     break;
 
                 default:
@@ -586,7 +602,7 @@ void Vocalist::set_attack(Sound sound)
         case B:
         case G:
         case V:
-            attack_duration = 2600;
+            attack_duration = 3200;
             break;
         default:
             attack_duration = 0;
