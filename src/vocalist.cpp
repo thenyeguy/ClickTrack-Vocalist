@@ -101,7 +101,7 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
     // Check what note was playing and decide our action
     // The second octave is mapped to changing the vocal sounds
     // The third octave (C3 to E4) is or performance range
-    if(36 <= in_note && in_note <= 47) // change sound
+    if(26 <= in_note && in_note <= 47) // change sound
     {
         // Change the note sound based on the key
         switch(in_note)
@@ -154,6 +154,36 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
             case 47:
                 std::cout << "Setting attack to M" << std::endl;
                 set_attack(M);
+                break;
+
+            case 35:
+                std::cout << "Setting attack to N" << std::endl;
+                set_attack(N);
+                break;
+
+            case 33:
+                std::cout << "Setting attack to G" << std::endl;
+                set_attack(G);
+                break;
+
+            case 31:
+                std::cout << "Setting attack to K" << std::endl;
+                set_attack(K);
+                break;
+
+            case 29:
+                std::cout << "Setting attack to B" << std::endl;
+                set_attack(B);
+                break;
+
+            case 28:
+                std::cout << "Setting attack to Z" << std::endl;
+                set_attack(Z);
+                break;
+
+            case 26:
+                std::cout << "Setting attack to S" << std::endl;
+                set_attack(S);
                 break;
 
             default:
