@@ -16,6 +16,7 @@ Vocalist::Vocalist()
       tremelo_lfo(Oscillator::Sine, 5),
       tremelo(-12),
 
+      attack_modifier(1.0),
       attack_duration(0), // set based on consonant
       release_duration(4000),
       glide_duration(2000),
@@ -278,34 +279,41 @@ void Vocalist::on_midi_message(std::vector<unsigned char>* message,
                 tremelo.set_gain((value - 1.0) * 20);
                 break;
             }
-            case 0x17: // tremelo
+            case 0x17: // vibrato
+            {
+                float value = (float)message->at(2) / 127;
+                voice.set_lfo_intensity(value);
+                break;
+            }
+            case 0x18: // tremelo
             {
                 float value = (float)message->at(2) / 127;
                 tremelo.set_lfo_intensity(value * 20);
                 break;
             }
-            case 0x18: // attack time
+            case 0x19: // attack time
             {
                 float value = (float)message->at(2) / 127;
-                attack_duration = value * 20000;
+                attack_modifier = value * 3.0;
+                set_attack(attack_sound);
                 break;
             }
-            case 0x19: // release time
+            case 0x1A: // release time
             {
                 float value = (float)message->at(2) / 127;
-                release_duration = value * 20000;
+                release_duration = value * 20000 + 1;
                 break;
             }
-            case 0x1A: // glide time
+            case 0x1B: // glide time
             {
                 float value = (float)message->at(2) / 127;
-                glide_duration = value * 20000;
+                glide_duration = value * 20000 + 1;
                 break;
             }
-            case 0x1B: // interpolate time
+            case 0x1C: // interpolate time
             {
                 float value = (float)message->at(2) / 127;
-                held_interpolate_duration = value * 20000;
+                held_interpolate_duration = value * 20000 + 1;
                 break;
             }
             default:
@@ -638,6 +646,7 @@ void Vocalist::set_attack(Sound sound)
             attack_duration = 0;
             break;
     }
+    attack_duration *= attack_modifier + 1;
 }
 
 

@@ -87,6 +87,7 @@ namespace ClickTrack
 
             /* Store ADSRish parameters
              */
+            float attack_modifier;
             unsigned attack_duration;
             unsigned release_duration;
             unsigned glide_duration;
