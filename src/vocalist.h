@@ -49,7 +49,7 @@ namespace ClickTrack
                 A, E, I, O, U,    //vowels
                 V, F, Z, S,       //fricatives
                 T, D, P, B, K, G, //stops
-                M, N,             //nasals
+                L, M, N,          //nasals
                 H };
             void set_hold(Sound sound);
             void set_attack(Sound sound);

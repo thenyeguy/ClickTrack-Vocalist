@@ -19,6 +19,7 @@ disp 'Training consonants...';
 V = trainModel('../wav/raw/V.wav', poles);
 Z = trainModel('../wav/raw/Z.wav', poles);
 
+L = trainModel('../wav/raw/L.wav', poles);
 M = trainModel('../wav/raw/M.wav', poles);
 N = trainModel('../wav/raw/N.wav', poles);
 
@@ -31,7 +32,7 @@ disp 'Complete.'
 
 %% Normalize gains
 disp 'Normalizing gains...'
-all = [A E I O U V Z M N T P K];
+all = [A E I O U V Z L M N T P K];
 gains = [all.gain];
 maxGain = max(gains);
 
@@ -44,6 +45,7 @@ U.gain = U.gain/maxGain;
 V.gain = V.gain/maxGain;
 Z.gain = Z.gain/maxGain;
 
+L.gain = L.gain/maxGain;
 M.gain = M.gain/maxGain;
 N.gain = N.gain/maxGain;
 
@@ -66,6 +68,7 @@ saveModel(U);
 saveModel(V);
 saveModel(Z);
 
+saveModel(L);
 saveModel(M);
 saveModel(N);
 

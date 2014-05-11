@@ -45,6 +45,7 @@ Vocalist::Vocalist()
     load_sound(V, "data/V.dat");
     load_sound(Z, "data/Z.dat");
 
+    load_sound(L, "data/L.dat");
     load_sound(M, "data/M.dat");
     load_sound(N, "data/N.dat");
 
@@ -107,6 +108,7 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
         // Change the note sound based on the key
         switch(in_note)
         {
+            // Vowels
             case 37:
                 std::cout << "Setting vowel to A" << std::endl;
                 set_hold(A);
@@ -128,6 +130,7 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
                 set_hold(U);
                 break;
 
+            // Primary consonants
             case 36:
                 std::cout << "Setting attack to H" << std::endl;
                 set_attack(H);
@@ -141,48 +144,48 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
                 set_attack(D);
                 break;
             case 41:
-                std::cout << "Setting attack to P" << std::endl;
-                set_attack(P);
-                break;
-            case 43:
                 std::cout << "Setting attack to F" << std::endl;
                 set_attack(F);
                 break;
-            case 45:
+            case 43:
                 std::cout << "Setting attack to V" << std::endl;
                 set_attack(V);
+                break;
+            case 45:
+                std::cout << "Setting attack to L" << std::endl;
+                set_attack(L);
                 break;
             case 47:
                 std::cout << "Setting attack to M" << std::endl;
                 set_attack(M);
                 break;
 
+            // Secondary consonants
             case 35:
                 std::cout << "Setting attack to N" << std::endl;
                 set_attack(N);
                 break;
-
             case 33:
                 std::cout << "Setting attack to G" << std::endl;
                 set_attack(G);
                 break;
-
             case 31:
                 std::cout << "Setting attack to K" << std::endl;
                 set_attack(K);
                 break;
-
             case 29:
                 std::cout << "Setting attack to B" << std::endl;
                 set_attack(B);
                 break;
-
             case 28:
+                std::cout << "Setting attack to B" << std::endl;
+                set_attack(B);
+                break;
+            case 26:
                 std::cout << "Setting attack to Z" << std::endl;
                 set_attack(Z);
                 break;
-
-            case 26:
+            case 24:
                 std::cout << "Setting attack to S" << std::endl;
                 set_attack(S);
                 break;
@@ -454,6 +457,7 @@ void Vocalist::generate_outputs(std::vector<SAMPLE>& output, unsigned long t)
                         interpolate_sound(held_sound, attack_duration*0.2);
                     break;
 
+                case L:
                 case M:
                 case N:
                     out = (alpha < 0.2 ? alpha/0.2 : 1.0)*voiced;
@@ -627,6 +631,9 @@ void Vocalist::set_attack(Sound sound)
             break;
         case S:
             attack_duration = 6000;
+            break;
+        case L:
+            attack_duration = 3200;
             break;
         case M:
         case N:
