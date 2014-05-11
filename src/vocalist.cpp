@@ -32,7 +32,7 @@ Vocalist::Vocalist()
     voice.set_lfo_intensity(0.1);
 
     tremelo.set_lfo_input(tremelo_lfo.get_output_channel());
-    tremelo.set_lfo_intensity(3.0);
+    tremelo.set_lfo_intensity(0.0);
 
     /* Load our sound sets
      */
@@ -103,7 +103,7 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
     // Check what note was playing and decide our action
     // The second octave is mapped to changing the vocal sounds
     // The third octave (C3 to E4) is or performance range
-    if(26 <= in_note && in_note <= 47) // change sound
+    if(24 <= in_note && in_note <= 47) // change sound
     {
         // Change the note sound based on the key
         switch(in_note)
@@ -178,8 +178,8 @@ void Vocalist::on_note_down(unsigned in_note, float velocity, unsigned long time
                 set_attack(B);
                 break;
             case 28:
-                std::cout << "Setting attack to B" << std::endl;
-                set_attack(B);
+                std::cout << "Setting attack to P" << std::endl;
+                set_attack(P);
                 break;
             case 26:
                 std::cout << "Setting attack to Z" << std::endl;
@@ -291,13 +291,13 @@ void Vocalist::on_midi_message(std::vector<unsigned char>* message,
             case 0x18: // tremelo
             {
                 float value = (float)message->at(2) / 127;
-                tremelo.set_lfo_intensity(value * 20);
+                tremelo.set_lfo_intensity(value);
                 break;
             }
             case 0x19: // attack time
             {
                 float value = (float)message->at(2) / 127;
-                attack_modifier = value * 3.0;
+                attack_modifier = value * 2.9 + 0.1;
                 set_attack(attack_sound);
                 break;
             }
@@ -653,7 +653,9 @@ void Vocalist::set_attack(Sound sound)
             attack_duration = 0;
             break;
     }
-    attack_duration *= attack_modifier + 1;
+
+    // Scale according to the modifier
+    attack_duration *= attack_modifier;
 }
 
 

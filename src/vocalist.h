@@ -68,7 +68,7 @@ namespace ClickTrack
             Oscillator voice;
             Oscillator noise;
 
-            GainFilter tremelo_lfo;
+            Oscillator tremelo_lfo;
             GainFilter tremelo;
 
             /* Current note status
