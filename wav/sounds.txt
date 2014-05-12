@@ -1,0 +1,19 @@
+VOWELS:
+ * A
+ * E
+ * I
+ * O
+ * U
+
+FRICATIVES:
+ * H
+ * S/Z
+ * F/V
+
+NASALS:
+ * M
+ * N
+
+STOPS:
+ * P/B
+ * T/D
